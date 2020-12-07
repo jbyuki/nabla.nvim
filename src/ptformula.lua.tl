@@ -1,8 +1,13 @@
 @../lua/ptformula.lua=
 @requires
 @script_variables
+@expressions
+@tokens
+
 @declare_functions
 @functions
+
+@parse
 
 @init_ptformula_mode
 
@@ -17,7 +22,7 @@ local function init()
 
 	@attach_on_lines_callback
 
-	@create_vertical_split_with_scratch_buffer
+	@create_split_with_scratch_buffer
 end
 
 @export_symbols+=
@@ -26,17 +31,63 @@ init = init,
 @create_scratch_buffer+=
 local scratch = vim.api.nvim_create_buf(false, true)
 
-@create_vertical_split_with_scratch_buffer+=
+@create_split_with_scratch_buffer+=
 local prewin = vim.api.nvim_get_current_win()
-vim.api.nvim_command("vsp")
+local height = vim.api.nvim_win_get_height(prewin) 
+local width = vim.api.nvim_win_get_width(prewin)
+
+if width > height*2 then
+	vim.api.nvim_command("vsp")
+else
+	vim.api.nvim_command("sp")
+end
 vim.api.nvim_win_set_buf(prewin, scratch)
 
 @attach_on_lines_callback+=
 local curbuf = vim.api.nvim_get_current_buf()
 local attach = vim.api.nvim_buf_attach(curbuf, true, {
-	on_lines = function(...)
-		@erase_scratch_buffer
-		@read_whole_buffer
-		@foreach_nonempty_line_parse_and_output_to_scratch
+	on_lines = function(_, buf, _, _, _, _, _)
+		vim.schedule(function()
+			@erase_scratch_buffer
+			@clear_all_virtual_text
+			@read_whole_buffer
+			@foreach_nonempty_line_parse_and_output_to_scratch
+		end)
 	end
 })
+
+@erase_scratch_buffer+=
+vim.api.nvim_buf_set_lines(scratch, 0, -1, true, {})
+
+@read_whole_buffer+=
+local lines = vim.api.nvim_buf_get_lines(buf, 0, -1, true)
+
+@foreach_nonempty_line_parse_and_output_to_scratch+=
+for y, line in ipairs(lines) do
+	if line ~= "" then
+		@parse_math_expression
+		if exp then
+			@generate_ascii_art
+		else
+			@display_error_as_virtual_text
+		end
+	end
+end
+
+@requires+=
+local parser = require("ptformula.parser")
+
+@parse_math_expression+=
+local exp, errmsg = parser.parse_all(line)
+
+@script_variables+=
+local vtext = vim.api.nvim_create_namespace("ptformula")
+
+@clear_all_virtual_text+=
+vim.api.nvim_buf_clear_namespace( buf, vtext, 0, -1)
+
+@display_error_as_virtual_text+=
+vim.api.nvim_buf_set_virtual_text(buf, vtext, y-1, {{ vim.inspect(errmsg), "Special" }}, {})
+
+@generate_ascii_art+=
+vim.api.nvim_buf_set_lines(scratch, -1, -1, true, { "exp: " .. exp.toString() })
