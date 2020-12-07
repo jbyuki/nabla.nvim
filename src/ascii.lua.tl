@@ -261,10 +261,13 @@ right_top_par    = '⎞',
 right_middle_par = '⎟',
 right_bottom_par = '⎠',
 
+left_single_par = '(',
+right_single_par = ')',
+
 @create_left_paren_with_correct_height+=
 local left_content = {}
 if self.h == 1 then
-	left_content = { '(' }
+	left_content = { style.left_single_par }
 else
 	for y=1,self.h do
 		if y == 1 then table.insert(left_content, style.left_top_par)
@@ -280,7 +283,7 @@ left_paren.my = self.my
 @create_right_paren_with_correct_height+=
 local right_content = {}
 if self.h == 1 then
-	right_content = { ')' }
+	right_content = { style.right_single_par }
 else
 	for y=1,self.h do
 		if y == 1 then table.insert(right_content, style.right_top_par)
@@ -316,5 +319,21 @@ elseif exp.kind == "funexp" then
 		end
 	end
 
-	args = args:enclose_paren()
+	if args then
+		args = args:enclose_paren()
+	else
+		args = grid:new(2, 1, { style.left_single_par .. style.right_single_par })
+	end
 	return c0:join_hori(args)
+
+@style_variables+=
+eq_sign = ' = ',
+
+@transform_exp_to_grid+=
+elseif exp.kind == "eqexp" then
+	local leftgrid = to_ascii(exp.left)
+	local rightgrid = to_ascii(exp.right)
+	local opgrid = grid:new(utf8len(style.eq_sign), 1, { style.eq_sign })
+	local c1 = leftgrid:join_hori(opgrid)
+	local c2 = c1:join_hori(rightgrid)
+	return c2
