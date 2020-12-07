@@ -26,6 +26,11 @@ local style = {
 	
 	eq_sign = ' = ',
 	
+	int_top = "⌠",
+	int_middle = "⏐",
+	int_single = "∫",
+	int_bottom = "⌡",
+	
 }
 
 local special_syms = {
@@ -34,6 +39,7 @@ local special_syms = {
 	["alpha"] = "α", ["beta"] = "β", ["gamma"] = "γ", ["delta"] = "δ", ["epsilon"] = "ε", ["zeta"] = "ζ", ["eta"] = "η", ["theta"] = "θ", ["iota"] = "ι", ["kappa"] = "κ", ["lambda"] = "λ", ["mu"] = "μ", ["nu"] = "ν", ["xi"] = "ξ", ["omicron"] = "ο", ["pi"] = "π", ["rho"] = "ρ", ["final"] = "ς", ["sigma"] = "σ", ["tau"] = "τ", ["upsilon"] = "υ", ["phi"] = "φ", ["chi"] = "χ", ["psi"] = "ψ", ["omega"] = "ω",
 	
 	["nabla"] = "∇",
+	
 }
 
 local grid = {}
@@ -227,7 +233,26 @@ local function to_ascii(exp)
 	
 	
 	elseif exp.kind == "funexp" then
-		if false then
+		if exp.name == "int" and #exp.args == 3 then
+			local upperbound = to_ascii(exp.args[1])
+			local lowerbound = to_ascii(exp.args[2])
+			local integrand = to_ascii(exp.args[3])
+		
+			local int_content = {}
+			for y=1,integrand.h+1 do
+				if y == 1 then table.insert(int_content, style.int_top)
+				elseif y == integrand.h+1 then table.insert(int_content, style.int_bottom)
+				else table.insert(int_content, style.int_middle)
+				end
+			end
+			
+			local int_bar = grid:new(1, integrand.h+1, int_content)
+		
+			local res = upperbound:join_vert(int_bar)
+			res = res:join_vert(lowerbound)
+			res.my = upperbound.h + integrand.my + 1
+		
+			return res:join_hori(integrand)
 		
 		else
 			local c0 = grid:new(utf8len(exp.name), 1, { exp.name })
@@ -259,6 +284,7 @@ local function to_ascii(exp)
 		local c1 = leftgrid:join_hori(opgrid)
 		local c2 = c1:join_hori(rightgrid)
 		return c2
+	
 	
 	else
 		return nil
