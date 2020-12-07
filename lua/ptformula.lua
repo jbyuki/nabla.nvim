@@ -1,6 +1,8 @@
 -- Generated from ptformula.lua.tl using ntangle.nvim
 local parser = require("ptformula.parser")
 
+local ascii = require("ptformula.ascii")
+
 local vtext = vim.api.nvim_create_namespace("ptformula")
 
 
@@ -25,7 +27,13 @@ local function init()
 						local exp, errmsg = parser.parse_all(line)
 						
 						if exp then
-							vim.api.nvim_buf_set_lines(scratch, -1, -1, true, { "exp: " .. exp.toString() })
+							local g = ascii.to_ascii(exp)
+							local drawing = {}
+							for row in vim.gsplit(tostring(g), "\n") do
+								table.insert(drawing, row)
+							end
+							
+							vim.api.nvim_buf_set_lines(scratch, -1, -1, true, drawing)
 						else
 							vim.api.nvim_buf_set_virtual_text(buf, vtext, y-1, {{ vim.inspect(errmsg), "Special" }}, {})
 							

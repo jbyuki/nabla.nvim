@@ -267,12 +267,7 @@ local function SubToken() local self = { kind = "sub" }
 		if not t then
 			return nil
 		end
-		-- return SubExpression(left, t)
-		if t.kind == "numexp" then
-			return AddExpression(left, NumExpression(-t.num))
-		else
-			return AddExpression(left, PrefixSubExpression(t))
-		end
+		return SubExpression(left, t)
 	end
 	function self.priority() return priority_list["sub"] end
 	

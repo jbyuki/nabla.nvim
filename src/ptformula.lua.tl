@@ -89,5 +89,14 @@ vim.api.nvim_buf_clear_namespace( buf, vtext, 0, -1)
 @display_error_as_virtual_text+=
 vim.api.nvim_buf_set_virtual_text(buf, vtext, y-1, {{ vim.inspect(errmsg), "Special" }}, {})
 
+@requires+=
+local ascii = require("ptformula.ascii")
+
 @generate_ascii_art+=
-vim.api.nvim_buf_set_lines(scratch, -1, -1, true, { "exp: " .. exp.toString() })
+local g = ascii.to_ascii(exp)
+local drawing = {}
+for row in vim.gsplit(tostring(g), "\n") do
+	table.insert(drawing, row)
+end
+
+vim.api.nvim_buf_set_lines(scratch, -1, -1, true, drawing)
