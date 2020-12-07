@@ -325,6 +325,7 @@ local function LParToken() local self = { kind = "lpar" }
 			end
 			table.insert(args, exp)
 			local t = nextToken()
+			if not t then return nil end
 			if t.kind == "rpar" then
 				break
 			end
@@ -480,6 +481,8 @@ function tokenize(str)
 			
 			local parsed = string.match(string.sub(str, i), "[%w_]+")
 			i = i+string.len(parsed)
+			
+			table.insert(tokens, SymToken(parsed))
 			
 		
 		else

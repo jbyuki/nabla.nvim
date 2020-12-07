@@ -129,6 +129,7 @@ return self end
 elseif string.match(c, "[%a_]") then
 	@add_mul_token_if_num_just_before
 	@get_all_char_sym
+	@crete_sym_token
 
 @add_mul_token_if_num_just_before+=
 if #tokens > 0 and tokens[#tokens].kind == "num" then
@@ -389,6 +390,7 @@ function self.infix(left)
 		end
 		table.insert(args, exp)
 		local t = nextToken()
+		if not t then return nil end
 		@if_rpar_quit
 		@if_comma_next_arg
 	end

@@ -19,6 +19,8 @@ local style = {
 	right_middle_par = '⎟',
 	right_bottom_par = '⎠',
 	
+	comma_sign = ", ", 
+	
 }
 
 local grid = {}
@@ -144,6 +146,7 @@ function grid:enclose_paren()
 	
 	local right_paren = grid:new(1, self.h, right_content)
 	right_paren.my = self.my
+	
 
 	local c1 = left_paren:join_hori(self)
 	local c2 = c1:join_hori(right_paren)
@@ -202,6 +205,26 @@ local function to_ascii(exp)
 		
 		return c2
 	
+	elseif exp.kind == "symexp" then
+		return grid:new(utf8len(exp.sym), 1, { exp.sym })
+	
+	elseif exp.kind == "funexp" then
+		local c0 = grid:new(utf8len(exp.name), 1, { exp.name })
+	
+		local comma = grid:new(utf8len(style.comma_sign), 1, { style.comma_sign })
+	
+		local args
+		for _, arg in ipairs(exp.args) do
+			local garg = to_ascii(arg)
+			if not args then args = garg
+			else
+				args = args:join_hori(comma)
+				args = args:join_hori(garg)
+			end
+		end
+	
+		args = args:enclose_paren()
+		return c0:join_hori(args)
 	else
 		return nil
 	end

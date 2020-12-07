@@ -292,3 +292,29 @@ end
 
 local right_paren = grid:new(1, self.h, right_content)
 right_paren.my = self.my
+
+@transform_exp_to_grid+=
+elseif exp.kind == "symexp" then
+	return grid:new(utf8len(exp.sym), 1, { exp.sym })
+
+@style_variables+=
+comma_sign = ", ", 
+
+@transform_exp_to_grid+=
+elseif exp.kind == "funexp" then
+	local c0 = grid:new(utf8len(exp.name), 1, { exp.name })
+
+	local comma = grid:new(utf8len(style.comma_sign), 1, { style.comma_sign })
+
+	local args
+	for _, arg in ipairs(exp.args) do
+		local garg = to_ascii(arg)
+		if not args then args = garg
+		else
+			args = args:join_hori(comma)
+			args = args:join_hori(garg)
+		end
+	end
+
+	args = args:enclose_paren()
+	return c0:join_hori(args)
