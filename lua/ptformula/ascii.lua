@@ -28,6 +28,14 @@ local style = {
 	
 }
 
+local special_syms = {
+	["Alpha"] = "Α", ["Beta"] = "Β", ["Gamma"] = "Γ", ["Delta"] = "Δ", ["Epsilon"] = "Ε", ["Zeta"] = "Ζ", ["Eta"] = "Η", ["Theta"] = "Θ", ["Iota"] = "Ι", ["Kappa"] = "Κ", ["Lambda"] = "Λ", ["Mu"] = "Μ", ["Nu"] = "Ν", ["Xi"] = "Ξ", ["Omicron"] = "Ο", ["Pi"] = "Π", ["Rho"] = "Ρ", ["Sigma"] = "Σ", ["Tau"] = "Τ", ["Upsilon"] = "Υ", ["Phi"] = "Φ", ["Chi"] = "Χ", ["Psi"] = "Ψ", ["Omega"] = "Ω",
+	
+	["alpha"] = "α", ["beta"] = "β", ["gamma"] = "γ", ["delta"] = "δ", ["epsilon"] = "ε", ["zeta"] = "ζ", ["eta"] = "η", ["theta"] = "θ", ["iota"] = "ι", ["kappa"] = "κ", ["lambda"] = "λ", ["mu"] = "μ", ["nu"] = "ν", ["xi"] = "ξ", ["omicron"] = "ο", ["pi"] = "π", ["rho"] = "ρ", ["final"] = "ς", ["sigma"] = "σ", ["tau"] = "τ", ["upsilon"] = "υ", ["phi"] = "φ", ["chi"] = "χ", ["psi"] = "ψ", ["omega"] = "ω",
+	
+	["nabla"] = "∇",
+}
+
 local grid = {}
 function grid:new(w, h, content)
 	local o = { 
@@ -211,29 +219,38 @@ local function to_ascii(exp)
 		return c2
 	
 	elseif exp.kind == "symexp" then
-		return grid:new(utf8len(exp.sym), 1, { exp.sym })
+		local sym = exp.sym
+		if special_syms[sym] then
+			sym = special_syms[sym]
+		end
+		return grid:new(utf8len(sym), 1, { sym })
+	
 	
 	elseif exp.kind == "funexp" then
-		local c0 = grid:new(utf8len(exp.name), 1, { exp.name })
-	
-		local comma = grid:new(utf8len(style.comma_sign), 1, { style.comma_sign })
-	
-		local args
-		for _, arg in ipairs(exp.args) do
-			local garg = to_ascii(arg)
-			if not args then args = garg
-			else
-				args = args:join_hori(comma)
-				args = args:join_hori(garg)
-			end
-		end
-	
-		if args then
-			args = args:enclose_paren()
+		if false then
+		
 		else
-			args = grid:new(2, 1, { style.left_single_par .. style.right_single_par })
+			local c0 = grid:new(utf8len(exp.name), 1, { exp.name })
+	
+			local comma = grid:new(utf8len(style.comma_sign), 1, { style.comma_sign })
+	
+			local args
+			for _, arg in ipairs(exp.args) do
+				local garg = to_ascii(arg)
+				if not args then args = garg
+				else
+					args = args:join_hori(comma)
+					args = args:join_hori(garg)
+				end
+			end
+	
+			if args then
+				args = args:enclose_paren()
+			else
+				args = grid:new(2, 1, { style.left_single_par .. style.right_single_par })
+			end
+			return c0:join_hori(args)
 		end
-		return c0:join_hori(args)
 	
 	elseif exp.kind == "eqexp" then
 		local leftgrid = to_ascii(exp.left)
@@ -242,6 +259,7 @@ local function to_ascii(exp)
 		local c1 = leftgrid:join_hori(opgrid)
 		local c2 = c1:join_hori(rightgrid)
 		return c2
+	
 	else
 		return nil
 	end
