@@ -1,4 +1,6 @@
 ptformula.nvim
 --------------
 
-Math expression to ASCII art
+**work-in-progress**
+
+experimental math expression to ascii art visualizer
