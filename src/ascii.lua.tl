@@ -2,11 +2,12 @@
 @requires
 @declare_functions
 
-@grid_prototype
-
 local style = {
 	@style_variables
 }
+
+@grid_prototype
+
 
 @script_variables
 
@@ -240,3 +241,54 @@ c.my = num_max
 
 @set_middle_for_fraction+=
 c2.my = leftgrid.h
+
+@grid_prototype+=
+function grid:enclose_paren()
+	@create_left_paren_with_correct_height
+	@create_right_paren_with_correct_height
+
+	local c1 = left_paren:join_hori(self)
+	local c2 = c1:join_hori(right_paren)
+	return c2
+end
+
+@style_variables+=
+left_top_par    = '⎛',
+left_middle_par = '⎜',
+left_bottom_par = '⎝',
+
+right_top_par    = '⎞',
+right_middle_par = '⎟',
+right_bottom_par = '⎠',
+
+@create_left_paren_with_correct_height+=
+local left_content = {}
+if self.h == 1 then
+	left_content = { '(' }
+else
+	for y=1,self.h do
+		if y == 1 then table.insert(left_content, style.left_top_par)
+		elseif y == self.h then table.insert(left_content, style.left_bottom_par)
+		else table.insert(left_content, style.left_middle_par)
+		end
+	end
+end
+
+local left_paren = grid:new(1, self.h, left_content)
+left_paren.my = self.my
+
+@create_right_paren_with_correct_height+=
+local right_content = {}
+if self.h == 1 then
+	right_content = { ')' }
+else
+	for y=1,self.h do
+		if y == 1 then table.insert(right_content, style.right_top_par)
+		elseif y == self.h then table.insert(right_content, style.right_bottom_par)
+		else table.insert(right_content, style.right_middle_par)
+		end
+	end
+end
+
+local right_paren = grid:new(1, self.h, right_content)
+right_paren.my = self.my

@@ -27,7 +27,7 @@ local function init()
 						local exp, errmsg = parser.parse_all(line)
 						
 						if exp then
-							local g = ascii.to_ascii(exp)
+							local g = ascii.to_ascii(exp):enclose_paren()
 							local drawing = {}
 							for row in vim.gsplit(tostring(g), "\n") do
 								table.insert(drawing, row)

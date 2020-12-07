@@ -2,6 +2,25 @@
 local utf8len, utf8char
 
 
+local style = {
+	plus_sign = " + ",
+	
+	minus_sign = " - ",
+	
+	multiply_sign = " ∙ ",
+	
+	div_bar = "―",
+	
+	left_top_par    = '⎛',
+	left_middle_par = '⎜',
+	left_bottom_par = '⎝',
+	
+	right_top_par    = '⎞',
+	right_middle_par = '⎟',
+	right_bottom_par = '⎠',
+	
+}
+
 local grid = {}
 function grid:new(w, h, content)
 	local o = { 
@@ -95,17 +114,43 @@ function grid:get_col(x)
 	return s
 end
 
+function grid:enclose_paren()
+	local left_content = {}
+	if self.h == 1 then
+		left_content = { '(' }
+	else
+		for y=1,self.h do
+			if y == 1 then table.insert(left_content, style.left_top_par)
+			elseif y == self.h then table.insert(left_content, style.left_bottom_par)
+			else table.insert(left_content, style.left_middle_par)
+			end
+		end
+	end
+	
+	local left_paren = grid:new(1, self.h, left_content)
+	left_paren.my = self.my
+	
+	local right_content = {}
+	if self.h == 1 then
+		right_content = { ')' }
+	else
+		for y=1,self.h do
+			if y == 1 then table.insert(right_content, style.right_top_par)
+			elseif y == self.h then table.insert(right_content, style.right_bottom_par)
+			else table.insert(right_content, style.right_middle_par)
+			end
+		end
+	end
+	
+	local right_paren = grid:new(1, self.h, right_content)
+	right_paren.my = self.my
 
-local style = {
-	plus_sign = " + ",
-	
-	minus_sign = " - ",
-	
-	multiply_sign = " ∙ ",
-	
-	div_bar = "―",
-	
-}
+	local c1 = left_paren:join_hori(self)
+	local c2 = c1:join_hori(right_paren)
+	return c2
+end
+
+
 
 
 local function to_ascii(exp)
@@ -154,6 +199,7 @@ local function to_ascii(exp)
 		local c1 = leftgrid:join_vert(opgrid)
 		local c2 = c1:join_vert(rightgrid)
 		c2.my = leftgrid.h
+		
 		return c2
 	
 	else
