@@ -1,11 +1,11 @@
 ptformula.nvim
 --------------
 
+ptformula (plain-text formula)
+
 **work-in-progress**
 
 experimental math expression to ascii art visualizer
-
-Enventually this plugin should allow to, by the press of a button, replace a mathematical expression under the cursor, by its ASCII art equivalent. This would be useful for taking notes, when dealing with formulas, etc.
 
 Examples
 --------
