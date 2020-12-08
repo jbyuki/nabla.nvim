@@ -1,11 +1,13 @@
 -- Generated from ascii.lua.tl using ntangle.nvim
 local utf8len, utf8char
 
+local hassuperscript
+
 
 local style = {
 	plus_sign = " + ",
 	
-	minus_sign = " - ",
+	minus_sign = " − ",
 	
 	multiply_sign = " ∙ ",
 	
@@ -31,6 +33,8 @@ local style = {
 	int_single = "∫",
 	int_bottom = "⌡",
 	
+	prefix_minus_sign = "‐",
+	
 }
 
 local special_syms = {
@@ -40,10 +44,23 @@ local special_syms = {
 	
 	["nabla"] = "∇",
 	
+	["inf"] = "∞",
+	
 }
 
 local grid = {}
 function grid:new(w, h, content)
+	if not content and w and h and w > 0 and h > 0 then
+		content = {}
+		for y=1,h do
+			local row = ""
+			for x=1,w do
+				row = row .. " "
+			end
+			table.insert(content, row)
+		end
+	end
+	
 	local o = { 
 		w = w or 0, 
 		h = h or 0, 
@@ -172,6 +189,14 @@ function grid:enclose_paren()
 	return c2
 end
 
+function grid:put_paren(exp, parent)
+	if exp.priority() < parent.priority() then
+		return self:enclose_paren()
+	else
+		return self
+	end
+end
+
 
 
 
@@ -182,24 +207,24 @@ local function to_ascii(exp)
 		local numstr = tostring(exp.num)
 		return grid:new(string.len(numstr), 1, { tostring(numstr) })
 	elseif exp.kind == "addexp" then
-		local leftgrid = to_ascii(exp.left)
-		local rightgrid = to_ascii(exp.right)
+		local leftgrid = to_ascii(exp.left):put_paren(exp.left, exp)
+		local rightgrid = to_ascii(exp.right):put_paren(exp.right, exp)
 		local opgrid = grid:new(utf8len(style.plus_sign), 1, { style.plus_sign })
 		local c1 = leftgrid:join_hori(opgrid)
 		local c2 = c1:join_hori(rightgrid)
 		return c2
 	
 	elseif exp.kind == "subexp" then
-		local leftgrid = to_ascii(exp.left)
-		local rightgrid = to_ascii(exp.right)
+		local leftgrid = to_ascii(exp.left):put_paren(exp.left, exp)
+		local rightgrid = to_ascii(exp.right):put_paren(exp.right, exp)
 		local opgrid = grid:new(utf8len(style.minus_sign), 1, { style.minus_sign })
 		local c1 = leftgrid:join_hori(opgrid)
 		local c2 = c1:join_hori(rightgrid)
 		return c2
 	
 	elseif exp.kind == "mulexp" then
-		local leftgrid = to_ascii(exp.left)
-		local rightgrid = to_ascii(exp.right)
+		local leftgrid = to_ascii(exp.left):put_paren(exp.left, exp)
+		local rightgrid = to_ascii(exp.right):put_paren(exp.right, exp)
 		local opgrid = grid:new(utf8len(style.multiply_sign), 1, { style.multiply_sign })
 		local c1 = leftgrid:join_hori(opgrid)
 		local c2 = c1:join_hori(rightgrid)
@@ -247,6 +272,7 @@ local function to_ascii(exp)
 			end
 			
 			local int_bar = grid:new(1, integrand.h+1, int_content)
+			
 		
 			local res = upperbound:join_vert(int_bar)
 			res = res:join_vert(lowerbound)
@@ -286,6 +312,46 @@ local function to_ascii(exp)
 		return c2
 	
 	
+	elseif exp.kind == "presubexp" then
+		local minus = grid:new(utf8len(style.prefix_minus_sign), 1, { style.prefix_minus_sign })
+		local leftgrid = to_ascii(exp.left):put_paren(exp.left, exp)
+		return minus:join_hori(leftgrid)
+	
+	elseif exp.kind == "expexp" then
+		local leftgrid = to_ascii(exp.left):put_paren(exp.left, exp)
+		if exp.right.kind == "numexp" and hassuperscript(exp.right) then
+			local snum = { "⁰", "¹", "²", "³", "⁴", "⁵", "⁶", "⁷", "⁸", "⁹" }
+			
+			local superscript = grid:new(1, 1, { snum[exp.right.num+1] })
+			
+			local my = leftgrid.my
+			leftgrid.my = 0
+			local result = leftgrid:join_hori(superscript)
+			result.my = my
+			
+			return result
+		elseif exp.right.kind == "symexp" and hassuperscript(exp.right) then
+			local superscript = grid:new(1, 1, { "ⁿ" })
+			
+			local my = leftgrid.my
+			leftgrid.my = 0
+			local result = leftgrid:join_hori(superscript)
+			result.my = my
+			
+			return result
+		end
+	
+		local rightgrid = to_ascii(exp.right):put_paren(exp.right, exp)
+	
+		
+		local spacer = grid:new(leftgrid.w, rightgrid.h)
+		
+		local upper = spacer:join_hori(rightgrid)
+		local result = upper:join_vert(leftgrid)
+		result.my = leftgrid.my + rightgrid.h
+		
+		return result
+	
 	else
 		return nil
 	end
@@ -302,6 +368,15 @@ function utf8char(str, i)
 	local s1 = vim.str_byteindex(str, i)
 	local s2 = vim.str_byteindex(str, i+1)
 	return string.sub(str, s1+1, s2)
+end
+
+function hassuperscript(x)
+	if x.kind == "numexp" and math.floor(x.num) == x.num then
+		return x.num >= 0 and x.num <= 9
+	elseif x.kind == "symexp" and x.sym == "n" then
+		return true
+	end
+	return false
 end
 
 

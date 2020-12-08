@@ -40,6 +40,7 @@ end
 @grid_prototype+=
 local grid = {}
 function grid:new(w, h, content)
+	@make_blank_content_if_not_provided
 	local o = { 
 		w = w or 0, 
 		h = h or 0, 
@@ -103,20 +104,20 @@ if exp.kind == "numexp" then
 	local numstr = tostring(exp.num)
 	return grid:new(string.len(numstr), 1, { tostring(numstr) })
 elseif exp.kind == "addexp" then
-	local leftgrid = to_ascii(exp.left)
-	local rightgrid = to_ascii(exp.right)
+	local leftgrid = to_ascii(exp.left):put_paren(exp.left, exp)
+	local rightgrid = to_ascii(exp.right):put_paren(exp.right, exp)
 	local opgrid = grid:new(utf8len(style.plus_sign), 1, { style.plus_sign })
 	local c1 = leftgrid:join_hori(opgrid)
 	local c2 = c1:join_hori(rightgrid)
 	return c2
 
 @style_variables+=
-minus_sign = " - ",
+minus_sign = " − ",
 
 @transform_exp_to_grid+=
 elseif exp.kind == "subexp" then
-	local leftgrid = to_ascii(exp.left)
-	local rightgrid = to_ascii(exp.right)
+	local leftgrid = to_ascii(exp.left):put_paren(exp.left, exp)
+	local rightgrid = to_ascii(exp.right):put_paren(exp.right, exp)
 	local opgrid = grid:new(utf8len(style.minus_sign), 1, { style.minus_sign })
 	local c1 = leftgrid:join_hori(opgrid)
 	local c2 = c1:join_hori(rightgrid)
@@ -127,8 +128,8 @@ multiply_sign = " ∙ ",
 
 @transform_exp_to_grid+=
 elseif exp.kind == "mulexp" then
-	local leftgrid = to_ascii(exp.left)
-	local rightgrid = to_ascii(exp.right)
+	local leftgrid = to_ascii(exp.left):put_paren(exp.left, exp)
+	local rightgrid = to_ascii(exp.right):put_paren(exp.right, exp)
 	local opgrid = grid:new(utf8len(style.multiply_sign), 1, { style.multiply_sign })
 	local c1 = leftgrid:join_hori(opgrid)
 	local c2 = c1:join_hori(rightgrid)
@@ -388,3 +389,92 @@ for y=1,integrand.h+1 do
 end
 
 local int_bar = grid:new(1, integrand.h+1, int_content)
+
+@special_symbols+=
+["inf"] = "∞",
+
+@style_variables+=
+prefix_minus_sign = "‐",
+
+@transform_exp_to_grid+=
+elseif exp.kind == "presubexp" then
+	local minus = grid:new(utf8len(style.prefix_minus_sign), 1, { style.prefix_minus_sign })
+	local leftgrid = to_ascii(exp.left):put_paren(exp.left, exp)
+	return minus:join_hori(leftgrid)
+
+@grid_prototype+=
+function grid:put_paren(exp, parent)
+	if exp.priority() < parent.priority() then
+		return self:enclose_paren()
+	else
+		return self
+	end
+end
+
+@declare_functions+=
+local hassuperscript
+
+@functions+=
+function hassuperscript(x)
+	if x.kind == "numexp" and math.floor(x.num) == x.num then
+		return x.num >= 0 and x.num <= 9
+	elseif x.kind == "symexp" and x.sym == "n" then
+		return true
+	end
+	return false
+end
+
+@transform_exp_to_grid+=
+elseif exp.kind == "expexp" then
+	local leftgrid = to_ascii(exp.left):put_paren(exp.left, exp)
+	if exp.right.kind == "numexp" and hassuperscript(exp.right) then
+		@get_superscript_number
+		@combine_superscript_char
+		return result
+	elseif exp.right.kind == "symexp" and hassuperscript(exp.right) then
+		@get_superscript_n
+		@combine_superscript_char
+		return result
+	end
+
+	local rightgrid = to_ascii(exp.right):put_paren(exp.right, exp)
+
+	@combine_diagonally_for_superscript
+	return result
+
+@combine_superscript_char+=
+local my = leftgrid.my
+leftgrid.my = 0
+local result = leftgrid:join_hori(superscript)
+result.my = my
+
+@get_superscript_number+=
+local snum = { "⁰", "¹", "²", "³", "⁴", "⁵", "⁶", "⁷", "⁸", "⁹" }
+
+local superscript = grid:new(1, 1, { snum[exp.right.num+1] })
+
+@get_superscript_n+=
+local superscript = grid:new(1, 1, { "ⁿ" })
+
+@make_blank_content_if_not_provided+=
+if not content and w and h and w > 0 and h > 0 then
+	content = {}
+	for y=1,h do
+		local row = ""
+		for x=1,w do
+			row = row .. " "
+		end
+		table.insert(content, row)
+	end
+end
+
+@combine_diagonally_for_superscript+=
+
+@make_spacer_upper_left
+
+local upper = spacer:join_hori(rightgrid)
+local result = upper:join_vert(leftgrid)
+result.my = leftgrid.my + rightgrid.h
+
+@make_spacer_upper_left+=
+local spacer = grid:new(leftgrid.w, rightgrid.h)
