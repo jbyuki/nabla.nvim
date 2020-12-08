@@ -517,3 +517,73 @@ end
 up_str = up_str .. style.root_upper_right
 
 local top_root = grid:new(toroot.w+2, 1, { up_str })
+
+@declare_functions+=
+local hassubscript
+
+@functions+=
+function hassubscript(x)
+	if x.kind == "numexp" and math.floor(x.num) == x.num then
+		return x.num >= 0 and x.num <= 9
+	elseif x.kind == "symexp" and string.len(x.sym) == 1 and string.find("aeoxhklmnpst", x.sym) then
+		return true
+	end
+	return false
+end
+
+@transform_exp_to_grid+=
+elseif exp.kind == "indexp" then
+	local leftgrid = to_ascii(exp.left):put_paren(exp.left, exp)
+	if exp.right.kind == "numexp" and hassuperscript(exp.right) then
+		@get_subscript_number
+		@combine_subscript_char
+		return result
+	elseif exp.right.kind == "symexp" and hassuperscript(exp.right) then
+		@get_subscript_letter
+		@combine_subscript_char
+		return result
+	end
+
+	local rightgrid = to_ascii(exp.right):put_paren(exp.right, exp)
+
+	@combine_diagonally_for_subscript
+	return result
+
+@get_subscript_number+=
+local snum = { "₀","₁","₂","₃","₄","₅","₆","₇","₈","₉" }
+local subscript = grid:new(1, 1, { snum[exp.right.num+1] })
+
+@combine_subscript_char+=
+local my = leftgrid.my
+leftgrid.my = 0
+local result = leftgrid:join_hori(subscript)
+result.my = my
+
+@get_subscript_letter+=
+local sletter = { 
+	["a"] = "ₐ", 
+	["e"] = "ₑ", 
+	["o"] = "ₒ", 
+	["x"] = "ₓ", 
+	["h"] = "ₕ", 
+	["k"] = "ₖ", 
+	["l"] = "ₗ", 
+	["m"] = "ₘ", 
+	["n"] = "ₙ", 
+	["p"] = "ₚ", 
+	["s"] = "ₛ", 
+	["t"] = "ₜ",
+}
+
+local subscript = grid:new(1, 1, { sletter[exp.right.sym] })
+
+@combine_diagonally_for_subscript+=
+
+@make_spacer_lower_left
+
+local lower = spacer:join_hori(rightgrid)
+local result = leftgrid:join_vert(lower)
+result.my = leftgrid.my
+
+@make_spacer_lower_left+=
+local spacer = grid:new(leftgrid.w, rightgrid.h)

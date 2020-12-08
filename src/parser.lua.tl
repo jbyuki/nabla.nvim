@@ -137,7 +137,7 @@ if #tokens > 0 and tokens[#tokens].kind == "num" then
 end
 
 @get_all_char_sym+=
-local parsed = string.match(string.sub(str, i), "[%w_]+")
+local parsed = string.match(string.sub(str, i), "%w+")
 i = i+string.len(parsed)
 
 @crete_sym_token+=
@@ -764,4 +764,42 @@ end
 @mat_exp_methods+=
 function self.getLeft() 
 	return self
+end
+
+@tokenize_op+=
+elseif c == "_" then table.insert(tokens, IndToken()) i = i+1
+
+@tokens+=
+local function IndToken() local self = { kind = "ind" }
+	@ind_token_methods
+return self end
+
+@declare_functions+=
+local IndExpression
+
+@expressions+=
+function IndExpression(left, right)
+	local self = { kind = "indexp", left = left, right = right }
+	@ind_exp_methods
+return self end
+
+@ind_token_methods+=
+function self.infix(left)
+	local exp = parse(self.priority())
+	if not exp then
+		return nil
+	end
+	return IndExpression(left, exp)
+end
+function self.priority() return priority_list["ind"] end
+
+@priority_list+=
+["ind"] = 70,
+
+@ind_exp_methods+=
+function self.priority() 
+	return priority_list["ind"]
+end
+function self.getLeft() 
+	return self.left.getLeft()
 end

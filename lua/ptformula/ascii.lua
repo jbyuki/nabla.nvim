@@ -3,6 +3,8 @@ local utf8len, utf8char
 
 local hassuperscript
 
+local hassubscript
+
 
 local style = {
 	plus_sign = " + ",
@@ -308,6 +310,7 @@ local function to_ascii(exp)
 			up_str = up_str .. style.root_upper_right
 			
 			local top_root = grid:new(toroot.w+2, 1, { up_str })
+			
 		
 			local res = left_root:join_hori(toroot)
 			res = top_root:join_vert(res)
@@ -387,6 +390,55 @@ local function to_ascii(exp)
 		
 		return result
 	
+	elseif exp.kind == "indexp" then
+		local leftgrid = to_ascii(exp.left):put_paren(exp.left, exp)
+		if exp.right.kind == "numexp" and hassuperscript(exp.right) then
+			local snum = { "₀","₁","₂","₃","₄","₅","₆","₇","₈","₉" }
+			local subscript = grid:new(1, 1, { snum[exp.right.num+1] })
+			
+			local my = leftgrid.my
+			leftgrid.my = 0
+			local result = leftgrid:join_hori(subscript)
+			result.my = my
+			
+			return result
+		elseif exp.right.kind == "symexp" and hassuperscript(exp.right) then
+			local sletter = { 
+				["a"] = "ₐ", 
+				["e"] = "ₑ", 
+				["o"] = "ₒ", 
+				["x"] = "ₓ", 
+				["h"] = "ₕ", 
+				["k"] = "ₖ", 
+				["l"] = "ₗ", 
+				["m"] = "ₘ", 
+				["n"] = "ₙ", 
+				["p"] = "ₚ", 
+				["s"] = "ₛ", 
+				["t"] = "ₜ",
+			}
+			
+			local subscript = grid:new(1, 1, { sletter[exp.right.sym] })
+			
+			local my = leftgrid.my
+			leftgrid.my = 0
+			local result = leftgrid:join_hori(subscript)
+			result.my = my
+			
+			return result
+		end
+	
+		local rightgrid = to_ascii(exp.right):put_paren(exp.right, exp)
+	
+		
+		local spacer = grid:new(leftgrid.w, rightgrid.h)
+		
+		local lower = spacer:join_hori(rightgrid)
+		local result = leftgrid:join_vert(lower)
+		result.my = leftgrid.my
+		
+		return result
+	
 	else
 		return nil
 	end
@@ -409,6 +461,15 @@ function hassuperscript(x)
 	if x.kind == "numexp" and math.floor(x.num) == x.num then
 		return x.num >= 0 and x.num <= 9
 	elseif x.kind == "symexp" and x.sym == "n" then
+		return true
+	end
+	return false
+end
+
+function hassubscript(x)
+	if x.kind == "numexp" and math.floor(x.num) == x.num then
+		return x.num >= 0 and x.num <= 9
+	elseif x.kind == "symexp" and string.len(x.sym) == 1 and string.find("aeoxhklmnpst", x.sym) then
 		return true
 	end
 	return false

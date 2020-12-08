@@ -33,6 +33,8 @@ local ExpExpression
 
 local putParen
 
+local IndExpression
+
 tokens = {}
 
 local errmsg = ""
@@ -67,6 +69,8 @@ local priority_list = {
 	["sym"] = 110,
 	["num"] = 110,
 	["fun"] = 100,
+	
+	["ind"] = 70,
 	
 }
 
@@ -225,6 +229,7 @@ function MatrixExpression(rows, m, n)
 	function self.getLeft() 
 		return self
 	end
+	
 return self end
 
 function EqualExpression(left, right) 
@@ -235,6 +240,16 @@ function EqualExpression(left, right)
 		return t1 .. " = " .. t2
 	end
 	
+return self end
+
+function IndExpression(left, right)
+	local self = { kind = "indexp", left = left, right = right }
+	function self.priority() 
+		return priority_list["ind"]
+	end
+	function self.getLeft() 
+		return self.left.getLeft()
+	end
 return self end
 
 -- closure-based object
@@ -440,6 +455,18 @@ local function EqualToken() local self = { kind = "equal" }
 	
 return self end
 
+local function IndToken() local self = { kind = "ind" }
+	function self.infix(left)
+		local exp = parse(self.priority())
+		if not exp then
+			return nil
+		end
+		return IndExpression(left, exp)
+	end
+	function self.priority() return priority_list["ind"] end
+	
+return self end
+
 
 function tokenize(str)
 	tokens = {}
@@ -458,6 +485,8 @@ function tokenize(str)
 		
 		
 		elseif c == "^" then table.insert(tokens, ExpToken()) i = i+1
+		
+		elseif c == "_" then table.insert(tokens, IndToken()) i = i+1
 		
 		elseif c == "(" then table.insert(tokens, LParToken()) i = i+1
 		elseif c == ")" then table.insert(tokens, RParToken()) i = i+1
@@ -479,7 +508,7 @@ function tokenize(str)
 				table.insert(tokens, MulToken())
 			end
 			
-			local parsed = string.match(string.sub(str, i), "[%w_]+")
+			local parsed = string.match(string.sub(str, i), "%w+")
 			i = i+string.len(parsed)
 			
 			table.insert(tokens, SymToken(parsed))
