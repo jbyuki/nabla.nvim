@@ -1,11 +1,34 @@
 ptformula.nvim
 --------------
 
-ptformula (plain-text formula)
+ptformula (plain-text formula) experimental math expression to ascii art visualizer
 
-**work-in-progress**
+**Work in progress**
 
-experimental math expression to ascii art visualizer
+Install
+-------
+
+Install using a plugin manager such as [vim-plug](https://github.com/junegunn/vim-plug).
+
+```
+Plug 'jbyuki/ptformula.nvim'
+```
+
+Configuration
+-------------
+
+Out of the box, the plugin doesn't provide any command. You will need to bind commands or keyshortcuts to use it.
+
+For example to bind it to <kbd>F5</kbd>:
+
+```
+nnoremap <F5> :lua require("ptformula").replace_current()<CR>
+```
+
+Usage
+-----
+
+Hover the cursor on a mathematical expression and call ptformula.nvim. If the expression is correct, it will replace it with an ASCII art respresentation.
 
 Examples
 --------
