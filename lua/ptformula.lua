@@ -27,7 +27,6 @@ local function init()
 						local exp, errmsg = parser.parse_all(line)
 						
 						if exp then
-							print(vim.inspect(exp))
 							local g = ascii.to_ascii(exp)
 							local drawing = {}
 							for row in vim.gsplit(tostring(g), "\n") do
@@ -35,6 +34,7 @@ local function init()
 							end
 							
 							vim.api.nvim_buf_set_lines(scratch, -1, -1, true, drawing)
+							
 						else
 							vim.api.nvim_buf_set_virtual_text(buf, vtext, y-1, {{ vim.inspect(errmsg), "Special" }}, {})
 							
@@ -60,9 +60,34 @@ local function init()
 	
 end
 
+local function replace_current()
+	local line = vim.api.nvim_get_current_line()
+	
+	local exp, errmsg = parser.parse_all(line)
+	
+	if exp then
+		local g = ascii.to_ascii(exp)
+		local drawing = {}
+		for row in vim.gsplit(tostring(g), "\n") do
+			table.insert(drawing, row)
+		end
+		
+		local curline, _ = unpack(vim.api.nvim_win_get_cursor(0))
+		vim.api.nvim_buf_set_lines(0, curline-1, curline, true, drawing) 
+	else
+		if type(errmsg) == "string"  then
+			print("ptformula error: " .. errmsg)
+		else
+			print("ptformula error!")
+		end
+	end
+end
+
 
 return {
 	init = init,
+	
+	replace_current = replace_current,
 	
 }
 

@@ -10,6 +10,7 @@
 @parse
 
 @init_ptformula_mode
+@replace_current_line
 
 return {
 	@export_symbols
@@ -68,6 +69,7 @@ for y, line in ipairs(lines) do
 		@parse_math_expression
 		if exp then
 			@generate_ascii_art
+			@display_in_scratch_buffer
 		else
 			@display_error_as_virtual_text
 		end
@@ -93,11 +95,37 @@ vim.api.nvim_buf_set_virtual_text(buf, vtext, y-1, {{ vim.inspect(errmsg), "Spec
 local ascii = require("ptformula.ascii")
 
 @generate_ascii_art+=
-print(vim.inspect(exp))
 local g = ascii.to_ascii(exp)
 local drawing = {}
 for row in vim.gsplit(tostring(g), "\n") do
 	table.insert(drawing, row)
 end
 
+@display_in_scratch_buffer+=
 vim.api.nvim_buf_set_lines(scratch, -1, -1, true, drawing)
+
+@replace_current_line+=
+local function replace_current()
+	@get_current_line
+	@parse_math_expression
+	if exp then
+		@generate_ascii_art
+		@replace_current_line_with_ascii_art
+	else
+		if type(errmsg) == "string"  then
+			print("ptformula error: " .. errmsg)
+		else
+			print("ptformula error!")
+		end
+	end
+end
+
+@export_symbols+=
+replace_current = replace_current,
+
+@get_current_line+=
+local line = vim.api.nvim_get_current_line()
+
+@replace_current_line_with_ascii_art+=
+local curline, _ = unpack(vim.api.nvim_win_get_cursor(0))
+vim.api.nvim_buf_set_lines(0, curline-1, curline, true, drawing) 
