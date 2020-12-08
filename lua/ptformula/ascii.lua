@@ -35,6 +35,12 @@ local style = {
 	
 	prefix_minus_sign = "‐",
 	
+	root_vert_bar = "│",
+	root_bottom = "\\",
+	root_upper_left = "┌",
+	root_upper = "─",
+	root_upper_right = "┐",
+	
 }
 
 local special_syms = {
@@ -280,6 +286,34 @@ local function to_ascii(exp)
 		
 			return res:join_hori(integrand)
 		
+		elseif exp.name == "sqrt" and #exp.args == 1 then
+			local toroot = to_ascii(exp.args[1])
+		
+			local left_content = {}
+			for y=1,toroot.h do 
+				if y < toroot.h then
+					table.insert(left_content, " " .. style.root_vert_bar)
+				else
+					table.insert(left_content, style.root_bottom .. style.root_vert_bar)
+				end
+			end
+			
+			local left_root = grid:new(2, toroot.h, left_content)
+			left_root.my = toroot.my
+			
+			local up_str = " " .. style.root_upper_left
+			for x=1,toroot.w do
+				up_str = up_str .. style.root_upper
+			end
+			up_str = up_str .. style.root_upper_right
+			
+			local top_root = grid:new(toroot.w+2, 1, { up_str })
+		
+			local res = left_root:join_hori(toroot)
+			res = top_root:join_vert(res)
+			res.my = top_root.h + toroot.my
+			return res
+		
 		else
 			local c0 = grid:new(utf8len(exp.name), 1, { exp.name })
 	
@@ -345,6 +379,7 @@ local function to_ascii(exp)
 	
 		
 		local spacer = grid:new(leftgrid.w, rightgrid.h)
+		
 		
 		local upper = spacer:join_hori(rightgrid)
 		local result = upper:join_vert(leftgrid)
