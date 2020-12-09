@@ -49,9 +49,9 @@ Examples
 Reference
 ---------
 
-* sqrt: `sqrt(x)`
+* square root: `sqrt(x)`
 * integral: `int(A, B, f(x))`
-* limit: `int(x, A, f(x))`
+* limit: `lim(x, A, f(x))`
 * superscript: `x^a`
 * subscript: `x_a`
 * special symbols: `pi`, `inf`, `nabla`, ...
