@@ -55,4 +55,4 @@ Reference
 * superscript: `x^a`
 * subscript: `x_a`
 * special symbols: `pi`, `inf`, `nabla`, ...
-* matrix: `[1,2;3,4]`
+* vector, matrix: `[1,2;3,4]`
