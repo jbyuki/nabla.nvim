@@ -70,7 +70,7 @@ local priority_list = {
 	["num"] = 110,
 	["fun"] = 100,
 	
-	["ind"] = 70,
+	["ind"] = 95,
 	
 }
 
@@ -232,12 +232,12 @@ function MatrixExpression(rows, m, n)
 	
 return self end
 
-function EqualExpression(left, right) 
-	local self = { kind = "eqexp", left = left, right = right }
+function EqualExpression(left, right, sign) 
+	local self = { kind = "eqexp", left = left, right = right, sign = sign }
 	function self.toString()
 		local t1 = self.left.toString()
 		local t2 = self.right.toString()
-		return t1 .. " = " .. t2
+		return t1 .. " " .. self.sign .. " " .. t2
 	end
 	
 return self end
@@ -250,6 +250,7 @@ function IndExpression(left, right)
 	function self.getLeft() 
 		return self.left.getLeft()
 	end
+	
 return self end
 
 -- closure-based object
@@ -368,6 +369,9 @@ local function SymToken(sym) local self = { kind = "sym", sym = sym }
 		return SymExpression(self.sym)
 	end
 	
+	function self.priority() 
+		return 5
+	end
 return self end
 
 local function ExpToken() local self = { kind = "exp" }
@@ -443,13 +447,13 @@ local function SemiToken() local self = { kind = "semi" }
 return self end
 
 -- right bracket
-local function EqualToken() local self = { kind = "equal" }
+local function EqualToken(sign) local self = { kind = "equal", sign = sign }
 	function self.infix(left)
 		local t = parse(self.priority())
 		if not t then
 			return nil
 		end
-		return EqualExpression(left, t)
+		return EqualExpression(left, t, self.sign)
 	end
 	function self.priority() return priority_list["eq"] end
 	
@@ -493,7 +497,16 @@ function tokenize(str)
 			
 		elseif c == "[" then table.insert(tokens, LBraToken()) i = i+1
 		elseif c == "]" then table.insert(tokens, RBraToken()) i = i+1
-		elseif c == "=" then table.insert(tokens, EqualToken()) i = i+1
+		elseif c == "=" or c == ">" or c == "<" or c == "~" or c == "!" then 
+			local cn = string.sub(str, i+1, i+1)
+		
+			if cn == "=" or cn == ">" or cn == "<" then
+				table.insert(tokens, EqualToken(c .. cn)) 
+				i = i+2
+			else
+				table.insert(tokens, EqualToken(c)) 
+				i = i+1
+			end
 		
 		elseif c == "," then table.insert(tokens, CommaToken()) i = i+1
 		elseif c == ";" then table.insert(tokens, SemiToken()) i = i+1
@@ -503,12 +516,12 @@ function tokenize(str)
 			i = i+string.len(parsed)
 			table.insert(tokens, NumToken(tonumber(parsed))) 
 		
-		elseif string.match(c, "[%a_]") then
+		elseif string.match(c, "[%a_%.]") then
 			if #tokens > 0 and tokens[#tokens].kind == "num" then
 				table.insert(tokens, MulToken())
 			end
 			
-			local parsed = string.match(string.sub(str, i), "%w+")
+			local parsed = string.match(string.sub(str, i), "[%w%.]+")
 			i = i+string.len(parsed)
 			
 			table.insert(tokens, SymToken(parsed))
@@ -547,8 +560,9 @@ function parse(p)
 
 	while exp and not finish() and p <= getToken().priority() do
 		t = nextToken()
-		exp = t.infix(exp)
+		exp = t.infix and t.infix(exp)
 	end
+
 	return exp
 end
 

@@ -28,7 +28,19 @@ local style = {
 	
 	comma_sign = ", ", 
 	
-	eq_sign = ' = ',
+	eq_sign = {
+		["="] = " = ",
+		["<"] = " < ",
+		[">"] = " > ",
+		[">="] = " ≥ ",
+		["<="] = " ≤ ",
+		[">>"] = " ≫ ",
+		["<<"] = " ≪ ",
+		["~="] = " ≅ ",
+		["!="] = " ≠ ",
+		["=>"] = " → ",
+		
+	},
 	
 	int_top = "⌠",
 	int_middle = "⏐",
@@ -52,6 +64,8 @@ local style = {
 	matrix_lower_left = "⎣", 
 	matrix_lower_right = "⎦", 
 	matrix_vert_right = "⎥",
+	matrix_single_left = "[",
+	matrix_single_right = "]",
 	
 }
 
@@ -64,6 +78,7 @@ local special_syms = {
 	
 	["inf"] = "∞",
 	
+	["..."] = "…",
 }
 
 local grid = {}
@@ -358,7 +373,11 @@ local function to_ascii(exp)
 			return res
 		
 		else
-			local c0 = grid:new(utf8len(exp.name), 1, { exp.name })
+			local sym = exp.name
+			if special_syms[sym] then
+				sym = special_syms[sym]
+			end
+			local c0 = grid:new(utf8len(sym), 1, { sym })
 	
 			local comma = grid:new(utf8len(style.comma_sign), 1, { style.comma_sign })
 	
@@ -381,12 +400,16 @@ local function to_ascii(exp)
 		end
 	
 	elseif exp.kind == "eqexp" then
-		local leftgrid = to_ascii(exp.left)
-		local rightgrid = to_ascii(exp.right)
-		local opgrid = grid:new(utf8len(style.eq_sign), 1, { style.eq_sign })
-		local c1 = leftgrid:join_hori(opgrid)
-		local c2 = c1:join_hori(rightgrid)
-		return c2
+		if style.eq_sign[exp.sign] then
+			local leftgrid = to_ascii(exp.left)
+			local rightgrid = to_ascii(exp.right)
+			local opgrid = grid:new(utf8len(style.eq_sign[exp.sign]), 1, { style.eq_sign[exp.sign] })
+			local c1 = leftgrid:join_hori(opgrid)
+			local c2 = c1:join_hori(rightgrid)
+			return c2
+		else
+			return nil
+		end
 	
 	
 	elseif exp.kind == "presubexp" then
@@ -404,7 +427,7 @@ local function to_ascii(exp)
 			local my = leftgrid.my
 			leftgrid.my = 0
 			local result = leftgrid:join_hori(superscript)
-			result.my = my
+			result.my = my+superscript.h
 			
 			return result
 		elseif exp.right.kind == "symexp" and hassuperscript(exp.right) then
@@ -413,7 +436,7 @@ local function to_ascii(exp)
 			local my = leftgrid.my
 			leftgrid.my = 0
 			local result = leftgrid:join_hori(superscript)
-			result.my = my
+			result.my = my+superscript.h
 			
 			return result
 		end
@@ -500,8 +523,8 @@ local function to_ascii(exp)
 				local col 
 				for j=1,#cellsgrid do
 					local cell = cellsgrid[j][i]
-					local sup = math.floor((maxheight-cell.h)/2)
-					local sdown = maxheight - cell.h - sup
+					local sup = maxheight - cell.h
+					local sdown = 0
 					local up, down
 					if sup > 0 then up = grid:new(cell.w, sup) end
 					if sdown > 0 then down = grid:new(cell.w, sdown) end
@@ -526,17 +549,22 @@ local function to_ascii(exp)
 			end
 			
 			local left_content, right_content = {}, {}
-			for y=1,res.h do
-				if y == 1 then
-					table.insert(left_content, style.matrix_upper_left)
-					table.insert(right_content, style.matrix_upper_right)
-				elseif y == res.h then
-					table.insert(left_content, style.matrix_lower_left)
-					table.insert(right_content, style.matrix_lower_right)
-				else
-					table.insert(left_content, style.matrix_vert_left)
-					table.insert(right_content, style.matrix_vert_right)
+			if res.h > 1 then
+				for y=1,res.h do
+					if y == 1 then
+						table.insert(left_content, style.matrix_upper_left)
+						table.insert(right_content, style.matrix_upper_right)
+					elseif y == res.h then
+						table.insert(left_content, style.matrix_lower_left)
+						table.insert(right_content, style.matrix_lower_right)
+					else
+						table.insert(left_content, style.matrix_vert_left)
+						table.insert(right_content, style.matrix_vert_right)
+					end
 				end
+			else
+				left_content = { style.matrix_single_left }
+				right_content = { style.matrix_single_right }
 			end
 			
 			local leftbracket = grid:new(1, res.h, left_content)
@@ -544,6 +572,7 @@ local function to_ascii(exp)
 			
 			res = leftbracket:join_hori(res, true)
 			res = res:join_hori(rightbracket, true)
+			
 			res.my = math.floor(res.h/2)
 			return res
 		else

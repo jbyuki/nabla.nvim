@@ -329,7 +329,11 @@ comma_sign = ", ",
 elseif exp.kind == "funexp" then
 	@transform_special_functions
 	else
-		local c0 = grid:new(utf8len(exp.name), 1, { exp.name })
+		local sym = exp.name
+		if special_syms[sym] then
+			sym = special_syms[sym]
+		end
+		local c0 = grid:new(utf8len(sym), 1, { sym })
 
 		local comma = grid:new(utf8len(style.comma_sign), 1, { style.comma_sign })
 
@@ -352,16 +356,34 @@ elseif exp.kind == "funexp" then
 	end
 
 @style_variables+=
-eq_sign = ' = ',
+eq_sign = {
+	@relation_signs
+},
+
+@relation_signs+=
+["="] = " = ",
+["<"] = " < ",
+[">"] = " > ",
+[">="] = " ≥ ",
+["<="] = " ≤ ",
+[">>"] = " ≫ ",
+["<<"] = " ≪ ",
+["~="] = " ≅ ",
+["!="] = " ≠ ",
+["=>"] = " → ",
 
 @transform_exp_to_grid+=
 elseif exp.kind == "eqexp" then
-	local leftgrid = to_ascii(exp.left)
-	local rightgrid = to_ascii(exp.right)
-	local opgrid = grid:new(utf8len(style.eq_sign), 1, { style.eq_sign })
-	local c1 = leftgrid:join_hori(opgrid)
-	local c2 = c1:join_hori(rightgrid)
-	return c2
+	if style.eq_sign[exp.sign] then
+		local leftgrid = to_ascii(exp.left)
+		local rightgrid = to_ascii(exp.right)
+		local opgrid = grid:new(utf8len(style.eq_sign[exp.sign]), 1, { style.eq_sign[exp.sign] })
+		local c1 = leftgrid:join_hori(opgrid)
+		local c2 = c1:join_hori(rightgrid)
+		return c2
+	else
+		return nil
+	end
 
 
 @special_symbols+=
@@ -458,7 +480,7 @@ elseif exp.kind == "expexp" then
 local my = leftgrid.my
 leftgrid.my = 0
 local result = leftgrid:join_hori(superscript)
-result.my = my
+result.my = my+superscript.h
 
 @get_superscript_number+=
 local snum = { "⁰", "¹", "²", "³", "⁴", "⁵", "⁶", "⁷", "⁸", "⁹" }
@@ -675,8 +697,8 @@ if not res then res = col
 else res = res:join_hori(col, true) end
 
 @add_row_spacer_to_center_cell+=
-local sup = math.floor((maxheight-cell.h)/2)
-local sdown = maxheight - cell.h - sup
+local sup = maxheight - cell.h
+local sdown = 0
 local up, down
 if sup > 0 then up = grid:new(cell.w, sup) end
 if sdown > 0 then down = grid:new(cell.w, sdown) end
@@ -699,20 +721,27 @@ matrix_vert_left = "⎢",
 matrix_lower_left = "⎣", 
 matrix_lower_right = "⎦", 
 matrix_vert_right = "⎥",
+matrix_single_left = "[",
+matrix_single_right = "]",
 
 @combine_matrix_brackets+=
 local left_content, right_content = {}, {}
-for y=1,res.h do
-	if y == 1 then
-		table.insert(left_content, style.matrix_upper_left)
-		table.insert(right_content, style.matrix_upper_right)
-	elseif y == res.h then
-		table.insert(left_content, style.matrix_lower_left)
-		table.insert(right_content, style.matrix_lower_right)
-	else
-		table.insert(left_content, style.matrix_vert_left)
-		table.insert(right_content, style.matrix_vert_right)
+if res.h > 1 then
+	for y=1,res.h do
+		if y == 1 then
+			table.insert(left_content, style.matrix_upper_left)
+			table.insert(right_content, style.matrix_upper_right)
+		elseif y == res.h then
+			table.insert(left_content, style.matrix_lower_left)
+			table.insert(right_content, style.matrix_lower_right)
+		else
+			table.insert(left_content, style.matrix_vert_left)
+			table.insert(right_content, style.matrix_vert_right)
+		end
 	end
+else
+	left_content = { style.matrix_single_left }
+	right_content = { style.matrix_single_right }
 end
 
 local leftbracket = grid:new(1, res.h, left_content)
@@ -720,3 +749,6 @@ local rightbracket = grid:new(1, res.h, right_content)
 
 res = leftbracket:join_hori(res, true)
 res = res:join_hori(rightbracket, true)
+
+@special_symbols+=
+["..."] = "…",

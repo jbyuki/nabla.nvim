@@ -126,7 +126,7 @@ local function SymToken(sym) local self = { kind = "sym", sym = sym }
 return self end
 
 @tokenize_symbol+=
-elseif string.match(c, "[%a_]") then
+elseif string.match(c, "[%a_%.]") then
 	@add_mul_token_if_num_just_before
 	@get_all_char_sym
 	@crete_sym_token
@@ -137,7 +137,7 @@ if #tokens > 0 and tokens[#tokens].kind == "num" then
 end
 
 @get_all_char_sym+=
-local parsed = string.match(string.sub(str, i), "%w+")
+local parsed = string.match(string.sub(str, i), "[%w%.]+")
 i = i+string.len(parsed)
 
 @crete_sym_token+=
@@ -192,8 +192,9 @@ function parse(p)
 
 	while exp and not finish() and p <= getToken().priority() do
 		t = nextToken()
-		exp = t.infix(exp)
+		exp = t.infix and t.infix(exp)
 	end
+
 	return exp
 end
 
@@ -558,11 +559,20 @@ end
 ["mat"] = 110,
 
 @tokenize_equalsign+=
-elseif c == "=" then table.insert(tokens, EqualToken()) i = i+1
+elseif c == "=" or c == ">" or c == "<" or c == "~" or c == "!" then 
+	local cn = string.sub(str, i+1, i+1)
+
+	if cn == "=" or cn == ">" or cn == "<" then
+		table.insert(tokens, EqualToken(c .. cn)) 
+		i = i+2
+	else
+		table.insert(tokens, EqualToken(c)) 
+		i = i+1
+	end
 
 @tokens+=
 -- right bracket
-local function EqualToken() local self = { kind = "equal" }
+local function EqualToken(sign) local self = { kind = "equal", sign = sign }
 	@equal_token_methods
 return self end
 
@@ -572,7 +582,7 @@ function self.infix(left)
 	if not t then
 		return nil
 	end
-	return EqualExpression(left, t)
+	return EqualExpression(left, t, self.sign)
 end
 function self.priority() return priority_list["eq"] end
 
@@ -580,8 +590,8 @@ function self.priority() return priority_list["eq"] end
 ["eq"] = 1,
 
 @expressions+=
-function EqualExpression(left, right) 
-	local self = { kind = "eqexp", left = left, right = right }
+function EqualExpression(left, right, sign) 
+	local self = { kind = "eqexp", left = left, right = right, sign = sign }
 	@eq_exp_methods
 return self end
 
@@ -655,7 +665,7 @@ end
 function self.toString()
 	local t1 = self.left.toString()
 	local t2 = self.right.toString()
-	return t1 .. " = " .. t2
+	return t1 .. " " .. self.sign .. " " .. t2
 end
 
 @add_exp_methods+=
@@ -794,7 +804,7 @@ end
 function self.priority() return priority_list["ind"] end
 
 @priority_list+=
-["ind"] = 70,
+["ind"] = 95,
 
 @ind_exp_methods+=
 function self.priority() 
@@ -802,4 +812,9 @@ function self.priority()
 end
 function self.getLeft() 
 	return self.left.getLeft()
+end
+
+@sym_token_methods+=
+function self.priority() 
+	return 5
 end

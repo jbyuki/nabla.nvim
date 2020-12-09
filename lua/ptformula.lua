@@ -32,6 +32,11 @@ local function init()
 							for row in vim.gsplit(tostring(g), "\n") do
 								table.insert(drawing, row)
 							end
+							if whitespace then
+								for i=1,#drawing do
+									drawing[i] = whitespace .. drawing[i]
+								end
+							end
 							
 							vim.api.nvim_buf_set_lines(scratch, -1, -1, true, drawing)
 							
@@ -63,6 +68,8 @@ end
 local function replace_current()
 	local line = vim.api.nvim_get_current_line()
 	
+	local whitespace = string.match(line, "^(%s*)%S")
+	
 	local exp, errmsg = parser.parse_all(line)
 	
 	if exp then
@@ -71,9 +78,15 @@ local function replace_current()
 		for row in vim.gsplit(tostring(g), "\n") do
 			table.insert(drawing, row)
 		end
+		if whitespace then
+			for i=1,#drawing do
+				drawing[i] = whitespace .. drawing[i]
+			end
+		end
 		
 		local curline, _ = unpack(vim.api.nvim_win_get_cursor(0))
 		vim.api.nvim_buf_set_lines(0, curline-1, curline, true, drawing) 
+		
 	else
 		if type(errmsg) == "string"  then
 			print("ptformula error: " .. errmsg)

@@ -100,6 +100,7 @@ local drawing = {}
 for row in vim.gsplit(tostring(g), "\n") do
 	table.insert(drawing, row)
 end
+@add_whitespace_to_ascii_art
 
 @display_in_scratch_buffer+=
 vim.api.nvim_buf_set_lines(scratch, -1, -1, true, drawing)
@@ -107,6 +108,7 @@ vim.api.nvim_buf_set_lines(scratch, -1, -1, true, drawing)
 @replace_current_line+=
 local function replace_current()
 	@get_current_line
+	@get_whilespace_before
 	@parse_math_expression
 	if exp then
 		@generate_ascii_art
@@ -129,3 +131,13 @@ local line = vim.api.nvim_get_current_line()
 @replace_current_line_with_ascii_art+=
 local curline, _ = unpack(vim.api.nvim_win_get_cursor(0))
 vim.api.nvim_buf_set_lines(0, curline-1, curline, true, drawing) 
+
+@get_whilespace_before+=
+local whitespace = string.match(line, "^(%s*)%S")
+
+@add_whitespace_to_ascii_art+=
+if whitespace then
+	for i=1,#drawing do
+		drawing[i] = whitespace .. drawing[i]
+	end
+end
