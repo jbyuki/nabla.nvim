@@ -1,7 +1,11 @@
-ptformula.nvim
---------------
+nabla.nvim
+-----------
 
-ptformula (plain-text formula) experimental math expression to ascii art visualizer
+Take your scientific notes in Neovim.
+
+[![Capture.png](https://i.postimg.cc/sDn3nNWj/Capture.png)](https://postimg.cc/PPwGJKK9)
+
+**nabla.nvim** is an ASCII math generator.
 
 **Work in progress**
 
@@ -11,40 +15,22 @@ Install
 Install using a plugin manager such as [vim-plug](https://github.com/junegunn/vim-plug).
 
 ```
-Plug 'jbyuki/ptformula.nvim'
+Plug 'jbyuki/nabla.nvim'
 ```
 
 Configuration
 -------------
 
-Out of the box, the plugin doesn't provide any command. You will need to bind commands or keyshortcuts to use it.
-
 For example to bind it to <kbd>F5</kbd>:
 
 ```
-nnoremap <F5> :lua require("ptformula").replace_current()<CR>
+nnoremap <F5> :lua require("nabla").replace_current()<CR>
 ```
 
 Usage
 -----
 
-Hover the cursor on a mathematical expression and call ptformula.nvim. If the expression is correct, it will replace it with an ASCII art respresentation.
-
-Examples
---------
-
-* `1/(1+1/(1+1/(1+2))) + 2`
-
-**Output**:
-```
-      1          
-――――――――――――― + 2
-        1        
-1 + ―――――――――    
-          1      
-    1 + ―――――    
-        1 + 2    
-```
+Press <kbd>F5</kbd> on the math expression line.
 
 Reference
 ---------
