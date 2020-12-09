@@ -57,7 +57,7 @@ end
 local g = grid:new()
 
 @grid_prototype+=
-function grid:join_hori(g)
+function grid:join_hori(g, top_align)
 	local combined = {}
 
 	@align_both_for_horizontal_join
@@ -141,7 +141,7 @@ __tostring = function(g)
 end,
 
 @grid_prototype+=
-function grid:join_vert(g)
+function grid:join_vert(g, align_left)
 	local w = math.max(self.w, g.w)
 	local h = self.h+g.h
 	local combined = {}
@@ -157,8 +157,14 @@ function grid:join_vert(g)
 end
 
 @compute_spacers_vertical+=
-local s1 = math.floor((w-self.w)/2)
-local s2 = math.floor((w-g.w)/2)
+local s1, s2
+if not align_left then
+	s1 = math.floor((w-self.w)/2)
+	s2 = math.floor((w-g.w)/2)
+else
+	s1 = 0
+	s2 = 0
+end
 
 @declare_functions+=
 local utf8len, utf8char
@@ -238,8 +244,14 @@ local den_max = math.max(self.h - self.my, g.h - g.my)
 local h = num_max + den_max
 
 @compute_horizontal_spaces+=
-local s1 = num_max - self.my
-local s2 = num_max - g.my
+local s1, s2
+if not top_align then
+	s1 = num_max - self.my
+	s2 = num_max - g.my
+else
+	s1 = 0
+	s2 = 0
+end
 
 @set_result_horizontal_middle+=
 c.my = num_max
@@ -473,7 +485,7 @@ end
 @make_spacer_upper_left
 
 local upper = spacer:join_hori(rightgrid)
-local result = upper:join_vert(leftgrid)
+local result = upper:join_vert(leftgrid, true)
 result.my = leftgrid.my + rightgrid.h
 
 @make_spacer_upper_left+=
@@ -582,8 +594,129 @@ local subscript = grid:new(1, 1, { sletter[exp.right.sym] })
 @make_spacer_lower_left
 
 local lower = spacer:join_hori(rightgrid)
-local result = leftgrid:join_vert(lower)
+local result = leftgrid:join_vert(lower, true)
 result.my = leftgrid.my
 
 @make_spacer_lower_left+=
 local spacer = grid:new(leftgrid.w, rightgrid.h)
+
+@transform_special_functions+=
+elseif exp.name == "lim" and #exp.args == 3 then
+	local variable = to_ascii(exp.args[1])
+	local limit = to_ascii(exp.args[2])
+	local formula = to_ascii(exp.args[3])
+
+	@make_limit_symbols
+	@combine_limit_symbols
+
+	return res
+
+@style_variables+=
+limit = "lim ",
+limit_arrow = " → ",
+
+@make_limit_symbols+=
+local limit_text = grid:new(utf8len(style.limit), 1, { style.limit })
+local arrow_text = grid:new(utf8len(style.limit_arrow), 1, { style.limit_arrow })
+
+@combine_limit_symbols+=
+local lower = variable:join_hori(arrow_text)
+lower = lower:join_hori(limit)
+
+local res = limit_text:join_vert(lower)
+res.my = 0
+res = res:join_hori(formula)
+
+@transform_exp_to_grid+=
+elseif exp.kind == "matexp" then
+	if #exp.rows > 0 then
+		@make_grid_of_individual_cells
+
+		@combine_to_matrix_grid
+		@combine_matrix_brackets
+		res.my = math.floor(res.h/2)
+		return res
+	else
+		return nil, "empty matrix"
+	end
+
+@make_grid_of_individual_cells+=
+local cellsgrid = {}
+local maxheight = 0
+for _, row in ipairs(exp.rows) do
+	local rowgrid = {}
+	for _, cell in ipairs(row) do
+		local cellgrid = to_ascii(cell)
+		table.insert(rowgrid, cellgrid)
+		maxheight = math.max(maxheight, cellgrid.h)
+	end
+	table.insert(cellsgrid, rowgrid)
+end
+
+@combine_to_matrix_grid+=
+local res
+for i=1,#cellsgrid[1] do
+	local col 
+	for j=1,#cellsgrid do
+		local cell = cellsgrid[j][i]
+		@add_row_spacer_to_center_cell
+		@add_col_spacer_to_center_cell
+		@add_cell_grid_to_row_grid
+	end
+	@add_row_grid_to_matrix_grid
+end
+
+@add_cell_grid_to_row_grid+=
+if not col then col = cell
+else col = col:join_vert(cell, true) end
+
+@add_row_grid_to_matrix_grid+=
+if not res then res = col
+else res = res:join_hori(col, true) end
+
+@add_row_spacer_to_center_cell+=
+local sup = math.floor((maxheight-cell.h)/2)
+local sdown = maxheight - cell.h - sup
+local up, down
+if sup > 0 then up = grid:new(cell.w, sup) end
+if sdown > 0 then down = grid:new(cell.w, sdown) end
+
+if up then cell = up:join_vert(cell) end
+if down then cell = cell:join_vert(down) end
+
+@add_col_spacer_to_center_cell+=
+local colspacer = grid:new(1, cell.h)
+colspacer.my = cell.my
+
+if i < #cellsgrid[1] then
+	cell = cell:join_hori(colspacer)
+end
+
+@style_variables+=
+matrix_upper_left = "⎡", 
+matrix_upper_right = "⎤", 
+matrix_vert_left = "⎢",
+matrix_lower_left = "⎣", 
+matrix_lower_right = "⎦", 
+matrix_vert_right = "⎥",
+
+@combine_matrix_brackets+=
+local left_content, right_content = {}, {}
+for y=1,res.h do
+	if y == 1 then
+		table.insert(left_content, style.matrix_upper_left)
+		table.insert(right_content, style.matrix_upper_right)
+	elseif y == res.h then
+		table.insert(left_content, style.matrix_lower_left)
+		table.insert(right_content, style.matrix_lower_right)
+	else
+		table.insert(left_content, style.matrix_vert_left)
+		table.insert(right_content, style.matrix_vert_right)
+	end
+end
+
+local leftbracket = grid:new(1, res.h, left_content)
+local rightbracket = grid:new(1, res.h, right_content)
+
+res = leftbracket:join_hori(res, true)
+res = res:join_hori(rightbracket, true)
