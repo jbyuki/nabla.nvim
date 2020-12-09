@@ -1,9 +1,9 @@
--- Generated from ptformula.lua.tl using ntangle.nvim
-local parser = require("ptformula.parser")
+-- Generated from nabla.lua.tl using ntangle.nvim
+local parser = require("nabla.parser")
 
-local ascii = require("ptformula.ascii")
+local ascii = require("nabla.ascii")
 
-local vtext = vim.api.nvim_create_namespace("ptformula")
+local vtext = vim.api.nvim_create_namespace("nabla")
 
 
 
@@ -89,9 +89,9 @@ local function replace_current()
 		
 	else
 		if type(errmsg) == "string"  then
-			print("ptformula error: " .. errmsg)
+			print("nabla error: " .. errmsg)
 		else
-			print("ptformula error!")
+			print("nabla error!")
 		end
 	end
 end

@@ -1,4 +1,4 @@
-@../lua/ptformula/ascii.lua=
+@../lua/nabla/ascii.lua=
 @requires
 @declare_functions
 

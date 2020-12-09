@@ -1,4 +1,4 @@
-@../lua/ptformula.lua=
+@../lua/nabla.lua=
 @requires
 @script_variables
 @expressions
@@ -9,14 +9,14 @@
 
 @parse
 
-@init_ptformula_mode
+@init_nabla_mode
 @replace_current_line
 
 return {
 	@export_symbols
 }
 
-@init_ptformula_mode+=
+@init_nabla_mode+=
 local function init()
 	@create_scratch_buffer
 	@setup_scratch_buffer
@@ -77,13 +77,13 @@ for y, line in ipairs(lines) do
 end
 
 @requires+=
-local parser = require("ptformula.parser")
+local parser = require("nabla.parser")
 
 @parse_math_expression+=
 local exp, errmsg = parser.parse_all(line)
 
 @script_variables+=
-local vtext = vim.api.nvim_create_namespace("ptformula")
+local vtext = vim.api.nvim_create_namespace("nabla")
 
 @clear_all_virtual_text+=
 vim.api.nvim_buf_clear_namespace( buf, vtext, 0, -1)
@@ -92,7 +92,7 @@ vim.api.nvim_buf_clear_namespace( buf, vtext, 0, -1)
 vim.api.nvim_buf_set_virtual_text(buf, vtext, y-1, {{ vim.inspect(errmsg), "Special" }}, {})
 
 @requires+=
-local ascii = require("ptformula.ascii")
+local ascii = require("nabla.ascii")
 
 @generate_ascii_art+=
 local g = ascii.to_ascii(exp)
@@ -115,9 +115,9 @@ local function replace_current()
 		@replace_current_line_with_ascii_art
 	else
 		if type(errmsg) == "string"  then
-			print("ptformula error: " .. errmsg)
+			print("nabla error: " .. errmsg)
 		else
-			print("ptformula error!")
+			print("nabla error!")
 		end
 	end
 end

@@ -1,4 +1,4 @@
-@../lua/ptformula/parser.lua=
+@../lua/nabla/parser.lua=
 @requires
 @declare_functions
 @script_variables
