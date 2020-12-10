@@ -35,10 +35,17 @@ Press <kbd>F5</kbd> on the math expression line.
 Reference
 ---------
 
-* square root: `sqrt(x)`
-* integral: `int(A, B, f(x))`
-* limit: `lim(x, A, f(x))`
-* superscript: `x^a`
-* subscript: `x_a`
-* special symbols: `pi`, `inf`, `nabla`, ...
-* vector, matrix: `[1,2;3,4]`
+| Name | Expression |
+|------|------------|
+| square root | `sqrt(x)` |
+| integral | `integral(A, B, f(x))` |
+| sum | `sum(A, B, f(x))` or `sum(f(x))` |
+| limit | `lim(x, a, f(x))` |
+| superscript | `x^a` |
+| subscript | `x_a` |
+| special symbols | `alpha`, `inf`, `nabla`, ... |
+| vector, matrix | `[x,y;z,w]` |
+| derivative | `d(x, f(x))` |
+| partial derivative | `dp(x, f(x))` |
+
+**Note**: If the notation you need is not present or there is a misaligned expression, feel free to open an [Issue](https://github.com/jbyuki/nabla.nvim/issues).
