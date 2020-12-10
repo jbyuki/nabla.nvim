@@ -67,6 +67,9 @@ local style = {
 	matrix_single_left = "[",
 	matrix_single_right = "]",
 	
+	sum_up   = "⎲ ",
+	sum_down = "⎳ ",
+	
 }
 
 local special_syms = {
@@ -325,9 +328,10 @@ local function to_ascii(exp)
 	
 	
 	elseif exp.kind == "funexp" then
-		if exp.name == "int" and #exp.args == 3 then
-			local upperbound = to_ascii(exp.args[1])
-			local lowerbound = to_ascii(exp.args[2])
+		local name = exp.name.kind == "symexp" and exp.name.sym
+		if name == "int" and #exp.args == 3 then
+			local lowerbound = to_ascii(exp.args[1])
+			local upperbound = to_ascii(exp.args[2])
 			local integrand = to_ascii(exp.args[3])
 		
 			local int_content = {}
@@ -347,7 +351,7 @@ local function to_ascii(exp)
 		
 			return res:join_hori(integrand)
 		
-		elseif exp.name == "sqrt" and #exp.args == 1 then
+		elseif name == "sqrt" and #exp.args == 1 then
 			local toroot = to_ascii(exp.args[1])
 		
 			local left_content = {}
@@ -376,7 +380,7 @@ local function to_ascii(exp)
 			res.my = top_root.h + toroot.my
 			return res
 		
-		elseif exp.name == "lim" and #exp.args == 3 then
+		elseif name == "lim" and #exp.args == 3 then
 			local variable = to_ascii(exp.args[1])
 			local limit = to_ascii(exp.args[2])
 			local formula = to_ascii(exp.args[3])
@@ -393,6 +397,20 @@ local function to_ascii(exp)
 			
 		
 			return res
+		
+		elseif name == "sum" and #exp.args == 3 then
+			local lowerbound = to_ascii(exp.args[1])
+			local upperbound = to_ascii(exp.args[2])
+			local sum = to_ascii(exp.args[3])
+		
+			assert(utf8len(style.sum_up) == utf8len(style.sum_down))
+			local sum_sym = grid:new(utf8len(style.sum_up), 2, { style.sum_up, style.sum_down })
+		
+			local res = upperbound:join_vert(sum_sym)
+			res = res:join_vert(lowerbound)
+			res.my = upperbound.h + sum.my + 1
+		
+			return res:join_hori(sum)
 		
 		else
 			local c0 = to_ascii(exp.name)
@@ -594,6 +612,7 @@ local function to_ascii(exp)
 		end
 		
 		local superscript = grid:new(exp.order, 1, { super_content })
+		
 	
 		local result = leftgrid:join_hori(superscript, true)
 		result.my = leftgrid.my

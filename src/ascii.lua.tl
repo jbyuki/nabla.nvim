@@ -326,6 +326,7 @@ comma_sign = ", ",
 
 @transform_exp_to_grid+=
 elseif exp.kind == "funexp" then
+	local name = exp.name.kind == "symexp" and exp.name.sym
 	@transform_special_functions
 	else
 		local c0 = to_ascii(exp.name)
@@ -390,9 +391,9 @@ elseif exp.kind == "eqexp" then
 ["nabla"] = "∇",
 
 @transform_special_functions+=
-if exp.name == "int" and #exp.args == 3 then
-	local upperbound = to_ascii(exp.args[1])
-	local lowerbound = to_ascii(exp.args[2])
+if name == "int" and #exp.args == 3 then
+	local lowerbound = to_ascii(exp.args[1])
+	local upperbound = to_ascii(exp.args[2])
 	local integrand = to_ascii(exp.args[3])
 
 	@make_integral_symbol
@@ -516,7 +517,7 @@ local result = leftgrid:join_super(rightgrid)
 local spacer = grid:new(self.w, superscript.h)
 
 @transform_special_functions+=
-elseif exp.name == "sqrt" and #exp.args == 1 then
+elseif name == "sqrt" and #exp.args == 1 then
 	local toroot = to_ascii(exp.args[1])
 
 	@make_root_symbols
@@ -631,7 +632,7 @@ local result = leftgrid:combine_sub(rightgrid)
 local spacer = grid:new(self.w, other.h)
 
 @transform_special_functions+=
-elseif exp.name == "lim" and #exp.args == 3 then
+elseif name == "lim" and #exp.args == 3 then
 	local variable = to_ascii(exp.args[1])
 	local limit = to_ascii(exp.args[2])
 	local formula = to_ascii(exp.args[3])
@@ -778,3 +779,25 @@ for i=1,exp.order do
 end
 
 local superscript = grid:new(exp.order, 1, { super_content })
+
+@transform_special_functions+=
+elseif name == "sum" and #exp.args == 3 then
+	local lowerbound = to_ascii(exp.args[1])
+	local upperbound = to_ascii(exp.args[2])
+	local sum = to_ascii(exp.args[3])
+
+	@make_sum_symbol
+
+	local res = upperbound:join_vert(sum_sym)
+	res = res:join_vert(lowerbound)
+	res.my = upperbound.h + sum.my + 1
+
+	return res:join_hori(sum)
+
+@style_variables+=
+sum_up   = "⎲ ",
+sum_down = "⎳ ",
+
+@make_sum_symbol+=
+assert(utf8len(style.sum_up) == utf8len(style.sum_down))
+local sum_sym = grid:new(utf8len(style.sum_up), 2, { style.sum_up, style.sum_down })
