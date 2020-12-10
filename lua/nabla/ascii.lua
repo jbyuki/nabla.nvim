@@ -127,7 +127,6 @@ function grid:join_hori(g, top_align)
 		s2 = 0
 	end
 	
-	local h = math.max(self.h, g.h)
 
 	for y=1,h do
 		local r1 = self:get_row(y-s1)
@@ -428,6 +427,7 @@ local function to_ascii(exp)
 			local rightgrid = to_ascii(exp.right)
 			local opgrid = grid:new(utf8len(style.eq_sign[exp.sign]), 1, { style.eq_sign[exp.sign] })
 			local c1 = leftgrid:join_hori(opgrid)
+	
 			local c2 = c1:join_hori(rightgrid)
 			return c2
 		else

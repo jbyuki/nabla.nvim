@@ -62,7 +62,6 @@ function grid:join_hori(g, top_align)
 
 	@align_both_for_horizontal_join
 	@compute_horizontal_spaces
-	local h = math.max(self.h, g.h)
 
 	for y=1,h do
 		@get_row_or_create_empty_row
@@ -379,6 +378,7 @@ elseif exp.kind == "eqexp" then
 		local rightgrid = to_ascii(exp.right)
 		local opgrid = grid:new(utf8len(style.eq_sign[exp.sign]), 1, { style.eq_sign[exp.sign] })
 		local c1 = leftgrid:join_hori(opgrid)
+
 		local c2 = c1:join_hori(rightgrid)
 		return c2
 	else
