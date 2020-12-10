@@ -405,6 +405,7 @@ local function to_ascii(exp)
 		
 			assert(utf8len(style.sum_up) == utf8len(style.sum_down))
 			local sum_sym = grid:new(utf8len(style.sum_up), 2, { style.sum_up, style.sum_down })
+			
 		
 			local res = upperbound:join_vert(sum_sym)
 			res = res:join_vert(lowerbound)
@@ -412,6 +413,14 @@ local function to_ascii(exp)
 		
 			return res:join_hori(sum)
 		
+		elseif name == "sum" and #exp.args == 1 then
+			local sum = to_ascii(exp.args[1])
+		
+			assert(utf8len(style.sum_up) == utf8len(style.sum_down))
+			local sum_sym = grid:new(utf8len(style.sum_up), 2, { style.sum_up, style.sum_down })
+			
+		
+			return sum_sym:join_hori(sum)
 		else
 			local c0 = to_ascii(exp.name)
 	
@@ -462,7 +471,7 @@ local function to_ascii(exp)
 			local my = leftgrid.my
 			leftgrid.my = 0
 			local result = leftgrid:join_hori(superscript)
-			result.my = my+superscript.h
+			result.my = my
 			
 			return result
 		elseif exp.right.kind == "symexp" and hassuperscript(exp.right) then
@@ -471,7 +480,7 @@ local function to_ascii(exp)
 			local my = leftgrid.my
 			leftgrid.my = 0
 			local result = leftgrid:join_hori(superscript)
-			result.my = my+superscript.h
+			result.my = my
 			
 			return result
 		end

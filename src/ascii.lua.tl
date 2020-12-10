@@ -477,7 +477,7 @@ elseif exp.kind == "expexp" then
 local my = leftgrid.my
 leftgrid.my = 0
 local result = leftgrid:join_hori(superscript)
-result.my = my+superscript.h
+result.my = my
 
 @script_variables+=
 local super_num = { "⁰", "¹", "²", "³", "⁴", "⁵", "⁶", "⁷", "⁸", "⁹" }
@@ -801,3 +801,11 @@ sum_down = "⎳ ",
 @make_sum_symbol+=
 assert(utf8len(style.sum_up) == utf8len(style.sum_down))
 local sum_sym = grid:new(utf8len(style.sum_up), 2, { style.sum_up, style.sum_down })
+
+@transform_special_functions+=
+elseif name == "sum" and #exp.args == 1 then
+	local sum = to_ascii(exp.args[1])
+
+	@make_sum_symbol
+
+	return sum_sym:join_hori(sum)
