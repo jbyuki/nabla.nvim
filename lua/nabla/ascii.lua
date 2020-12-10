@@ -70,6 +70,10 @@ local style = {
 	sum_up   = "⎲",
 	sum_down = "⎳",
 	
+	derivative = "d",
+	
+	partial_derivative = "∂",
+	
 }
 
 local special_syms = {
@@ -430,6 +434,58 @@ local function to_ascii(exp)
 		
 			local res = sum_sym:join_hori(col_spacer)
 			return res:join_hori(sum)
+		
+		elseif name == "d" and #exp.args == 2 then
+			local var = to_ascii(exp.args[1])
+			local fun = to_ascii(exp.args[2])
+		
+			local d = grid:new(utf8len(style.derivative), 1, { style.derivative })
+			local leftgrid = d:join_hori(fun)
+			
+			local d = grid:new(utf8len(style.derivative), 1, { style.derivative })
+			local rightgrid = d:join_hori(var)
+			
+		
+			local bar = ""
+			local w = math.max(leftgrid.w, rightgrid.w)
+			for x=1,w do
+				bar = bar .. style.div_bar
+			end
+			
+		
+			local opgrid = grid:new(w, 1, { bar })
+		
+			local c1 = leftgrid:join_vert(opgrid)
+			local c2 = c1:join_vert(rightgrid)
+			c2.my = leftgrid.h
+			
+			return c2
+		
+		elseif name == "dp" and #exp.args == 2 then
+			local var = to_ascii(exp.args[1])
+			local fun = to_ascii(exp.args[2])
+		
+			local d = grid:new(utf8len(style.derivative), 1, { style.partial_derivative })
+			local leftgrid = d:join_hori(fun)
+			
+			local d = grid:new(utf8len(style.derivative), 1, { style.partial_derivative })
+			local rightgrid = d:join_hori(var)
+		
+			local bar = ""
+			local w = math.max(leftgrid.w, rightgrid.w)
+			for x=1,w do
+				bar = bar .. style.div_bar
+			end
+			
+		
+			local opgrid = grid:new(w, 1, { bar })
+		
+			local c1 = leftgrid:join_vert(opgrid)
+			local c2 = c1:join_vert(rightgrid)
+			c2.my = leftgrid.h
+			
+			return c2
+		
 		else
 			local c0 = to_ascii(exp.name)
 	

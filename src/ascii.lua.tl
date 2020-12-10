@@ -817,3 +817,59 @@ elseif name == "sum" and #exp.args == 1 then
 
 	local res = sum_sym:join_hori(col_spacer)
 	return res:join_hori(sum)
+
+@transform_special_functions+=
+elseif name == "d" and #exp.args == 2 then
+	local var = to_ascii(exp.args[1])
+	local fun = to_ascii(exp.args[2])
+
+	@make_numerator_derivative
+	@make_denominator_derivative
+
+	@generate_appropriate_size_fraction_bar
+
+	local opgrid = grid:new(w, 1, { bar })
+
+	local c1 = leftgrid:join_vert(opgrid)
+	local c2 = c1:join_vert(rightgrid)
+	@set_middle_for_fraction
+	return c2
+
+@style_variables+=
+derivative = "d",
+
+@make_numerator_derivative+=
+local d = grid:new(utf8len(style.derivative), 1, { style.derivative })
+local leftgrid = d:join_hori(fun)
+
+@make_denominator_derivative+=
+local d = grid:new(utf8len(style.derivative), 1, { style.derivative })
+local rightgrid = d:join_hori(var)
+
+@transform_special_functions+=
+elseif name == "dp" and #exp.args == 2 then
+	local var = to_ascii(exp.args[1])
+	local fun = to_ascii(exp.args[2])
+
+	@make_numerator_partial_derivative
+	@make_denominator_partial_derivative
+
+	@generate_appropriate_size_fraction_bar
+
+	local opgrid = grid:new(w, 1, { bar })
+
+	local c1 = leftgrid:join_vert(opgrid)
+	local c2 = c1:join_vert(rightgrid)
+	@set_middle_for_fraction
+	return c2
+
+@style_variables+=
+partial_derivative = "∂",
+
+@make_numerator_partial_derivative+=
+local d = grid:new(utf8len(style.derivative), 1, { style.partial_derivative })
+local leftgrid = d:join_hori(fun)
+
+@make_denominator_partial_derivative+=
+local d = grid:new(utf8len(style.derivative), 1, { style.partial_derivative })
+local rightgrid = d:join_hori(var)
