@@ -395,11 +395,7 @@ local function to_ascii(exp)
 			return res
 		
 		else
-			local sym = exp.name
-			if special_syms[sym] then
-				sym = special_syms[sym]
-			end
-			local c0 = grid:new(utf8len(sym), 1, { sym })
+			local c0 = to_ascii(exp.name)
 	
 			local comma = grid:new(utf8len(style.comma_sign), 1, { style.comma_sign })
 	

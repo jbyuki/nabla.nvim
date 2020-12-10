@@ -70,7 +70,7 @@ local priority_list = {
 	["num"] = 110,
 	["fun"] = 100,
 	
-	["ind"] = 95,
+	["ind"] = 110,
 	
 	["der"] = 85,
 	
@@ -360,8 +360,7 @@ local function LParToken() local self = { kind = "lpar" }
 			end
 			
 		end
-		local name = left.sym
-		return FunExpression(name, args)
+		return FunExpression(left, args)
 	end
 	
 return self end

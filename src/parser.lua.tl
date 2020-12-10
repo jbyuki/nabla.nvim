@@ -396,8 +396,7 @@ function self.infix(left)
 		@if_rpar_quit
 		@if_comma_next_arg
 	end
-	local name = left.sym
-	return FunExpression(name, args)
+	return FunExpression(left, args)
 end
 
 @if_rpar_quit+=
@@ -805,7 +804,7 @@ end
 function self.priority() return priority_list["ind"] end
 
 @priority_list+=
-["ind"] = 95,
+["ind"] = 110,
 
 @ind_exp_methods+=
 function self.priority() 
