@@ -482,10 +482,11 @@ leftgrid.my = 0
 local result = leftgrid:join_hori(superscript)
 result.my = my+superscript.h
 
-@get_superscript_number+=
-local snum = { "⁰", "¹", "²", "³", "⁴", "⁵", "⁶", "⁷", "⁸", "⁹" }
+@script_variables+=
+local super_num = { "⁰", "¹", "²", "³", "⁴", "⁵", "⁶", "⁷", "⁸", "⁹" }
 
-local superscript = grid:new(1, 1, { snum[exp.right.num+1] })
+@get_superscript_number+=
+local superscript = grid:new(1, 1, { super_num[exp.right.num+1] })
 
 @get_superscript_n+=
 local superscript = grid:new(1, 1, { "ⁿ" })
@@ -502,16 +503,21 @@ if not content and w and h and w > 0 and h > 0 then
 	end
 end
 
+@grid_prototype+=
+function grid:join_super(superscript)
+	@make_spacer_upper_left
+
+	local upper = spacer:join_hori(superscript)
+	local result = upper:join_vert(self, true)
+	result.my = self.my + superscript.h
+	return result
+end
+
 @combine_diagonally_for_superscript+=
-
-@make_spacer_upper_left
-
-local upper = spacer:join_hori(rightgrid)
-local result = upper:join_vert(leftgrid, true)
-result.my = leftgrid.my + rightgrid.h
+local result = leftgrid:join_super(rightgrid)
 
 @make_spacer_upper_left+=
-local spacer = grid:new(leftgrid.w, rightgrid.h)
+local spacer = grid:new(self.w, superscript.h)
 
 @transform_special_functions+=
 elseif exp.name == "sqrt" and #exp.args == 1 then
@@ -583,9 +589,10 @@ elseif exp.kind == "indexp" then
 	@combine_diagonally_for_subscript
 	return result
 
+
 @get_subscript_number+=
-local snum = { "₀","₁","₂","₃","₄","₅","₆","₇","₈","₉" }
-local subscript = grid:new(1, 1, { snum[exp.right.num+1] })
+local sub_num = { "₀","₁","₂","₃","₄","₅","₆","₇","₈","₉" }
+local subscript = grid:new(1, 1, { sub_num[exp.right.num+1] })
 
 @combine_subscript_char+=
 local my = leftgrid.my
@@ -611,16 +618,21 @@ local sletter = {
 
 local subscript = grid:new(1, 1, { sletter[exp.right.sym] })
 
+@grid_prototype+=
+function grid:combine_sub(other)
+	@make_spacer_lower_left
+
+	local lower = spacer:join_hori(other)
+	local result = self:join_vert(lower, true)
+	result.my = self.my
+	return result
+end
+
 @combine_diagonally_for_subscript+=
-
-@make_spacer_lower_left
-
-local lower = spacer:join_hori(rightgrid)
-local result = leftgrid:join_vert(lower, true)
-result.my = leftgrid.my
+local result = leftgrid:combine_sub(rightgrid)
 
 @make_spacer_lower_left+=
-local spacer = grid:new(leftgrid.w, rightgrid.h)
+local spacer = grid:new(self.w, other.h)
 
 @transform_special_functions+=
 elseif exp.name == "lim" and #exp.args == 3 then
@@ -752,3 +764,21 @@ res = res:join_hori(rightbracket, true)
 
 @special_symbols+=
 ["..."] = "…",
+
+@transform_exp_to_grid+=
+elseif exp.kind == "derexp" then
+	local leftgrid = to_ascii(exp.left):put_paren(exp.left, exp)
+
+	@make_derivates_symbol_derexp
+
+	local result = leftgrid:join_hori(superscript, true)
+	result.my = leftgrid.my
+	return result
+
+@make_derivates_symbol_derexp+=
+local super_content = ""
+for i=1,exp.order do
+	super_content = super_content .. "'"
+end
+
+local superscript = grid:new(exp.order, 1, { super_content })

@@ -51,6 +51,7 @@ while i <= string.len(str) do
 	@tokenize_equalsign
 	@tokenize_comma
 	@tokenize_semicolon
+	@tokenize_apostrophe
 	@tokenize_num
 	@tokenize_symbol
 	@handle_error_tokenize
@@ -817,4 +818,36 @@ end
 @sym_token_methods+=
 function self.priority() 
 	return 5
+end
+
+@tokenize_apostrophe+=
+elseif c == "'" then 
+	local parsed = string.match(string.sub(str, i), "[']+")
+	i = i + string.len(parsed)
+	table.insert(tokens, DerToken(string.len(parsed))) 
+
+@tokens+=
+-- derivate
+local function DerToken(order) local self = { kind = "der", order = order }
+	@derivate_token_methods
+return self end
+
+@derivate_token_methods+=
+function self.infix(left)
+	return DerExpression(left, self.order)
+end
+function self.priority() return priority_list["der"] end
+
+@priority_list+=
+["der"] = 85,
+
+@expressions+=
+function DerExpression(left, order) 
+	local self = { kind = "derexp", left = left, order = order }
+	@der_exp_methods
+return self end
+
+@der_exp_methods+=
+function self.priority() 
+	return priority_list["der"]
 end

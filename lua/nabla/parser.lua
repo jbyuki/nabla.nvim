@@ -72,6 +72,8 @@ local priority_list = {
 	
 	["ind"] = 95,
 	
+	["der"] = 85,
+	
 }
 
 function AddExpression(left, right) 
@@ -253,6 +255,13 @@ function IndExpression(left, right)
 	
 return self end
 
+function DerExpression(left, order) 
+	local self = { kind = "derexp", left = left, order = order }
+	function self.priority() 
+		return priority_list["der"]
+	end
+return self end
+
 -- closure-based object
 local function AddToken() local self = { kind = "add" }
 	function self.prefix()
@@ -372,6 +381,7 @@ local function SymToken(sym) local self = { kind = "sym", sym = sym }
 	function self.priority() 
 		return 5
 	end
+	
 return self end
 
 local function ExpToken() local self = { kind = "exp" }
@@ -471,6 +481,15 @@ local function IndToken() local self = { kind = "ind" }
 	
 return self end
 
+-- derivate
+local function DerToken(order) local self = { kind = "der", order = order }
+	function self.infix(left)
+		return DerExpression(left, self.order)
+	end
+	function self.priority() return priority_list["der"] end
+	
+return self end
+
 
 function tokenize(str)
 	tokens = {}
@@ -510,6 +529,11 @@ function tokenize(str)
 		
 		elseif c == "," then table.insert(tokens, CommaToken()) i = i+1
 		elseif c == ";" then table.insert(tokens, SemiToken()) i = i+1
+		
+		elseif c == "'" then 
+			local parsed = string.match(string.sub(str, i), "[']+")
+			i = i + string.len(parsed)
+			table.insert(tokens, DerToken(string.len(parsed))) 
 		
 		elseif string.match(c, "%d") then 
 			local parsed = string.match(string.sub(str, i), "%d+%.?%d*")

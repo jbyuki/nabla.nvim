@@ -79,6 +79,7 @@ local special_syms = {
 	["inf"] = "∞",
 	
 	["..."] = "…",
+	
 }
 
 local grid = {}
@@ -242,7 +243,29 @@ function grid:put_paren(exp, parent)
 	end
 end
 
+function grid:join_super(superscript)
+	local spacer = grid:new(self.w, superscript.h)
+	
 
+	local upper = spacer:join_hori(superscript)
+	local result = upper:join_vert(self, true)
+	result.my = self.my + superscript.h
+	return result
+end
+
+function grid:combine_sub(other)
+	local spacer = grid:new(self.w, other.h)
+	
+
+	local lower = spacer:join_hori(other)
+	local result = self:join_vert(lower, true)
+	result.my = self.my
+	return result
+end
+
+
+
+local super_num = { "⁰", "¹", "²", "³", "⁴", "⁵", "⁶", "⁷", "⁸", "⁹" }
 
 
 local function to_ascii(exp)
@@ -420,9 +443,7 @@ local function to_ascii(exp)
 	elseif exp.kind == "expexp" then
 		local leftgrid = to_ascii(exp.left):put_paren(exp.left, exp)
 		if exp.right.kind == "numexp" and hassuperscript(exp.right) then
-			local snum = { "⁰", "¹", "²", "³", "⁴", "⁵", "⁶", "⁷", "⁸", "⁹" }
-			
-			local superscript = grid:new(1, 1, { snum[exp.right.num+1] })
+			local superscript = grid:new(1, 1, { super_num[exp.right.num+1] })
 			
 			local my = leftgrid.my
 			leftgrid.my = 0
@@ -443,21 +464,15 @@ local function to_ascii(exp)
 	
 		local rightgrid = to_ascii(exp.right):put_paren(exp.right, exp)
 	
-		
-		local spacer = grid:new(leftgrid.w, rightgrid.h)
-		
-		
-		local upper = spacer:join_hori(rightgrid)
-		local result = upper:join_vert(leftgrid, true)
-		result.my = leftgrid.my + rightgrid.h
+		local result = leftgrid:join_super(rightgrid)
 		
 		return result
 	
 	elseif exp.kind == "indexp" then
 		local leftgrid = to_ascii(exp.left):put_paren(exp.left, exp)
 		if exp.right.kind == "numexp" and hassuperscript(exp.right) then
-			local snum = { "₀","₁","₂","₃","₄","₅","₆","₇","₈","₉" }
-			local subscript = grid:new(1, 1, { snum[exp.right.num+1] })
+			local sub_num = { "₀","₁","₂","₃","₄","₅","₆","₇","₈","₉" }
+			local subscript = grid:new(1, 1, { sub_num[exp.right.num+1] })
 			
 			local my = leftgrid.my
 			leftgrid.my = 0
@@ -493,15 +508,10 @@ local function to_ascii(exp)
 	
 		local rightgrid = to_ascii(exp.right):put_paren(exp.right, exp)
 	
-		
-		local spacer = grid:new(leftgrid.w, rightgrid.h)
-		
-		
-		local lower = spacer:join_hori(rightgrid)
-		local result = leftgrid:join_vert(lower, true)
-		result.my = leftgrid.my
+		local result = leftgrid:combine_sub(rightgrid)
 		
 		return result
+	
 	
 	elseif exp.kind == "matexp" then
 		if #exp.rows > 0 then
@@ -578,6 +588,20 @@ local function to_ascii(exp)
 		else
 			return nil, "empty matrix"
 		end
+	
+	elseif exp.kind == "derexp" then
+		local leftgrid = to_ascii(exp.left):put_paren(exp.left, exp)
+	
+		local super_content = ""
+		for i=1,exp.order do
+			super_content = super_content .. "'"
+		end
+		
+		local superscript = grid:new(exp.order, 1, { super_content })
+	
+		local result = leftgrid:join_hori(superscript, true)
+		result.my = leftgrid.my
+		return result
 	
 	else
 		return nil
