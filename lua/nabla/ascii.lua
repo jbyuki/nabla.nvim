@@ -43,7 +43,7 @@ local style = {
 	},
 	
 	int_top = "⌠",
-	int_middle = "⏐",
+	int_middle = "⎮",
 	int_single = "∫",
 	int_bottom = "⌡",
 	
@@ -55,7 +55,7 @@ local style = {
 	root_upper = "─",
 	root_upper_right = "┐",
 	
-	limit = "lim ",
+	limit = "lim",
 	limit_arrow = " → ",
 	
 	matrix_upper_left = "⎡", 
@@ -67,8 +67,8 @@ local style = {
 	matrix_single_left = "[",
 	matrix_single_right = "]",
 	
-	sum_up   = "⎲ ",
-	sum_down = "⎳ ",
+	sum_up   = "⎲",
+	sum_down = "⎳",
 	
 }
 
@@ -343,11 +343,14 @@ local function to_ascii(exp)
 			end
 			
 			local int_bar = grid:new(1, integrand.h+1, int_content)
+			local col_spacer = grid:new(1, 1, { " " })
 			
 		
 			local res = upperbound:join_vert(int_bar)
 			res = res:join_vert(lowerbound)
 			res.my = upperbound.h + integrand.my + 1
+		
+			res = res:join_hori(col_spacer)
 		
 			return res:join_hori(integrand)
 		
@@ -387,12 +390,14 @@ local function to_ascii(exp)
 		
 			local limit_text = grid:new(utf8len(style.limit), 1, { style.limit })
 			local arrow_text = grid:new(utf8len(style.limit_arrow), 1, { style.limit_arrow })
+			local col_spacer = grid:new(1, 1, { " " })
 			
 			local lower = variable:join_hori(arrow_text)
 			lower = lower:join_hori(limit)
 			
 			local res = limit_text:join_vert(lower)
 			res.my = 0
+			res = res:join_hori(col_spacer)
 			res = res:join_hori(formula)
 			
 		
@@ -405,12 +410,14 @@ local function to_ascii(exp)
 		
 			assert(utf8len(style.sum_up) == utf8len(style.sum_down))
 			local sum_sym = grid:new(utf8len(style.sum_up), 2, { style.sum_up, style.sum_down })
+			local col_spacer = grid:new(1, 1, { " " })
 			
 		
 			local res = upperbound:join_vert(sum_sym)
 			res = res:join_vert(lowerbound)
-			res.my = upperbound.h + sum.my + 1
+			res.my = upperbound.h + sum.my
 		
+			res = res:join_hori(col_spacer)
 			return res:join_hori(sum)
 		
 		elseif name == "sum" and #exp.args == 1 then
@@ -418,9 +425,11 @@ local function to_ascii(exp)
 		
 			assert(utf8len(style.sum_up) == utf8len(style.sum_down))
 			local sum_sym = grid:new(utf8len(style.sum_up), 2, { style.sum_up, style.sum_down })
+			local col_spacer = grid:new(1, 1, { " " })
 			
 		
-			return sum_sym:join_hori(sum)
+			local res = sum_sym:join_hori(col_spacer)
+			return res:join_hori(sum)
 		else
 			local c0 = to_ascii(exp.name)
 	

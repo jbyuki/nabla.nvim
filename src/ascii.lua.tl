@@ -402,11 +402,13 @@ if name == "int" and #exp.args == 3 then
 	res = res:join_vert(lowerbound)
 	res.my = upperbound.h + integrand.my + 1
 
+	res = res:join_hori(col_spacer)
+
 	return res:join_hori(integrand)
 
 @style_variables+=
 int_top = "⌠",
-int_middle = "⏐",
+int_middle = "⎮",
 int_single = "∫",
 int_bottom = "⌡",
 
@@ -420,6 +422,7 @@ for y=1,integrand.h+1 do
 end
 
 local int_bar = grid:new(1, integrand.h+1, int_content)
+local col_spacer = grid:new(1, 1, { " " })
 
 @special_symbols+=
 ["inf"] = "∞",
@@ -643,12 +646,13 @@ elseif name == "lim" and #exp.args == 3 then
 	return res
 
 @style_variables+=
-limit = "lim ",
+limit = "lim",
 limit_arrow = " → ",
 
 @make_limit_symbols+=
 local limit_text = grid:new(utf8len(style.limit), 1, { style.limit })
 local arrow_text = grid:new(utf8len(style.limit_arrow), 1, { style.limit_arrow })
+local col_spacer = grid:new(1, 1, { " " })
 
 @combine_limit_symbols+=
 local lower = variable:join_hori(arrow_text)
@@ -656,6 +660,7 @@ lower = lower:join_hori(limit)
 
 local res = limit_text:join_vert(lower)
 res.my = 0
+res = res:join_hori(col_spacer)
 res = res:join_hori(formula)
 
 @transform_exp_to_grid+=
@@ -790,17 +795,19 @@ elseif name == "sum" and #exp.args == 3 then
 
 	local res = upperbound:join_vert(sum_sym)
 	res = res:join_vert(lowerbound)
-	res.my = upperbound.h + sum.my + 1
+	res.my = upperbound.h + sum.my
 
+	res = res:join_hori(col_spacer)
 	return res:join_hori(sum)
 
 @style_variables+=
-sum_up   = "⎲ ",
-sum_down = "⎳ ",
+sum_up   = "⎲",
+sum_down = "⎳",
 
 @make_sum_symbol+=
 assert(utf8len(style.sum_up) == utf8len(style.sum_down))
 local sum_sym = grid:new(utf8len(style.sum_up), 2, { style.sum_up, style.sum_down })
+local col_spacer = grid:new(1, 1, { " " })
 
 @transform_special_functions+=
 elseif name == "sum" and #exp.args == 1 then
@@ -808,4 +815,5 @@ elseif name == "sum" and #exp.args == 1 then
 
 	@make_sum_symbol
 
-	return sum_sym:join_hori(sum)
+	local res = sum_sym:join_hori(col_spacer)
+	return res:join_hori(sum)

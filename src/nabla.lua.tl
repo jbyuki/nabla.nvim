@@ -11,6 +11,7 @@
 
 @init_nabla_mode
 @replace_current_line
+@replace_all_lines
 
 return {
 	@export_symbols
@@ -140,4 +141,46 @@ if whitespace then
 	for i=1,#drawing do
 		drawing[i] = whitespace .. drawing[i]
 	end
+end
+
+@replace_all_lines+=
+local function replace_all()
+	@get_all_lines
+	result = {}
+	for i,line in ipairs(lines) do
+		if line == "" then
+			@if_empty_line_just_skip
+		else
+			@get_whilespace_before
+			@parse_math_expression
+			if exp then
+				@generate_ascii_art
+				@add_generated_to_result
+			else
+				if type(errmsg) == "string"  then
+					print("nabla error: " .. errmsg)
+				else
+					print("nabla error!")
+				end
+			end
+		end
+	end
+	@replace_with_generated
+end
+
+@export_symbols+=
+replace_all = replace_all,
+
+@get_all_lines+=
+local lines = vim.api.nvim_buf_get_lines(0, 0, -1, true)
+
+@replace_with_generated+=
+vim.api.nvim_buf_set_lines(0, 0, -1, true, result)
+
+@if_empty_line_just_skip+=
+table.insert(result, "")
+
+@add_generated_to_result+=
+for _, newline in ipairs(drawing) do
+	table.insert(result, newline)
 end

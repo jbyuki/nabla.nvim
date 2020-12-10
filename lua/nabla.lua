@@ -38,6 +38,7 @@ local function init()
 								end
 							end
 							
+							
 							vim.api.nvim_buf_set_lines(scratch, -1, -1, true, drawing)
 							
 						else
@@ -84,6 +85,7 @@ local function replace_current()
 			end
 		end
 		
+		
 		local curline, _ = unpack(vim.api.nvim_win_get_cursor(0))
 		vim.api.nvim_buf_set_lines(0, curline-1, curline, true, drawing) 
 		
@@ -96,11 +98,55 @@ local function replace_current()
 	end
 end
 
+local function replace_all()
+	local lines = vim.api.nvim_buf_get_lines(0, 0, -1, true)
+	
+	result = {}
+	for i,line in ipairs(lines) do
+		if line == "" then
+			table.insert(result, "")
+			
+		else
+			local whitespace = string.match(line, "^(%s*)%S")
+			
+			local exp, errmsg = parser.parse_all(line)
+			
+			if exp then
+				local g = ascii.to_ascii(exp)
+				local drawing = {}
+				for row in vim.gsplit(tostring(g), "\n") do
+					table.insert(drawing, row)
+				end
+				if whitespace then
+					for i=1,#drawing do
+						drawing[i] = whitespace .. drawing[i]
+					end
+				end
+				
+				
+				for _, newline in ipairs(drawing) do
+					table.insert(result, newline)
+				end
+			else
+				if type(errmsg) == "string"  then
+					print("nabla error: " .. errmsg)
+				else
+					print("nabla error!")
+				end
+			end
+		end
+	end
+	vim.api.nvim_buf_set_lines(0, 0, -1, true, result)
+	
+end
+
 
 return {
 	init = init,
 	
 	replace_current = replace_current,
+	
+	replace_all = replace_all,
 	
 }
 
