@@ -33,3 +33,5 @@ dp(x, f(x)) + dp(y, f(y)) = 2
 delta(x) = 2
 
 Delta(x) + Delta(y) = z
+
+e^(1/2) + 2 = x

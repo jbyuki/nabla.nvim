@@ -126,7 +126,6 @@ function grid:join_hori(g, top_align)
 
 	local num_max = math.max(self.my, g.my)
 	local den_max = math.max(self.h - self.my, g.h - g.my)
-	local h = num_max + den_max
 	
 	local s1, s2
 	if not top_align then
@@ -135,6 +134,13 @@ function grid:join_hori(g, top_align)
 	else
 		s1 = 0
 		s2 = 0
+	end
+	
+	local h 
+	if not top_align then
+		h = den_max + num_max
+	else
+		h = math.max(self.h, g.h)
 	end
 	
 
@@ -256,7 +262,7 @@ function grid:join_super(superscript)
 	local spacer = grid:new(self.w, superscript.h)
 	
 
-	local upper = spacer:join_hori(superscript)
+	local upper = spacer:join_hori(superscript, true)
 	local result = upper:join_vert(self, true)
 	result.my = self.my + superscript.h
 	return result
