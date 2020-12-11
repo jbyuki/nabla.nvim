@@ -38,7 +38,7 @@ Reference
 | Name | Expression |
 |------|------------|
 | square root | `sqrt(x)` |
-| integral | `integral(A, B, f(x))` |
+| integral | `int(A, B, f(x))` |
 | sum | `sum(A, B, f(x))` or `sum(f(x))` |
 | limit | `lim(x, a, f(x))` |
 | superscript | `x^a` |

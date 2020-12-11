@@ -795,7 +795,7 @@ elseif name == "sum" and #exp.args == 3 then
 
 	local res = upperbound:join_vert(sum_sym)
 	res = res:join_vert(lowerbound)
-	res.my = upperbound.h + sum.my
+	res.my = upperbound.h + math.floor(sum_sym.h/2)
 
 	res = res:join_hori(col_spacer)
 	return res:join_hori(sum)
