@@ -873,3 +873,30 @@ local leftgrid = d:join_hori(fun)
 @make_denominator_partial_derivative+=
 local d = grid:new(utf8len(style.derivative), 1, { style.partial_derivative })
 local rightgrid = d:join_hori(var)
+
+@transform_special_functions+=
+elseif name == "abs" and #exp.args == 1 then
+	local arg = to_ascii(exp.args[1])
+
+	@make_vertical_bar_absolute
+
+	local c1 = vbar_left:join_hori(arg, true)
+	local c2 = c1:join_hori(vbar_right, true)
+	c2.my = arg.my
+	return c2
+
+
+@style_variables+=
+abs_bar_left = "⎮",
+abs_bar_right = "⎮",
+
+@make_vertical_bar_absolute+=
+local vbar_left_content = {}
+local vbar_right_content = {}
+for _=1,arg.h do
+	table.insert(vbar_left_content, style.abs_bar_left)
+	table.insert(vbar_right_content, style.abs_bar_right)
+end
+
+local vbar_left = grid:new(utf8len(style.abs_bar_left), arg.h, vbar_left_content)
+local vbar_right = grid:new(utf8len(style.abs_bar_right), arg.h, vbar_right_content)

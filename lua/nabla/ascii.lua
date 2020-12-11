@@ -74,6 +74,9 @@ local style = {
 	
 	partial_derivative = "∂",
 	
+	abs_bar_left = "⎮",
+	abs_bar_right = "⎮",
+	
 }
 
 local special_syms = {
@@ -470,6 +473,7 @@ local function to_ascii(exp)
 			
 			local d = grid:new(utf8len(style.derivative), 1, { style.partial_derivative })
 			local rightgrid = d:join_hori(var)
+			
 		
 			local bar = ""
 			local w = math.max(leftgrid.w, rightgrid.w)
@@ -485,6 +489,25 @@ local function to_ascii(exp)
 			c2.my = leftgrid.h
 			
 			return c2
+		
+		elseif name == "abs" and #exp.args == 1 then
+			local arg = to_ascii(exp.args[1])
+		
+			local vbar_left_content = {}
+			local vbar_right_content = {}
+			for _=1,arg.h do
+				table.insert(vbar_left_content, style.abs_bar_left)
+				table.insert(vbar_right_content, style.abs_bar_right)
+			end
+			
+			local vbar_left = grid:new(utf8len(style.abs_bar_left), arg.h, vbar_left_content)
+			local vbar_right = grid:new(utf8len(style.abs_bar_right), arg.h, vbar_right_content)
+		
+			local c1 = vbar_left:join_hori(arg, true)
+			local c2 = c1:join_hori(vbar_right, true)
+			c2.my = arg.my
+			return c2
+		
 		
 		else
 			local c0 = to_ascii(exp.name)
