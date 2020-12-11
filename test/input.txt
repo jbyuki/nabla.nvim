@@ -29,3 +29,7 @@ int(2,inf,1/x * dx)
 d(x, f(x)) + d(y, f(y)) = 2
 
 dp(x, f(x)) + dp(y, f(y)) = 2
+
+delta(x) = 2
+
+Delta(x) + Delta(y) = z

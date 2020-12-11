@@ -502,6 +502,7 @@ local function to_ascii(exp)
 			
 			local vbar_left = grid:new(utf8len(style.abs_bar_left), arg.h, vbar_left_content)
 			local vbar_right = grid:new(utf8len(style.abs_bar_right), arg.h, vbar_right_content)
+			
 		
 			local c1 = vbar_left:join_hori(arg, true)
 			local c2 = c1:join_hori(vbar_right, true)
@@ -509,6 +510,13 @@ local function to_ascii(exp)
 			return c2
 		
 		
+		elseif (name == "Delta" or name == "delta") and #exp.args == 1 then
+			local arg = to_ascii(exp.args[1])
+			local delta = to_ascii(exp.name)
+		
+			local res = delta:join_hori(arg)
+			res.my = arg.my
+			return res
 		else
 			local c0 = to_ascii(exp.name)
 	
