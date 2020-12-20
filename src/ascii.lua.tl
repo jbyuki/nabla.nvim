@@ -910,8 +910,9 @@ local vbar_left = grid:new(utf8len(style.abs_bar_left), arg.h, vbar_left_content
 local vbar_right = grid:new(utf8len(style.abs_bar_right), arg.h, vbar_right_content)
 
 @transform_special_functions+=
-elseif (name == "Delta" or name == "delta") and #exp.args == 1 then
+elseif (name == "Del" or name == "del") and #exp.args == 1 then
 	local arg = to_ascii(exp.args[1])
+	exp.name.sym = exp.name.sym .. "ta"
 	local delta = to_ascii(exp.name)
 
 	local res = delta:join_hori(arg)

@@ -516,8 +516,9 @@ local function to_ascii(exp)
 			return c2
 		
 		
-		elseif (name == "Delta" or name == "delta") and #exp.args == 1 then
+		elseif (name == "Del" or name == "del") and #exp.args == 1 then
 			local arg = to_ascii(exp.args[1])
+			exp.name.sym = exp.name.sym .. "ta"
 			local delta = to_ascii(exp.name)
 		
 			local res = delta:join_hori(arg)

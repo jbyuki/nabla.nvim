@@ -48,6 +48,6 @@ Reference
 | derivative | `d(x, f(x))` |
 | partial derivative | `dp(x, f(x))` |
 | absolute value | `abs(x)` |
-| delta | `delta(x)` or `Delta(x)` |
+| delta | `del(x)` or `Del(x)` |
 
 **Note**: If the notation you need is not present or there is a misaligned expression, feel free to open an [Issue](https://github.com/jbyuki/nabla.nvim/issues).

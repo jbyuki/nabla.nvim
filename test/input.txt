@@ -35,3 +35,7 @@ delta(x) = 2
 Delta(x) + Delta(y) = z
 
 e^(1/2) + 2 = x
+
+del(x) + del(x-2) = del(y)
+
+Del(x) + Del(x-2) = Del(y)
