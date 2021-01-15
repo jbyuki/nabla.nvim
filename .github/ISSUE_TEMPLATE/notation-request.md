@@ -1,6 +1,6 @@
 ---
 name: Notation request
-about: Suggest an idea for this project
+about: Suggest further notation support
 title: ''
 labels: enhancement
 assignees: ''
@@ -16,8 +16,8 @@ assignees: ''
 (Mathematical operators and symbols in Unicode)[https://en.wikipedia.org/wiki/Mathematical_operators_and_symbols_in_Unicode] gives a table with all special symbols in case you need it.
 
 **Describe in what context you would use this notation**
-> Example: Chemistry
 Optional but it might give some context in case.
+> Example: Chemistry
 
 
 **Additional context**
