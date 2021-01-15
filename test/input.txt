@@ -39,3 +39,5 @@ e^(1/2) + 2 = x
 del(x) + del(x-2) = del(y)
 
 Del(x) + Del(x-2) = Del(y)
+
+C_5H_12(l)+8O_2(g)->5CO_2(g)+H_2O(l)
