@@ -619,6 +619,10 @@ while num ~= 0 do
 	num = math.floor(num / 10)
 end
 
+if string.len(sub_str) == 0 then
+	sub_str = sub_num[1]
+end
+
 local subscript = grid:new(string.len(sub_str), 1, { sub_str })
 
 @combine_subscript_char+=
