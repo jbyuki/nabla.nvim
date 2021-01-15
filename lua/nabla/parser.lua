@@ -260,6 +260,7 @@ function DerExpression(left, order)
 	function self.priority() 
 		return priority_list["der"]
 	end
+	
 return self end
 
 -- closure-based object
@@ -500,6 +501,12 @@ function tokenize(str)
 		if string.match(c, "%s") then
 			i = i+1 
 		
+		elseif c == "-" and string.sub(str, i+1, i+1) == ">" then
+			table.insert(tokens, EqualToken("->")) 
+			i = i+2
+		elseif c == "<" and string.sub(str, i+1, i+1) == "-" then
+			table.insert(tokens, EqualToken("<-")) 
+			i = i+2
 		elseif c == "+" then table.insert(tokens, AddToken()) i = i+1
 		elseif c == "-" then table.insert(tokens, SubToken()) i = i+1
 		elseif c == "*" then table.insert(tokens, MulToken()) i = i+1

@@ -1,3 +1,4 @@
+##../nabla
 @../lua/nabla.lua=
 @requires
 @script_variables

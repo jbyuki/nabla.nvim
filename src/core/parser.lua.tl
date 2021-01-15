@@ -1,3 +1,4 @@
+##../parser
 @../lua/nabla/parser.lua=
 @requires
 @declare_functions
@@ -45,6 +46,7 @@ local i = 1
 while i <= string.len(str) do
 	@get_character
 	@skip_whitespace
+	@tokenize_chem_equ
 	@tokenize_op
 	@tokenize_par
 	@tokenize_bracket
@@ -850,3 +852,11 @@ return self end
 function self.priority() 
 	return priority_list["der"]
 end
+
+@tokenize_chem_equ+=
+elseif c == "-" and string.sub(str, i+1, i+1) == ">" then
+	table.insert(tokens, EqualToken("->")) 
+	i = i+2
+elseif c == "<" and string.sub(str, i+1, i+1) == "-" then
+	table.insert(tokens, EqualToken("<-")) 
+	i = i+2

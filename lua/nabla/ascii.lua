@@ -40,6 +40,8 @@ local style = {
 		["!="] = " ≠ ",
 		["=>"] = " → ",
 		
+		["->"] = " → ",
+		["<-"] = " ← ",
 	},
 	
 	int_top = "⌠",
@@ -308,9 +310,16 @@ local function to_ascii(exp)
 	elseif exp.kind == "mulexp" then
 		local leftgrid = to_ascii(exp.left):put_paren(exp.left, exp)
 		local rightgrid = to_ascii(exp.right):put_paren(exp.right, exp)
-		local opgrid = grid:new(utf8len(style.multiply_sign), 1, { style.multiply_sign })
-		local c1 = leftgrid:join_hori(opgrid)
-		local c2 = c1:join_hori(rightgrid)
+		local c2
+		if exp.left.kind == "numexp" and exp.right.kind == "numexp" then
+			local opgrid = grid:new(utf8len(style.multiply_sign), 1, { style.multiply_sign })
+			local c1 = leftgrid:join_hori(opgrid)
+			c2 = c1:join_hori(rightgrid)
+			
+		else
+			c2 = leftgrid:join_hori(rightgrid)
+			
+		end
 		return c2
 	
 	elseif exp.kind == "divexp" then
@@ -524,6 +533,7 @@ local function to_ascii(exp)
 			local res = delta:join_hori(arg)
 			res.my = arg.my
 			return res
+		
 		else
 			local c0 = to_ascii(exp.name)
 	
@@ -596,9 +606,16 @@ local function to_ascii(exp)
 	
 	elseif exp.kind == "indexp" then
 		local leftgrid = to_ascii(exp.left):put_paren(exp.left, exp)
-		if exp.right.kind == "numexp" and hassuperscript(exp.right) then
+		if exp.right.kind == "numexp" and hassubscript(exp.right) then
 			local sub_num = { "₀","₁","₂","₃","₄","₅","₆","₇","₈","₉" }
-			local subscript = grid:new(1, 1, { sub_num[exp.right.num+1] })
+			local num = exp.right.num
+			local sub_str = ""
+			while num ~= 0 do
+				sub_str = sub_num[(num%10)+1] .. sub_str
+				num = math.floor(num / 10)
+			end
+			
+			local subscript = grid:new(string.len(sub_str), 1, { sub_str })
 			
 			local my = leftgrid.my
 			leftgrid.my = 0
@@ -606,7 +623,7 @@ local function to_ascii(exp)
 			result.my = my
 			
 			return result
-		elseif exp.right.kind == "symexp" and hassuperscript(exp.right) then
+		elseif exp.right.kind == "symexp" and hassubscript(exp.right) then
 			local sletter = { 
 				["a"] = "ₐ", 
 				["e"] = "ₑ", 
@@ -759,7 +776,7 @@ end
 
 function hassubscript(x)
 	if x.kind == "numexp" and math.floor(x.num) == x.num then
-		return x.num >= 0 and x.num <= 9
+		return true
 	elseif x.kind == "symexp" and string.len(x.sym) == 1 and string.find("aeoxhklmnpst", x.sym) then
 		return true
 	end
