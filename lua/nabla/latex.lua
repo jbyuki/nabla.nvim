@@ -12,12 +12,15 @@ local parse_number
 
 local parse_symbol
 
+local lookahead
+
 local M = {}
 function M.parse_all(str)
 	buf = str
 	ptr = 1
 	
 	local exp = parse()
+	print(vim.inspect(exp))
 	return exp
 end
 
@@ -60,6 +63,7 @@ function parse()
 					sym = " ",
 				}
 				nextc()
+			
 			else
 				sym = parse_symbol()
 			end
@@ -131,6 +135,13 @@ function parse()
 					exp = in_exp,
 				}
 			
+			elseif getc() == "/" and lookahead(1) == "/" then
+				exp = {
+					kind = "symexp",
+					sym = "//",
+				}
+				nextc()
+				nextc()
 			else 
 				exp = {
 					kind = "symexp",
@@ -179,6 +190,10 @@ function parse_symbol()
 	}
 	
 	return exp
+end
+
+function lookahead(i)
+	return string.sub(buf, ptr+i, ptr+i)
 end
 
 return M

@@ -1358,3 +1358,106 @@ end
 
 @special_symbols+=
 ["partial"] = "∂",
+
+
+@transform_exp_to_grid+=
+elseif exp.kind == "blockexp" then
+	local g
+	local name = exp.sym
+	@transform_block_expression
+	@otherwise_error_with_unknown_block_expression
+	return g
+
+@otherwise_error_with_unknown_block_expression+=
+else
+	error("Unknown block expression " .. exp.sym)
+end
+
+@transform_block_expression+=
+if name == "matrix" then
+	local cells = {}
+	@make_grid_of_cells_from_exp_list
+
+	@combine_to_matrix_grid
+	-- @combine_matrix_brackets
+	res.my = math.floor(res.h/2)
+	return res
+
+@make_grid_of_cells_from_exp_list+=
+local cellsgrid = {}
+local maxheight = 0
+local explist = exp.content.exps
+local i = 1
+local rowgrid = {}
+while i <= #explist do
+	@get_next_cell_from_explist
+end
+
+@get_next_cell_from_explist+=
+local cell_list = {
+	kind = "explist",
+	exps = {},
+}
+
+while i <= #explist do
+	if explist[i].kind == "symexp" and explist[i].sym == "&" then
+		@switch_to_next_cell
+	elseif explist[i].kind == "symexp" and explist[i].sym == "//" then
+		@switch_to_next_cell_and_row
+	else
+		table.insert(cell_list.exps, explist[i])
+		i = i+1
+	end
+
+	@if_last_one_add_cellgrid
+end
+
+@switch_to_next_cell+=
+local cellgrid = to_ascii(cell_list)
+table.insert(rowgrid, cellgrid)
+maxheight = math.max(maxheight, cellgrid.h)
+i = i+1
+break
+
+@switch_to_next_cell_and_row+=
+local cellgrid = to_ascii(cell_list)
+table.insert(rowgrid, cellgrid)
+maxheight = math.max(maxheight, cellgrid.h)
+
+table.insert(cellsgrid, rowgrid)
+rowgrid = {}
+i = i+1
+break
+
+@if_last_one_add_cellgrid+=
+if i > #explist then
+	local cellgrid = to_ascii(cell_list)
+	table.insert(rowgrid, cellgrid)
+	maxheight = math.max(maxheight, cellgrid.h)
+
+	table.insert(cellsgrid, rowgrid)
+end
+
+@transform_block_expression+=
+elseif name == "pmatrix" then
+	local cells = {}
+	@make_grid_of_cells_from_exp_list
+
+	@combine_to_matrix_grid
+	res.my = math.floor(res.h/2)
+	return res:enclose_paren()
+
+@transform_block_expression+=
+elseif name == "bmatrix" then
+	local cells = {}
+	@make_grid_of_cells_from_exp_list
+
+	@combine_to_matrix_grid
+	@combine_matrix_brackets
+	res.my = math.floor(res.h/2)
+	return res
+
+@special_symbols+=
+["cdots"] = "⋯",
+["vdots"] = "⋮",
+["ddots"] = "⋱",

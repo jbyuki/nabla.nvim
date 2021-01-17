@@ -115,6 +115,11 @@ local special_syms = {
 	["ast"] = "∗",
 	
 	["partial"] = "∂",
+	
+	
+	["cdots"] = "⋯",
+	["vdots"] = "⋮",
+	["ddots"] = "⋱",
 }
 
 local grid = {}
@@ -1214,6 +1219,287 @@ local function to_ascii(exp)
 				g = g:join_super(supgrid)
 				
 			end
+		end
+		
+		return g
+	
+	elseif exp.kind == "blockexp" then
+		local g
+		local name = exp.sym
+		if name == "matrix" then
+			local cells = {}
+			local cellsgrid = {}
+			local maxheight = 0
+			local explist = exp.content.exps
+			local i = 1
+			local rowgrid = {}
+			while i <= #explist do
+				local cell_list = {
+					kind = "explist",
+					exps = {},
+				}
+				
+				while i <= #explist do
+					if explist[i].kind == "symexp" and explist[i].sym == "&" then
+						local cellgrid = to_ascii(cell_list)
+						table.insert(rowgrid, cellgrid)
+						maxheight = math.max(maxheight, cellgrid.h)
+						i = i+1
+						break
+						
+					elseif explist[i].kind == "symexp" and explist[i].sym == "//" then
+						local cellgrid = to_ascii(cell_list)
+						table.insert(rowgrid, cellgrid)
+						maxheight = math.max(maxheight, cellgrid.h)
+						
+						table.insert(cellsgrid, rowgrid)
+						rowgrid = {}
+						i = i+1
+						break
+						
+					else
+						table.insert(cell_list.exps, explist[i])
+						i = i+1
+					end
+				
+					if i > #explist then
+						local cellgrid = to_ascii(cell_list)
+						table.insert(rowgrid, cellgrid)
+						maxheight = math.max(maxheight, cellgrid.h)
+					
+						table.insert(cellsgrid, rowgrid)
+					end
+					
+				end
+				
+			end
+			
+		
+			local res
+			for i=1,#cellsgrid[1] do
+				local col 
+				for j=1,#cellsgrid do
+					local cell = cellsgrid[j][i]
+					local sup = maxheight - cell.h
+					local sdown = 0
+					local up, down
+					if sup > 0 then up = grid:new(cell.w, sup) end
+					if sdown > 0 then down = grid:new(cell.w, sdown) end
+					
+					if up then cell = up:join_vert(cell) end
+					if down then cell = cell:join_vert(down) end
+					
+					local colspacer = grid:new(1, cell.h)
+					colspacer.my = cell.my
+					
+					if i < #cellsgrid[1] then
+						cell = cell:join_hori(colspacer)
+					end
+					
+					if not col then col = cell
+					else col = col:join_vert(cell, true) end
+					
+				end
+				if not res then res = col
+				else res = res:join_hori(col, true) end
+				
+			end
+			
+			-- @combine_matrix_brackets
+			res.my = math.floor(res.h/2)
+			return res
+		
+		elseif name == "pmatrix" then
+			local cells = {}
+			local cellsgrid = {}
+			local maxheight = 0
+			local explist = exp.content.exps
+			local i = 1
+			local rowgrid = {}
+			while i <= #explist do
+				local cell_list = {
+					kind = "explist",
+					exps = {},
+				}
+				
+				while i <= #explist do
+					if explist[i].kind == "symexp" and explist[i].sym == "&" then
+						local cellgrid = to_ascii(cell_list)
+						table.insert(rowgrid, cellgrid)
+						maxheight = math.max(maxheight, cellgrid.h)
+						i = i+1
+						break
+						
+					elseif explist[i].kind == "symexp" and explist[i].sym == "//" then
+						local cellgrid = to_ascii(cell_list)
+						table.insert(rowgrid, cellgrid)
+						maxheight = math.max(maxheight, cellgrid.h)
+						
+						table.insert(cellsgrid, rowgrid)
+						rowgrid = {}
+						i = i+1
+						break
+						
+					else
+						table.insert(cell_list.exps, explist[i])
+						i = i+1
+					end
+				
+					if i > #explist then
+						local cellgrid = to_ascii(cell_list)
+						table.insert(rowgrid, cellgrid)
+						maxheight = math.max(maxheight, cellgrid.h)
+					
+						table.insert(cellsgrid, rowgrid)
+					end
+					
+				end
+				
+			end
+			
+		
+			local res
+			for i=1,#cellsgrid[1] do
+				local col 
+				for j=1,#cellsgrid do
+					local cell = cellsgrid[j][i]
+					local sup = maxheight - cell.h
+					local sdown = 0
+					local up, down
+					if sup > 0 then up = grid:new(cell.w, sup) end
+					if sdown > 0 then down = grid:new(cell.w, sdown) end
+					
+					if up then cell = up:join_vert(cell) end
+					if down then cell = cell:join_vert(down) end
+					
+					local colspacer = grid:new(1, cell.h)
+					colspacer.my = cell.my
+					
+					if i < #cellsgrid[1] then
+						cell = cell:join_hori(colspacer)
+					end
+					
+					if not col then col = cell
+					else col = col:join_vert(cell, true) end
+					
+				end
+				if not res then res = col
+				else res = res:join_hori(col, true) end
+				
+			end
+			
+			res.my = math.floor(res.h/2)
+			return res:enclose_paren()
+		
+		elseif name == "bmatrix" then
+			local cells = {}
+			local cellsgrid = {}
+			local maxheight = 0
+			local explist = exp.content.exps
+			local i = 1
+			local rowgrid = {}
+			while i <= #explist do
+				local cell_list = {
+					kind = "explist",
+					exps = {},
+				}
+				
+				while i <= #explist do
+					if explist[i].kind == "symexp" and explist[i].sym == "&" then
+						local cellgrid = to_ascii(cell_list)
+						table.insert(rowgrid, cellgrid)
+						maxheight = math.max(maxheight, cellgrid.h)
+						i = i+1
+						break
+						
+					elseif explist[i].kind == "symexp" and explist[i].sym == "//" then
+						local cellgrid = to_ascii(cell_list)
+						table.insert(rowgrid, cellgrid)
+						maxheight = math.max(maxheight, cellgrid.h)
+						
+						table.insert(cellsgrid, rowgrid)
+						rowgrid = {}
+						i = i+1
+						break
+						
+					else
+						table.insert(cell_list.exps, explist[i])
+						i = i+1
+					end
+				
+					if i > #explist then
+						local cellgrid = to_ascii(cell_list)
+						table.insert(rowgrid, cellgrid)
+						maxheight = math.max(maxheight, cellgrid.h)
+					
+						table.insert(cellsgrid, rowgrid)
+					end
+					
+				end
+				
+			end
+			
+		
+			local res
+			for i=1,#cellsgrid[1] do
+				local col 
+				for j=1,#cellsgrid do
+					local cell = cellsgrid[j][i]
+					local sup = maxheight - cell.h
+					local sdown = 0
+					local up, down
+					if sup > 0 then up = grid:new(cell.w, sup) end
+					if sdown > 0 then down = grid:new(cell.w, sdown) end
+					
+					if up then cell = up:join_vert(cell) end
+					if down then cell = cell:join_vert(down) end
+					
+					local colspacer = grid:new(1, cell.h)
+					colspacer.my = cell.my
+					
+					if i < #cellsgrid[1] then
+						cell = cell:join_hori(colspacer)
+					end
+					
+					if not col then col = cell
+					else col = col:join_vert(cell, true) end
+					
+				end
+				if not res then res = col
+				else res = res:join_hori(col, true) end
+				
+			end
+			
+			local left_content, right_content = {}, {}
+			if res.h > 1 then
+				for y=1,res.h do
+					if y == 1 then
+						table.insert(left_content, style.matrix_upper_left)
+						table.insert(right_content, style.matrix_upper_right)
+					elseif y == res.h then
+						table.insert(left_content, style.matrix_lower_left)
+						table.insert(right_content, style.matrix_lower_right)
+					else
+						table.insert(left_content, style.matrix_vert_left)
+						table.insert(right_content, style.matrix_vert_right)
+					end
+				end
+			else
+				left_content = { style.matrix_single_left }
+				right_content = { style.matrix_single_right }
+			end
+			
+			local leftbracket = grid:new(1, res.h, left_content)
+			local rightbracket = grid:new(1, res.h, right_content)
+			
+			res = leftbracket:join_hori(res, true)
+			res = res:join_hori(rightbracket, true)
+			
+			res.my = math.floor(res.h/2)
+			return res
+		
+		else
+			error("Unknown block expression " .. exp.sym)
 		end
 		
 		return g

@@ -10,6 +10,7 @@ return M
 function M.parse_all(str)
 	@init_parser
 	local exp = parse()
+	print(vim.inspect(exp))
 	return exp
 end
 
@@ -153,6 +154,7 @@ else
 	@if_subscript_parse_with_sub
 	@if_superscript_parse_with_sup
 	@if_paren_parse_inside_it
+	@if_newnewline_parse_it
 	@otherwise_just_output_as_is
 end
 
@@ -234,4 +236,21 @@ if getc() == " " then
 		kind = "symexp",
 		sym = " ",
 	}
+	nextc()
+
+@declare_functions+=
+local lookahead
+
+@functions+=
+function lookahead(i)
+	return string.sub(buf, ptr+i, ptr+i)
+end
+
+@if_newnewline_parse_it+=
+elseif getc() == "/" and lookahead(1) == "/" then
+	exp = {
+		kind = "symexp",
+		sym = "//",
+	}
+	nextc()
 	nextc()
