@@ -20,7 +20,7 @@ f_a(\frac{2}{x})
 
 \begin{matrix} x^2 & a_H // \frac{1}{2} & d^2 \end{matrix}
 
-\sum_2^{\infty} \frac{1}{x} dx
+\int_0^{\infty} \frac{1}{x} dx
 
 \frac{dx}{df(x)} + \frac{dy}{df(y)} = 2
 
@@ -30,11 +30,11 @@ f_a(\frac{2}{x})
 
 \Delta (x) + \Delta (y) = z
 
-e^(1/2) + 2 = x
+e^{1/2} + 2 = x
 
-\del x + \del(x-2) = \del y
+\delta x + \delta x = \delta y
 
-\Del x + \Del z = \Del y
+\Delta x + \Delta z = \Delta y
 
 C_5H_{12}(l)+8O_2(g)\rightarrow 5CO_2(g)+H_2O(l)
 

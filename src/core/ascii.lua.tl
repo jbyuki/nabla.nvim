@@ -611,7 +611,7 @@ elseif exp.kind == "indexp" then
 
 	local rightgrid = to_ascii(exp.right):put_paren(exp.right, exp)
 
-	@combine_diagonally_for_subscript
+	-- @combine_diagonally_for_subscript
 	return result
 
 
@@ -1003,7 +1003,11 @@ end
 @transform_function_into_ascii+=
 elseif special_syms[name] then
 	local sym = special_syms[name]
-	return grid:new(utf8len(sym), 1, { sym })
+	local g = grid:new(utf8len(sym), 1, { sym })
+	@if_has_both_subscript_and_superscript_put_aside
+	@if_has_subscript_put_them_to_g
+	@if_has_superscript_put_them_to_g
+	return g
 
 
 @special_symbols+=
@@ -1103,8 +1107,73 @@ local sub_g = grid:new(utf8len(subscript), 1, { subscript })
 g = g:join_hori(sub_g)
 
 @combine_subscript_diagonally+=
-local subgrid = to_ascii(exp.sub)
+local subgrid
+local frac_exps = exp.sub.exps
+local frac_exp
+@if_numerical_fraction_put_smaller_form
+if not frac_exp then
+	subgrid = to_ascii(exp.sub)
+else
+	subgrid = frac_exp
+end
 g = g:combine_sub(subgrid)
+
+@if_numerical_fraction_put_smaller_form+=
+if #frac_exps == 1  then
+	local exp = frac_exps[1]
+	if exp.kind == "funexp" and exp.sym == "frac" then
+		assert(#exp.args == 2, "frac must have 2 arguments")
+		local numerator = exp.args[1].exps
+		local denominator = exp.args[2].exps
+		@if_both_numbers_fraction_simplify
+	end
+end
+
+@script_variables+=
+local frac_set = {
+	[0] = { [3] = "↉" },
+	[1] = { [2] = "½", [3] = "⅓", [4] = "¼", [5] = "⅕", [6] = "⅙", [7] = "⅐", [8] = "⅛", [9] = "⅑", [10] = "⅒" },
+	[2] = { [3] = "⅔", [4] = "¾", [5] = "⅖" },
+	[3] = { [5] = "⅗", [8] = "⅜" },
+	[4] = { [5] = "⅘" },
+	[5] = { [6] = "⅚", [8] = "⅝" },
+	[7] = { [8] = "⅞" },
+}
+
+@if_both_numbers_fraction_simplify+=
+if #numerator == 1 and numerator[1].kind == "numexp" and 
+	#denominator == 1 and denominator[1].kind == "numexp" then
+	local A = numerator[1].num
+	local B = denominator[1].num
+	if frac_set[A] and frac_set[A][B] then
+		frac_exp = grid:new(1, 1, { frac_set[A][B] })
+	else
+		local num_str = ""
+		local den_str = ""
+		@make_fraction_numerator
+		@make_fraction_denominator
+		if string.len(num_str) > 0 and string.len(den_str) > 0 then
+			local frac_str = num_str .. "⁄" .. den_str
+			frac_exp = grid:new(utf8len(frac_str), 1, { frac_str })
+		end
+	end
+end
+
+@make_fraction_numerator+=
+if math.floor(A) == A then
+	local s = tostring(A)
+	for i=1,string.len(s) do
+		num_str = num_str .. sup_letters[string.sub(s, i, i)]
+	end
+end
+
+@make_fraction_denominator+=
+if math.floor(B) == B then
+	local s = tostring(B)
+	for i=1,string.len(s) do
+		den_str = den_str .. sub_letters[string.sub(s, i, i)]
+	end
+end
 
 @if_has_superscript_put_them_to_g+=
 if exp.sup and not exp.sub then 
@@ -1184,6 +1253,14 @@ g = g:join_hori(sup_g, true)
 
 @combine_superscript_diagonally+=
 local supgrid = to_ascii(exp.sup)
+local frac_exps = exp.sup.exps
+local frac_exp
+@if_numerical_fraction_put_smaller_form
+if not frac_exp then
+	supgrid = to_ascii(exp.sub)
+else
+	supgrid = frac_exp
+end
 g = g:join_super(supgrid)
 
 @transform_exp_to_grid+=
@@ -1218,10 +1295,10 @@ elseif name == "int" then
 	return g
 
 @put_col_spacer_to_g+=
-local col_spacer = grid:new(1, 1, { " " })
-if g then
-	g = g:join_hori(col_spacer)
-end
+	local col_spacer = grid:new(1, 1, { " " })
+	if g then
+		g = g:join_hori(col_spacer)
+	end
 
 @transform_function_into_ascii+=
 elseif name == "iint" then
@@ -1288,9 +1365,9 @@ elseif name == "prod" then
 	return g
 
 @special_symbols+=
-["pm"] = "±",
-["mp"] = "∓",
-["to"] = "→",
+	["pm"] = "±",
+	["mp"] = "∓",
+	["to"] = "→",
 
 @if_has_both_subscript_and_superscript_put_aside+=
 if exp.sub and exp.sup then 
@@ -1334,11 +1411,11 @@ end
 
 @transform_function_into_ascii+=
 elseif name == "lim" then
-	local g = grid:new(3, 1, { "lim" })
+local g = grid:new(3, 1, { "lim" })
 
-	@if_has_subscript_stack_with_g
-	@put_col_spacer_to_g
-	return g
+@if_has_subscript_stack_with_g
+@put_col_spacer_to_g
+return g
 
 @if_has_subscript_stack_with_g+=
 if exp.sub and not exp.sup then
@@ -1362,26 +1439,26 @@ end
 
 @transform_exp_to_grid+=
 elseif exp.kind == "blockexp" then
-	local g
-	local name = exp.sym
-	@transform_block_expression
-	@otherwise_error_with_unknown_block_expression
-	return g
+local g
+local name = exp.sym
+@transform_block_expression
+@otherwise_error_with_unknown_block_expression
+return g
 
 @otherwise_error_with_unknown_block_expression+=
 else
-	error("Unknown block expression " .. exp.sym)
+error("Unknown block expression " .. exp.sym)
 end
 
 @transform_block_expression+=
 if name == "matrix" then
-	local cells = {}
-	@make_grid_of_cells_from_exp_list
+local cells = {}
+@make_grid_of_cells_from_exp_list
 
-	@combine_to_matrix_grid
-	-- @combine_matrix_brackets
-	res.my = math.floor(res.h/2)
-	return res
+@combine_to_matrix_grid
+-- @combine_matrix_brackets
+res.my = math.floor(res.h/2)
+return res
 
 @make_grid_of_cells_from_exp_list+=
 local cellsgrid = {}
@@ -1443,19 +1520,19 @@ elseif name == "pmatrix" then
 	local cells = {}
 	@make_grid_of_cells_from_exp_list
 
-	@combine_to_matrix_grid
-	res.my = math.floor(res.h/2)
-	return res:enclose_paren()
+@combine_to_matrix_grid
+res.my = math.floor(res.h/2)
+return res:enclose_paren()
 
 @transform_block_expression+=
 elseif name == "bmatrix" then
 	local cells = {}
 	@make_grid_of_cells_from_exp_list
 
-	@combine_to_matrix_grid
-	@combine_matrix_brackets
-	res.my = math.floor(res.h/2)
-	return res
+@combine_to_matrix_grid
+@combine_matrix_brackets
+res.my = math.floor(res.h/2)
+return res
 
 @special_symbols+=
 ["cdots"] = "⋯",
