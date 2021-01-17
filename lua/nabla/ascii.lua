@@ -391,6 +391,9 @@ local sup_letters = {
 
 local function to_ascii(exp)
 	local g = grid:new()
+	if not exp then
+		print(debug.traceback())
+	end
 	
 	if exp.kind == "numexp" then
 		local numstr = tostring(exp.num)
@@ -633,7 +636,7 @@ local function to_ascii(exp)
 				end
 				
 				if not frac_exp then
-					supgrid = to_ascii(exp.sub)
+					supgrid = to_ascii(exp.sup)
 				else
 					supgrid = frac_exp
 				end
@@ -1084,7 +1087,7 @@ local function to_ascii(exp)
 					end
 					
 					if not frac_exp then
-						supgrid = to_ascii(exp.sub)
+						supgrid = to_ascii(exp.sup)
 					else
 						supgrid = frac_exp
 					end
@@ -1596,7 +1599,7 @@ local function to_ascii(exp)
 				end
 				
 				if not frac_exp then
-					supgrid = to_ascii(exp.sub)
+					supgrid = to_ascii(exp.sup)
 				else
 					supgrid = frac_exp
 				end

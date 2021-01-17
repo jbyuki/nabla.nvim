@@ -56,6 +56,9 @@ end
 
 @init_grid_structure+=
 local g = grid:new()
+if not exp then
+	print(debug.traceback())
+end
 
 @grid_prototype+=
 function grid:join_hori(g, top_align)
@@ -1257,7 +1260,7 @@ local frac_exps = exp.sup.exps
 local frac_exp
 @if_numerical_fraction_put_smaller_form
 if not frac_exp then
-	supgrid = to_ascii(exp.sub)
+	supgrid = to_ascii(exp.sup)
 else
 	supgrid = frac_exp
 end
