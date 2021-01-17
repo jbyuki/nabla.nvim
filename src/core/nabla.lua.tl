@@ -79,10 +79,11 @@ for y, line in ipairs(lines) do
 end
 
 @requires+=
-local parser = require("nabla.parser")
+-- local parser = require("nabla.parser")
+local parser = require("nabla.latex")
 
 @parse_math_expression+=
-local exp, errmsg = parser.parse_all(line)
+local exp = parser.parse_all(line)
 
 @script_variables+=
 local vtext = vim.api.nvim_create_namespace("nabla")

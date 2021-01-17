@@ -104,6 +104,7 @@ plus_sign = " + ",
 if exp.kind == "numexp" then
 	local numstr = tostring(exp.num)
 	return grid:new(string.len(numstr), 1, { tostring(numstr) })
+
 elseif exp.kind == "addexp" then
 	local leftgrid = to_ascii(exp.left):put_paren(exp.left, exp)
 	local rightgrid = to_ascii(exp.right):put_paren(exp.right, exp)
@@ -335,41 +336,44 @@ right_paren.my = self.my
 @transform_exp_to_grid+=
 elseif exp.kind == "symexp" then
 	local sym = exp.sym
-	if special_syms[sym] then
-		sym = special_syms[sym]
-	end
-	return grid:new(utf8len(sym), 1, { sym })
+	-- if special_syms[sym] then
+		-- sym = special_syms[sym]
+	-- end
+	local g = grid:new(utf8len(sym), 1, { sym })
+	@if_has_subscript_put_them_to_g
+	@if_has_superscript_put_them_to_g
+	return g
 
 
 @style_variables+=
 comma_sign = ", ", 
 
 @transform_exp_to_grid+=
-elseif exp.kind == "funexp" then
-	local name = exp.name.kind == "symexp" and exp.name.sym
-	@transform_special_functions
-	else
-		local c0 = to_ascii(exp.name)
-
-		local comma = grid:new(utf8len(style.comma_sign), 1, { style.comma_sign })
-
-		local args
-		for _, arg in ipairs(exp.args) do
-			local garg = to_ascii(arg)
-			if not args then args = garg
-			else
-				args = args:join_hori(comma)
-				args = args:join_hori(garg)
-			end
-		end
-
-		if args then
-			args = args:enclose_paren()
-		else
-			args = grid:new(2, 1, { style.left_single_par .. style.right_single_par })
-		end
-		return c0:join_hori(args)
-	end
+-- elseif exp.kind == "funexp" then
+	-- local name = exp.name.kind == "symexp" and exp.name.sym
+	-- @transform_special_functions
+	-- else
+		-- local c0 = to_ascii(exp.name)
+-- 
+		-- local comma = grid:new(utf8len(style.comma_sign), 1, { style.comma_sign })
+-- 
+		-- local args
+		-- for _, arg in ipairs(exp.args) do
+			-- local garg = to_ascii(arg)
+			-- if not args then args = garg
+			-- else
+				-- args = args:join_hori(comma)
+				-- args = args:join_hori(garg)
+			-- end
+		-- end
+-- 
+		-- if args then
+			-- args = args:enclose_paren()
+		-- else
+			-- args = grid:new(2, 1, { style.left_single_par .. style.right_single_par })
+		-- end
+		-- return c0:join_hori(args)
+	-- end
 
 @style_variables+=
 eq_sign = {
@@ -384,7 +388,7 @@ eq_sign = {
 ["<="] = " ≤ ",
 [">>"] = " ≫ ",
 ["<<"] = " ≪ ",
-["~="] = " ≅ ",
+["~="] = " ≈ ",
 ["!="] = " ≠ ",
 ["=>"] = " → ",
 
@@ -945,3 +949,241 @@ elseif (name == "Del" or name == "del") and #exp.args == 1 then
 @relation_signs+=
 ["->"] = " → ",
 ["<-"] = " ← ",
+
+@transform_exp_to_grid+=
+elseif exp.kind == "explist" then
+	local res
+	for _, exp_el in ipairs(exp.exps) do
+		local exp_grid = to_ascii(exp_el)
+		@put_horizontal_spacer
+		if not res then
+			res = exp_grid
+		else
+			res = res:join_hori(exp_grid)
+		end
+	end
+	return res
+
+@put_horizontal_spacer+=
+local col_spacer = grid:new(1, 1, { " " })
+if res then
+	res = res:join_hori(col_spacer)
+end
+
+@transform_exp_to_grid+=
+elseif exp.kind == "funexp" then
+	local name = exp.sym
+	@transform_function_into_ascii
+	@otherwise_just_print_out_function_as_text
+
+@transform_function_into_ascii+=
+if name == "frac" then
+	assert(#exp.args == 2, "frac must have 2 arguments")
+	@build_ascii_fraction
+
+@build_ascii_fraction+=
+local leftgrid = to_ascii(exp.args[1])
+local rightgrid = to_ascii(exp.args[2])
+
+@generate_appropriate_size_fraction_bar
+
+local opgrid = grid:new(w, 1, { bar })
+
+local c1 = leftgrid:join_vert(opgrid)
+local c2 = c1:join_vert(rightgrid)
+@set_middle_for_fraction
+return c2
+
+@otherwise_just_print_out_function_as_text+=
+else
+	return grid:new(utf8len(name), 1, { name })
+end
+
+@transform_function_into_ascii+=
+elseif special_syms[name] then
+	local sym = special_syms[name]
+	return grid:new(utf8len(sym), 1, { sym })
+
+
+@special_symbols+=
+["cdot"] = "∙",
+["approx"] = "≈",
+["simeq"] = "≃",
+["sim"] = "∼",
+["propto"] = "∝",
+["neq"] = "≠",
+["doteq"] = "≐",
+["leq"] = "≤",
+["cong"] = "≥",
+
+@if_has_subscript_put_them_to_g+=
+if exp.sub then 
+	local subscript = ""
+	@try_to_make_subscript_expression
+	if subscript and string.len(subscript) > 0 then
+		@combine_subscript_to_align_bottom
+	else
+		@combine_subscript_diagonally
+	end
+end
+
+@try_to_make_subscript_expression+=
+local subexps = exp.sub.exps
+for _, exp in ipairs(subexps) do
+	if exp.kind == "numexp" and math.floor(exp.num) == exp.num then
+		@append_number_subscript
+	elseif exp.kind == "symexp" then
+		@append_characters_subscript
+	else
+		subscript = nil
+		break
+	end
+end
+
+@append_number_subscript+=
+local num = exp.num
+if num == 0 then
+	subscript = subscript .. sub_letters["0"]
+else
+	if num < 0 then
+		subscript = "₋" .. subscript
+		num = math.abs(num)
+	end
+	local num_subscript = ""
+	while num ~= 0 do
+		num_subscript = sub_letters[tostring(num%10)] .. num_subscript 
+		num = math.floor(num / 10)
+	end
+	subscript = subscript .. num_subscript 
+end
+
+@script_variables+=
+local sub_letters = { 
+	["+"] = "₊",
+	["-"] = "₋",
+	["="] = "₌",
+	["("] = "₍",
+	[")"] = "₎",
+	["a"] = "ₐ",
+	["e"] = "ₑ",
+	["o"] = "ₒ",
+	["x"] = "ₓ",
+	["ə"] = "ₔ",
+	["h"] = "ₕ",
+	["k"] = "ₖ",
+	["l"] = "ₗ",
+	["m"] = "ₘ",
+	["n"] = "ₙ",
+	["p"] = "ₚ",
+	["s"] = "ₛ",
+	["t"] = "ₜ",
+	["0"] = "₀",
+	["1"] = "₁",
+	["2"] = "₂",
+	["3"] = "₃",
+	["4"] = "₄",
+	["5"] = "₅",
+	["6"] = "₆",
+	["7"] = "₇",
+	["8"] = "₈",
+	["9"] = "₉",
+}
+
+@append_characters_subscript+=
+if sub_letters[exp.sym] then
+	subscript = subscript .. sub_letters[exp.sym]
+else
+	subscript = nil
+	break
+end
+
+@combine_subscript_to_align_bottom+=
+local sub_g = grid:new(utf8len(subscript), 1, { subscript })
+g = g:join_hori(sub_g)
+
+@combine_subscript_diagonally+=
+local subgrid = to_ascii(exp.sub)
+g = g:combine_sub(subgrid)
+
+@if_has_superscript_put_them_to_g+=
+if exp.sup then 
+	local superscript = ""
+	@try_to_make_superscript_expression
+	if superscript and string.len(superscript) > 0 then
+		@combine_superscript_to_align_top
+	else
+		@combine_superscript_diagonally
+	end
+end
+
+@try_to_make_superscript_expression+=
+local supexps = exp.sup.exps
+for _, exp in ipairs(supexps) do
+	if exp.kind == "numexp" and math.floor(exp.num) == exp.num then
+		@append_number_superscript
+	elseif exp.kind == "symexp" then
+		@append_characters_superscript
+	else
+		superscript = nil
+		break
+	end
+end
+
+@script_variables+=
+local sup_letters = { 
+	["+"] = "⁺",
+	["-"] = "⁻",
+	["="] = "⁼",
+	["("] = "⁽",
+	[")"] = "⁾",
+	["n"] = "ⁿ",
+	["0"] = "⁰",
+	["1"] = "¹",
+	["2"] = "²",
+	["3"] = "³",
+	["4"] = "⁴",
+	["5"] = "⁵",
+	["6"] = "⁶",
+	["7"] = "⁷",
+	["8"] = "⁸",
+	["9"] = "⁹",
+	["i"] = "ⁱ",
+	["j"] = "ʲ",
+	["w"] = "ʷ",
+}
+
+@append_number_superscript+=
+local num = exp.num
+if num == 0 then
+	superscript = superscript .. sub_letters["0"]
+else
+	if num < 0 then
+		superscript = "₋" .. superscript
+		num = math.abs(num)
+	end
+	local num_superscript = ""
+	while num ~= 0 do
+		num_superscript = sup_letters[tostring(num%10)] .. num_superscript 
+		num = math.floor(num / 10)
+	end
+	superscript = superscript .. num_superscript 
+end
+
+@append_characters_superscript+=
+if sup_letters[exp.sym] then
+	superscript = superscript .. sup_letters[exp.sym]
+else
+	superscript = nil
+	break
+end
+
+@combine_superscript_to_align_top+=
+local sup_g = grid:new(utf8len(superscript), 1, { superscript })
+g = g:join_hori(sup_g, true)
+
+@transform_exp_to_grid+=
+elseif exp.kind == "parexp" then
+	local g = to_ascii(exp.exp):enclose_paren()
+	@if_has_subscript_put_them_to_g
+	@if_has_superscript_put_them_to_g
+	return g

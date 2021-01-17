@@ -1,5 +1,6 @@
 -- Generated from nabla.lua.tl using ntangle.nvim
-local parser = require("nabla.parser")
+-- local parser = require("nabla.parser")
+local parser = require("nabla.latex")
 
 local ascii = require("nabla.ascii")
 
@@ -24,7 +25,7 @@ local function init()
 				
 				for y, line in ipairs(lines) do
 					if line ~= "" then
-						local exp, errmsg = parser.parse_all(line)
+						local exp = parser.parse_all(line)
 						
 						if exp then
 							local g = ascii.to_ascii(exp)
@@ -71,7 +72,7 @@ local function replace_current()
 	
 	local whitespace = string.match(line, "^(%s*)%S")
 	
-	local exp, errmsg = parser.parse_all(line)
+	local exp = parser.parse_all(line)
 	
 	if exp then
 		local g = ascii.to_ascii(exp)
@@ -109,7 +110,7 @@ local function replace_all()
 		else
 			local whitespace = string.match(line, "^(%s*)%S")
 			
-			local exp, errmsg = parser.parse_all(line)
+			local exp = parser.parse_all(line)
 			
 			if exp then
 				local g = ascii.to_ascii(exp)
