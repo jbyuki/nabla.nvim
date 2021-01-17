@@ -106,7 +106,14 @@ plus_sign = " + ",
 @transform_exp_to_grid+=
 if exp.kind == "numexp" then
 	local numstr = tostring(exp.num)
-	return grid:new(string.len(numstr), 1, { tostring(numstr) })
+	local g = grid:new(string.len(numstr), 1, { tostring(numstr) })
+
+	@if_has_both_subscript_and_superscript_put_aside
+	@if_has_subscript_put_them_to_g
+	@if_has_superscript_put_them_to_g
+
+	return g
+
 
 elseif exp.kind == "addexp" then
 	local leftgrid = to_ascii(exp.left):put_paren(exp.left, exp)
