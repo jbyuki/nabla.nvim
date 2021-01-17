@@ -400,9 +400,86 @@ local function to_ascii(exp)
 		local g = grid:new(string.len(numstr), 1, { tostring(numstr) })
 	
 		if exp.sub and exp.sup then 
-			local subgrid = to_ascii(exp.sub)
-			local supgrid = to_ascii(exp.sup)
-			g = g:join_sub_sup(subgrid, supgrid)
+			local subscript = ""
+			local subexps = exp.sup.exps
+			for _, exp in ipairs(subexps) do
+				if exp.kind == "numexp" and math.floor(exp.num) == exp.num then
+					local num = exp.num
+					if num == 0 then
+						subscript = subscript .. sub_letters["0"]
+					else
+						if num < 0 then
+							subscript = "₋" .. subscript
+							num = math.abs(num)
+						end
+						local num_subscript = ""
+						while num ~= 0 do
+							num_subscript = sub_letters[tostring(num%10)] .. num_subscript 
+							num = math.floor(num / 10)
+						end
+						subscript = subscript .. num_subscript 
+					end
+					
+				elseif exp.kind == "symexp" then
+					if sub_letters[exp.sym] then
+						subscript = subscript .. sub_letters[exp.sym]
+					else
+						subscript = nil
+						break
+					end
+					
+				else
+					subscript = nil
+					break
+				end
+			end
+			
+		
+			local superscript = ""
+			local supexps = exp.sub.exps
+			for _, exp in ipairs(supexps) do
+				if exp.kind == "numexp" and math.floor(exp.num) == exp.num then
+					local num = exp.num
+					if num == 0 then
+						superscript = superscript .. sub_letters["0"]
+					else
+						if num < 0 then
+							superscript = "₋" .. superscript
+							num = math.abs(num)
+						end
+						local num_superscript = ""
+						while num ~= 0 do
+							num_superscript = sup_letters[tostring(num%10)] .. num_superscript 
+							num = math.floor(num / 10)
+						end
+						superscript = superscript .. num_superscript 
+					end
+					
+				elseif exp.kind == "symexp" then
+					if sup_letters[exp.sym] then
+						superscript = superscript .. sup_letters[exp.sym]
+					else
+						superscript = nil
+						break
+					end
+					
+				else
+					superscript = nil
+					break
+				end
+			end
+			
+		
+			if subscript and superscript then
+				local sup_g = grid:new(utf8len(superscript), 1, { superscript })
+				local sub_g = grid:new(utf8len(subscript), 1, { subscript })
+				g = g:join_sub_sup(sub_g, sup_g)
+			else
+				local subgrid = to_ascii(exp.sub)
+				local supgrid = to_ascii(exp.sup)
+				g = g:join_sub_sup(subgrid, supgrid)
+			end
+		
 		end
 		
 		if exp.sub and not exp.sup then 
@@ -650,9 +727,86 @@ local function to_ascii(exp)
 		-- end
 		local g = grid:new(utf8len(sym), 1, { sym })
 		if exp.sub and exp.sup then 
-			local subgrid = to_ascii(exp.sub)
-			local supgrid = to_ascii(exp.sup)
-			g = g:join_sub_sup(subgrid, supgrid)
+			local subscript = ""
+			local subexps = exp.sup.exps
+			for _, exp in ipairs(subexps) do
+				if exp.kind == "numexp" and math.floor(exp.num) == exp.num then
+					local num = exp.num
+					if num == 0 then
+						subscript = subscript .. sub_letters["0"]
+					else
+						if num < 0 then
+							subscript = "₋" .. subscript
+							num = math.abs(num)
+						end
+						local num_subscript = ""
+						while num ~= 0 do
+							num_subscript = sub_letters[tostring(num%10)] .. num_subscript 
+							num = math.floor(num / 10)
+						end
+						subscript = subscript .. num_subscript 
+					end
+					
+				elseif exp.kind == "symexp" then
+					if sub_letters[exp.sym] then
+						subscript = subscript .. sub_letters[exp.sym]
+					else
+						subscript = nil
+						break
+					end
+					
+				else
+					subscript = nil
+					break
+				end
+			end
+			
+		
+			local superscript = ""
+			local supexps = exp.sub.exps
+			for _, exp in ipairs(supexps) do
+				if exp.kind == "numexp" and math.floor(exp.num) == exp.num then
+					local num = exp.num
+					if num == 0 then
+						superscript = superscript .. sub_letters["0"]
+					else
+						if num < 0 then
+							superscript = "₋" .. superscript
+							num = math.abs(num)
+						end
+						local num_superscript = ""
+						while num ~= 0 do
+							num_superscript = sup_letters[tostring(num%10)] .. num_superscript 
+							num = math.floor(num / 10)
+						end
+						superscript = superscript .. num_superscript 
+					end
+					
+				elseif exp.kind == "symexp" then
+					if sup_letters[exp.sym] then
+						superscript = superscript .. sup_letters[exp.sym]
+					else
+						superscript = nil
+						break
+					end
+					
+				else
+					superscript = nil
+					break
+				end
+			end
+			
+		
+			if subscript and superscript then
+				local sup_g = grid:new(utf8len(superscript), 1, { superscript })
+				local sub_g = grid:new(utf8len(subscript), 1, { subscript })
+				g = g:join_sub_sup(sub_g, sup_g)
+			else
+				local subgrid = to_ascii(exp.sub)
+				local supgrid = to_ascii(exp.sup)
+				g = g:join_sub_sup(subgrid, supgrid)
+			end
+		
 		end
 		
 		if exp.sub and not exp.sup then 
@@ -1101,9 +1255,86 @@ local function to_ascii(exp)
 			local sym = special_syms[name]
 			local g = grid:new(utf8len(sym), 1, { sym })
 			if exp.sub and exp.sup then 
-				local subgrid = to_ascii(exp.sub)
-				local supgrid = to_ascii(exp.sup)
-				g = g:join_sub_sup(subgrid, supgrid)
+				local subscript = ""
+				local subexps = exp.sup.exps
+				for _, exp in ipairs(subexps) do
+					if exp.kind == "numexp" and math.floor(exp.num) == exp.num then
+						local num = exp.num
+						if num == 0 then
+							subscript = subscript .. sub_letters["0"]
+						else
+							if num < 0 then
+								subscript = "₋" .. subscript
+								num = math.abs(num)
+							end
+							local num_subscript = ""
+							while num ~= 0 do
+								num_subscript = sub_letters[tostring(num%10)] .. num_subscript 
+								num = math.floor(num / 10)
+							end
+							subscript = subscript .. num_subscript 
+						end
+						
+					elseif exp.kind == "symexp" then
+						if sub_letters[exp.sym] then
+							subscript = subscript .. sub_letters[exp.sym]
+						else
+							subscript = nil
+							break
+						end
+						
+					else
+						subscript = nil
+						break
+					end
+				end
+				
+			
+				local superscript = ""
+				local supexps = exp.sub.exps
+				for _, exp in ipairs(supexps) do
+					if exp.kind == "numexp" and math.floor(exp.num) == exp.num then
+						local num = exp.num
+						if num == 0 then
+							superscript = superscript .. sub_letters["0"]
+						else
+							if num < 0 then
+								superscript = "₋" .. superscript
+								num = math.abs(num)
+							end
+							local num_superscript = ""
+							while num ~= 0 do
+								num_superscript = sup_letters[tostring(num%10)] .. num_superscript 
+								num = math.floor(num / 10)
+							end
+							superscript = superscript .. num_superscript 
+						end
+						
+					elseif exp.kind == "symexp" then
+						if sup_letters[exp.sym] then
+							superscript = superscript .. sup_letters[exp.sym]
+						else
+							superscript = nil
+							break
+						end
+						
+					else
+						superscript = nil
+						break
+					end
+				end
+				
+			
+				if subscript and superscript then
+					local sup_g = grid:new(utf8len(superscript), 1, { superscript })
+					local sub_g = grid:new(utf8len(subscript), 1, { subscript })
+					g = g:join_sub_sup(sub_g, sup_g)
+				else
+					local subgrid = to_ascii(exp.sub)
+					local supgrid = to_ascii(exp.sup)
+					g = g:join_sub_sup(subgrid, supgrid)
+				end
+			
 			end
 			
 			if exp.sub and not exp.sup then 
@@ -1613,9 +1844,86 @@ local function to_ascii(exp)
 	elseif exp.kind == "parexp" then
 		local g = to_ascii(exp.exp):enclose_paren()
 		if exp.sub and exp.sup then 
-			local subgrid = to_ascii(exp.sub)
-			local supgrid = to_ascii(exp.sup)
-			g = g:join_sub_sup(subgrid, supgrid)
+			local subscript = ""
+			local subexps = exp.sup.exps
+			for _, exp in ipairs(subexps) do
+				if exp.kind == "numexp" and math.floor(exp.num) == exp.num then
+					local num = exp.num
+					if num == 0 then
+						subscript = subscript .. sub_letters["0"]
+					else
+						if num < 0 then
+							subscript = "₋" .. subscript
+							num = math.abs(num)
+						end
+						local num_subscript = ""
+						while num ~= 0 do
+							num_subscript = sub_letters[tostring(num%10)] .. num_subscript 
+							num = math.floor(num / 10)
+						end
+						subscript = subscript .. num_subscript 
+					end
+					
+				elseif exp.kind == "symexp" then
+					if sub_letters[exp.sym] then
+						subscript = subscript .. sub_letters[exp.sym]
+					else
+						subscript = nil
+						break
+					end
+					
+				else
+					subscript = nil
+					break
+				end
+			end
+			
+		
+			local superscript = ""
+			local supexps = exp.sub.exps
+			for _, exp in ipairs(supexps) do
+				if exp.kind == "numexp" and math.floor(exp.num) == exp.num then
+					local num = exp.num
+					if num == 0 then
+						superscript = superscript .. sub_letters["0"]
+					else
+						if num < 0 then
+							superscript = "₋" .. superscript
+							num = math.abs(num)
+						end
+						local num_superscript = ""
+						while num ~= 0 do
+							num_superscript = sup_letters[tostring(num%10)] .. num_superscript 
+							num = math.floor(num / 10)
+						end
+						superscript = superscript .. num_superscript 
+					end
+					
+				elseif exp.kind == "symexp" then
+					if sup_letters[exp.sym] then
+						superscript = superscript .. sup_letters[exp.sym]
+					else
+						superscript = nil
+						break
+					end
+					
+				else
+					superscript = nil
+					break
+				end
+			end
+			
+		
+			if subscript and superscript then
+				local sup_g = grid:new(utf8len(superscript), 1, { superscript })
+				local sub_g = grid:new(utf8len(subscript), 1, { subscript })
+				g = g:join_sub_sup(sub_g, sup_g)
+			else
+				local subgrid = to_ascii(exp.sub)
+				local supgrid = to_ascii(exp.sup)
+				g = g:join_sub_sup(subgrid, supgrid)
+			end
+		
 		end
 		
 		if exp.sub and not exp.sup then 

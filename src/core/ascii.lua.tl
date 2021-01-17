@@ -1034,6 +1034,7 @@ elseif special_syms[name] then
 @if_has_subscript_put_them_to_g+=
 if exp.sub and not exp.sup then 
 	local subscript = ""
+	local subexps = exp.sub.exps
 	@try_to_make_subscript_expression
 	if subscript and string.len(subscript) > 0 then
 		@combine_subscript_to_align_bottom
@@ -1043,7 +1044,6 @@ if exp.sub and not exp.sup then
 end
 
 @try_to_make_subscript_expression+=
-local subexps = exp.sub.exps
 for _, exp in ipairs(subexps) do
 	if exp.kind == "numexp" and math.floor(exp.num) == exp.num then
 		@append_number_subscript
@@ -1188,6 +1188,7 @@ end
 @if_has_superscript_put_them_to_g+=
 if exp.sup and not exp.sub then 
 	local superscript = ""
+	local supexps = exp.sup.exps
 	@try_to_make_superscript_expression
 	if superscript and string.len(superscript) > 0 then
 		@combine_superscript_to_align_top
@@ -1197,7 +1198,6 @@ if exp.sup and not exp.sub then
 end
 
 @try_to_make_superscript_expression+=
-local supexps = exp.sup.exps
 for _, exp in ipairs(supexps) do
 	if exp.kind == "numexp" and math.floor(exp.num) == exp.num then
 		@append_number_superscript
@@ -1381,9 +1381,24 @@ elseif name == "prod" then
 
 @if_has_both_subscript_and_superscript_put_aside+=
 if exp.sub and exp.sup then 
-	local subgrid = to_ascii(exp.sub)
-	local supgrid = to_ascii(exp.sup)
-	g = g:join_sub_sup(subgrid, supgrid)
+	local subscript = ""
+	local subexps = exp.sup.exps
+	@try_to_make_subscript_expression
+
+	local superscript = ""
+	local supexps = exp.sub.exps
+	@try_to_make_superscript_expression
+
+	if subscript and superscript then
+		local sup_g = grid:new(utf8len(superscript), 1, { superscript })
+		local sub_g = grid:new(utf8len(subscript), 1, { subscript })
+		g = g:join_sub_sup(sub_g, sup_g)
+	else
+		local subgrid = to_ascii(exp.sub)
+		local supgrid = to_ascii(exp.sup)
+		g = g:join_sub_sup(subgrid, supgrid)
+	end
+
 end
 
 @declare_functions+=
