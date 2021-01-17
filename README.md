@@ -5,9 +5,7 @@ Take your scientific notes in Neovim.
 
 [![Capture.png](https://i.postimg.cc/sDn3nNWj/Capture.png)](https://postimg.cc/PPwGJKK9)
 
-**nabla.nvim** is an ASCII math generator.
-
-**Work in progress**
+**nabla.nvim** is an ASCII math generator from LaTeX equations.
 
 Install
 -------
@@ -35,19 +33,11 @@ Press <kbd>F5</kbd> on the math expression line.
 Reference
 ---------
 
-| Name | Expression |
-|------|------------|
-| square root | `sqrt(x)` |
-| integral | `int(A, B, f(x))` |
-| sum | `sum(A, B, f(x))` or `sum(f(x))` |
-| limit | `lim(x, a, f(x))` |
-| superscript | `x^a` |
-| subscript | `x_a` |
-| special symbols | `alpha`, `inf`, `nabla`, ... |
-| vector, matrix | `[x,y;z,w]` |
-| derivative | `d(x, f(x))` |
-| partial derivative | `dp(x, f(x))` |
-| absolute value | `abs(x)` |
-| delta | `del(x)` or `Del(x)` |
+See [test/input.txt](https://github.com/jbyuki/nabla.nvim/blob/master/test/input.txt) for examples.
 
 **Note**: If the notation you need is not present or there is a misaligned expression, feel free to open an [Issue](https://github.com/jbyuki/nabla.nvim/issues).
+
+Credits
+-------
+
+* Thanks to jetrosut for his helpful feedback and bug troubleshoot
