@@ -1189,7 +1189,7 @@ g = g:join_super(supgrid)
 @transform_exp_to_grid+=
 elseif exp.kind == "parexp" then
 	local g = to_ascii(exp.exp):enclose_paren()
-	@if_has_both_subscript_and_superscript_stack
+	@if_has_both_subscript_and_superscript_put_aside
 	@if_has_subscript_put_them_to_g
 	@if_has_superscript_put_them_to_g
 	return g
@@ -1211,64 +1211,80 @@ elseif name == "int" then
 	local g = grid:new(1, 1, { "∫" })
 
 	@if_has_both_subscript_and_superscript_stack
-	@if_has_subscript_put_them_to_g
-	@if_has_superscript_put_them_to_g
+	@if_has_subscript_stack_with_g
+	@if_has_superscript_stack_with_g
+
+	@put_col_spacer_to_g
 	return g
 
+@put_col_spacer_to_g+=
+local col_spacer = grid:new(1, 1, { " " })
+if g then
+	g = g:join_hori(col_spacer)
+end
+
+@transform_function_into_ascii+=
 elseif name == "iint" then
 	local g = grid:new(1, 1, { "∬" })
 
 	@if_has_both_subscript_and_superscript_stack
-	@if_has_subscript_put_them_to_g
-	@if_has_superscript_put_them_to_g
+	@if_has_subscript_stack_with_g
+	@if_has_superscript_stack_with_g
+	@put_col_spacer_to_g
 	return g
 
 elseif name == "iiint" then
 	local g = grid:new(1, 1, { "∭" })
 
 	@if_has_both_subscript_and_superscript_stack
-	@if_has_subscript_put_them_to_g
-	@if_has_superscript_put_them_to_g
+	@if_has_subscript_stack_with_g
+	@if_has_superscript_stack_with_g
+	@put_col_spacer_to_g
 	return g
 
 elseif name == "oint" then
 	local g = grid:new(1, 1, { "∮" })
 
 	@if_has_both_subscript_and_superscript_stack
-	@if_has_subscript_put_them_to_g
-	@if_has_superscript_put_them_to_g
+	@if_has_subscript_stack_with_g
+	@if_has_superscript_stack_with_g
+	@put_col_spacer_to_g
 	return g
 
 elseif name == "oiint" then
 	local g = grid:new(1, 1, { "∯" })
 
 	@if_has_both_subscript_and_superscript_stack
-	@if_has_subscript_put_them_to_g
-	@if_has_superscript_put_them_to_g
+	@if_has_subscript_stack_with_g
+	@if_has_superscript_stack_with_g
+	@put_col_spacer_to_g
 	return g
 
 elseif name == "oiiint" then
 	local g = grid:new(1, 1, { "∰" })
 
 	@if_has_both_subscript_and_superscript_stack
-	@if_has_subscript_put_them_to_g
-	@if_has_superscript_put_them_to_g
+	@if_has_subscript_stack_with_g
+	@if_has_superscript_stack_with_g
+	@put_col_spacer_to_g
 	return g
 
 elseif name == "sum" then
 	local g = grid:new(1, 1, { "∑" })
 
 	@if_has_both_subscript_and_superscript_stack
-	@if_has_subscript_put_them_to_g
-	@if_has_superscript_put_them_to_g
+	@if_has_subscript_stack_with_g
+	@if_has_superscript_stack_with_g
+	@put_col_spacer_to_g
 	return g
 
 elseif name == "prod" then
 	local g = grid:new(1, 1, { "∏" })
 
 	@if_has_both_subscript_and_superscript_stack
-	@if_has_subscript_put_them_to_g
-	@if_has_superscript_put_them_to_g
+	@if_has_subscript_stack_with_g
+	@if_has_superscript_stack_with_g
+	@put_col_spacer_to_g
 	return g
 
 @special_symbols+=
@@ -1314,3 +1330,31 @@ end
 ["rightarrow"] = "→",
 ["implies"] = "→",
 ["leftarrow"] = "⭠",
+["ast"] = "∗",
+
+@transform_function_into_ascii+=
+elseif name == "lim" then
+	local g = grid:new(3, 1, { "lim" })
+
+	@if_has_subscript_stack_with_g
+	@put_col_spacer_to_g
+	return g
+
+@if_has_subscript_stack_with_g+=
+if exp.sub and not exp.sup then
+	local my = g.my
+	local subgrid = to_ascii(exp.sub)
+	g = g:join_vert(subgrid)
+	g.my = my
+end
+
+@if_has_superscript_stack_with_g+=
+if exp.sup and not exp.sub then
+	local my = g.my
+	local supgrid = to_ascii(exp.sup)
+	g = g:join_vert(supgrid)
+	g.my = my + supgrid.h
+end
+
+@special_symbols+=
+["partial"] = "∂",
