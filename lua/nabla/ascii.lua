@@ -769,6 +769,35 @@ local function to_ascii(exp)
 			return grid:new(utf8len(sym), 1, { sym })
 		
 		
+		elseif name == "sqrt" then
+			assert(#exp.args == 1, "sqrt must have 2 arguments")
+			local toroot = to_ascii(exp.args[1].exps[1])
+		
+			local left_content = {}
+			for y=1,toroot.h do 
+				if y < toroot.h then
+					table.insert(left_content, " " .. style.root_vert_bar)
+				else
+					table.insert(left_content, style.root_bottom .. style.root_vert_bar)
+				end
+			end
+			
+			local left_root = grid:new(2, toroot.h, left_content)
+			left_root.my = toroot.my
+			
+			local up_str = " " .. style.root_upper_left
+			for x=1,toroot.w do
+				up_str = up_str .. style.root_upper
+			end
+			up_str = up_str .. style.root_upper_right
+			
+			local top_root = grid:new(toroot.w+2, 1, { up_str })
+			
+		
+			local res = left_root:join_hori(toroot)
+			res = top_root:join_vert(res)
+			res.my = top_root.h + toroot.my
+			return res
 		else
 			return grid:new(utf8len(name), 1, { name })
 		end
@@ -866,6 +895,7 @@ local function to_ascii(exp)
 		end
 		
 		return g
+	
 	else
 		return nil
 	end

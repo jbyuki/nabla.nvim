@@ -1187,3 +1187,15 @@ elseif exp.kind == "parexp" then
 	@if_has_subscript_put_them_to_g
 	@if_has_superscript_put_them_to_g
 	return g
+
+@transform_function_into_ascii+=
+elseif name == "sqrt" then
+	assert(#exp.args == 1, "sqrt must have 2 arguments")
+	local toroot = to_ascii(exp.args[1].exps[1])
+
+	@make_root_symbols
+
+	local res = left_root:join_hori(toroot)
+	res = top_root:join_vert(res)
+	res.my = top_root.h + toroot.my
+	return res
