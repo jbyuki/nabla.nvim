@@ -10,7 +10,6 @@ return M
 function M.parse_all(str)
 	@init_parser
 	local exp = parse()
-	print(vim.inspect(exp))
 	return exp
 end
 
@@ -122,7 +121,11 @@ local exp = {
 @if_backslash_parse_special_symbols+=
 elseif string.match(getc(), "\\") then
 	nextc()
-	local sym = parse_symbol()
+	local sym
+	@if_space_parse_as_single_space
+	else
+		sym = parse_symbol()
+	end
 	local args = {}
 	while not finish() and string.match(getc(), '{') do
 		nextc()
@@ -224,3 +227,11 @@ if sym.sym == "begin" then
 elseif sym.sym == "end" then
 	return explist
 end
+
+@if_space_parse_as_single_space+=
+if getc() == " " then
+	sym = {
+		kind = "symexp",
+		sym = " ",
+	}
+	nextc()

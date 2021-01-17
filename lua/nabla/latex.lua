@@ -18,7 +18,6 @@ function M.parse_all(str)
 	ptr = 1
 	
 	local exp = parse()
-	print(vim.inspect(exp))
 	return exp
 end
 
@@ -54,7 +53,16 @@ function parse()
 		
 		elseif string.match(getc(), "\\") then
 			nextc()
-			local sym = parse_symbol()
+			local sym
+			if getc() == " " then
+				sym = {
+					kind = "symexp",
+					sym = " ",
+				}
+				nextc()
+			else
+				sym = parse_symbol()
+			end
 			local args = {}
 			while not finish() and string.match(getc(), '{') do
 				nextc()
@@ -78,6 +86,7 @@ function parse()
 			elseif sym.sym == "end" then
 				return explist
 			end
+			
 		
 		elseif string.match(getc(), "%a") then
 			exp = parse_symbol()

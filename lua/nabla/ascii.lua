@@ -109,6 +109,9 @@ local special_syms = {
 	["mp"] = "∓",
 	["to"] = "→",
 	
+	["rightarrow"] = "→",
+	["implies"] = "→",
+	["leftarrow"] = "⭠",
 }
 
 local grid = {}
@@ -756,11 +759,7 @@ local function to_ascii(exp)
 		local res
 		for _, exp_el in ipairs(exp.exps) do
 			local exp_grid = to_ascii(exp_el)
-			local col_spacer = grid:new(1, 1, { " " })
-			if res then
-				res = res:join_hori(col_spacer)
-			end
-			
+			-- @put_horizontal_spacer
 			if not res then
 				res = exp_grid
 			else
@@ -838,6 +837,7 @@ local function to_ascii(exp)
 				g = g:join_vert(subgrid)
 				g.my = my + supgrid.h
 			end
+			
 			if exp.sub and not exp.sup then 
 				local subscript = ""
 				local subexps = exp.sub.exps
@@ -943,6 +943,7 @@ local function to_ascii(exp)
 				g = g:join_vert(subgrid)
 				g.my = my + supgrid.h
 			end
+			
 			if exp.sub and not exp.sup then 
 				local subscript = ""
 				local subexps = exp.sub.exps
@@ -1048,6 +1049,7 @@ local function to_ascii(exp)
 				g = g:join_vert(subgrid)
 				g.my = my + supgrid.h
 			end
+			
 			if exp.sub and not exp.sup then 
 				local subscript = ""
 				local subexps = exp.sub.exps
@@ -1153,6 +1155,7 @@ local function to_ascii(exp)
 				g = g:join_vert(subgrid)
 				g.my = my + supgrid.h
 			end
+			
 			if exp.sub and not exp.sup then 
 				local subscript = ""
 				local subexps = exp.sub.exps
@@ -1258,6 +1261,7 @@ local function to_ascii(exp)
 				g = g:join_vert(subgrid)
 				g.my = my + supgrid.h
 			end
+			
 			if exp.sub and not exp.sup then 
 				local subscript = ""
 				local subexps = exp.sub.exps
@@ -1363,6 +1367,7 @@ local function to_ascii(exp)
 				g = g:join_vert(subgrid)
 				g.my = my + supgrid.h
 			end
+			
 			if exp.sub and not exp.sup then 
 				local subscript = ""
 				local subexps = exp.sub.exps
@@ -1468,6 +1473,7 @@ local function to_ascii(exp)
 				g = g:join_vert(subgrid)
 				g.my = my + supgrid.h
 			end
+			
 			if exp.sub and not exp.sup then 
 				local subscript = ""
 				local subexps = exp.sub.exps
@@ -1573,6 +1579,7 @@ local function to_ascii(exp)
 				g = g:join_vert(subgrid)
 				g.my = my + supgrid.h
 			end
+			
 			if exp.sub and not exp.sup then 
 				local subscript = ""
 				local subexps = exp.sub.exps
@@ -1682,6 +1689,7 @@ local function to_ascii(exp)
 			g = g:join_vert(subgrid)
 			g.my = my + supgrid.h
 		end
+		
 		if exp.sub and not exp.sup then 
 			local subscript = ""
 			local subexps = exp.sub.exps

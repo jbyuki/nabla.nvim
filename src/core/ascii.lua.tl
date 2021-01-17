@@ -956,7 +956,7 @@ elseif exp.kind == "explist" then
 	local res
 	for _, exp_el in ipairs(exp.exps) do
 		local exp_grid = to_ascii(exp_el)
-		@put_horizontal_spacer
+		-- @put_horizontal_spacer
 		if not res then
 			res = exp_grid
 		else
@@ -1309,3 +1309,8 @@ if exp.sub and exp.sup then
 	g = g:join_vert(subgrid)
 	g.my = my + supgrid.h
 end
+
+@special_symbols+=
+["rightarrow"] = "→",
+["implies"] = "→",
+["leftarrow"] = "⭠",
