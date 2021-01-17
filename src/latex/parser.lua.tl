@@ -10,6 +10,7 @@ return M
 function M.parse_all(str)
 	@init_parser
 	local exp = parse()
+	print(vim.inspect(exp))
 	return exp
 end
 

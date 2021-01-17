@@ -18,6 +18,7 @@ function M.parse_all(str)
 	ptr = 1
 	
 	local exp = parse()
+	print(vim.inspect(exp))
 	return exp
 end
 

@@ -340,6 +340,7 @@ elseif exp.kind == "symexp" then
 		-- sym = special_syms[sym]
 	-- end
 	local g = grid:new(utf8len(sym), 1, { sym })
+	@if_has_both_subscript_and_superscript_put_aside
 	@if_has_subscript_put_them_to_g
 	@if_has_superscript_put_them_to_g
 	return g
@@ -449,7 +450,7 @@ local int_bar = grid:new(1, integrand.h+1, int_content)
 local col_spacer = grid:new(1, 1, { " " })
 
 @special_symbols+=
-["inf"] = "∞",
+["infty"] = "∞",
 
 @style_variables+=
 prefix_minus_sign = "‐",
@@ -1017,7 +1018,7 @@ elseif special_syms[name] then
 ["cong"] = "≥",
 
 @if_has_subscript_put_them_to_g+=
-if exp.sub then 
+if exp.sub and not exp.sup then 
 	local subscript = ""
 	@try_to_make_subscript_expression
 	if subscript and string.len(subscript) > 0 then
@@ -1106,7 +1107,7 @@ local subgrid = to_ascii(exp.sub)
 g = g:combine_sub(subgrid)
 
 @if_has_superscript_put_them_to_g+=
-if exp.sup then 
+if exp.sup and not exp.sub then 
 	local superscript = ""
 	@try_to_make_superscript_expression
 	if superscript and string.len(superscript) > 0 then
@@ -1181,9 +1182,14 @@ end
 local sup_g = grid:new(utf8len(superscript), 1, { superscript })
 g = g:join_hori(sup_g, true)
 
+@combine_superscript_diagonally+=
+local supgrid = to_ascii(exp.sup)
+g = g:join_super(supgrid)
+
 @transform_exp_to_grid+=
 elseif exp.kind == "parexp" then
 	local g = to_ascii(exp.exp):enclose_paren()
+	@if_has_both_subscript_and_superscript_stack
 	@if_has_subscript_put_them_to_g
 	@if_has_superscript_put_them_to_g
 	return g
@@ -1199,3 +1205,107 @@ elseif name == "sqrt" then
 	res = top_root:join_vert(res)
 	res.my = top_root.h + toroot.my
 	return res
+
+@transform_function_into_ascii+=
+elseif name == "int" then
+	local g = grid:new(1, 1, { "∫" })
+
+	@if_has_both_subscript_and_superscript_stack
+	@if_has_subscript_put_them_to_g
+	@if_has_superscript_put_them_to_g
+	return g
+
+elseif name == "iint" then
+	local g = grid:new(1, 1, { "∬" })
+
+	@if_has_both_subscript_and_superscript_stack
+	@if_has_subscript_put_them_to_g
+	@if_has_superscript_put_them_to_g
+	return g
+
+elseif name == "iiint" then
+	local g = grid:new(1, 1, { "∭" })
+
+	@if_has_both_subscript_and_superscript_stack
+	@if_has_subscript_put_them_to_g
+	@if_has_superscript_put_them_to_g
+	return g
+
+elseif name == "oint" then
+	local g = grid:new(1, 1, { "∮" })
+
+	@if_has_both_subscript_and_superscript_stack
+	@if_has_subscript_put_them_to_g
+	@if_has_superscript_put_them_to_g
+	return g
+
+elseif name == "oiint" then
+	local g = grid:new(1, 1, { "∯" })
+
+	@if_has_both_subscript_and_superscript_stack
+	@if_has_subscript_put_them_to_g
+	@if_has_superscript_put_them_to_g
+	return g
+
+elseif name == "oiiint" then
+	local g = grid:new(1, 1, { "∰" })
+
+	@if_has_both_subscript_and_superscript_stack
+	@if_has_subscript_put_them_to_g
+	@if_has_superscript_put_them_to_g
+	return g
+
+elseif name == "sum" then
+	local g = grid:new(1, 1, { "∑" })
+
+	@if_has_both_subscript_and_superscript_stack
+	@if_has_subscript_put_them_to_g
+	@if_has_superscript_put_them_to_g
+	return g
+
+elseif name == "prod" then
+	local g = grid:new(1, 1, { "∏" })
+
+	@if_has_both_subscript_and_superscript_stack
+	@if_has_subscript_put_them_to_g
+	@if_has_superscript_put_them_to_g
+	return g
+
+@special_symbols+=
+["pm"] = "±",
+["mp"] = "∓",
+["to"] = "→",
+
+@if_has_both_subscript_and_superscript_put_aside+=
+if exp.sub and exp.sup then 
+	local subgrid = to_ascii(exp.sub)
+	local supgrid = to_ascii(exp.sup)
+	g = g:join_sub_sup(subgrid, supgrid)
+end
+
+@declare_functions+=
+local join_sub_sup
+
+@grid_prototype+=
+function grid:join_sub_sup(sub, sup)
+	local upper_spacer = grid:new(self.w, sup.h)
+	local middle_spacer = grid:new(math.max(sub.w, sup.w), self.h)
+
+	local right = sub:join_vert(middle_spacer, true)
+	right = right:join_vert(sup, true)
+
+	local left = upper_spacer:join_vert(self, true)
+	local res = left:join_hori(right, true)
+	res.my = self.my + sup.h
+	return res
+end
+
+@if_has_both_subscript_and_superscript_stack+=
+if exp.sub and exp.sup then 
+	local subgrid = to_ascii(exp.sub)
+	local supgrid = to_ascii(exp.sup)
+	local my = g.my
+	g = supgrid:join_vert(g)
+	g = g:join_vert(subgrid)
+	g.my = my + supgrid.h
+end
