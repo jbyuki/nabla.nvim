@@ -7,6 +7,12 @@ local ascii = require("nabla.ascii")
 local vtext = vim.api.nvim_create_namespace("nabla")
 
 
+local remove_extmark
+
+function remove_extmark(events, ns_id)
+  vim.api.nvim_command("autocmd "..table.concat(events, ',').." <buffer> ++once lua pcall(vim.api.nvim_buf_clear_namespace, 0, "..ns_id..", 0, -1)")
+end
+
 
 
 local function init()
@@ -128,6 +134,7 @@ local function replace_all()
 				for _, newline in ipairs(drawing) do
 					table.insert(result, newline)
 				end
+				
 			else
 				if type(errmsg) == "string"  then
 					print("nabla error: " .. errmsg)
@@ -141,6 +148,64 @@ local function replace_all()
 	
 end
 
+local function draw_overlay()
+	local line = vim.api.nvim_get_current_line()
+	
+	local exp = parser.parse_all(line)
+	
+	if exp then
+		local g = ascii.to_ascii(exp)
+		local drawing = {}
+		for row in vim.gsplit(tostring(g), "\n") do
+			table.insert(drawing, row)
+		end
+		if whitespace then
+			for i=1,#drawing do
+				drawing[i] = whitespace .. drawing[i]
+			end
+		end
+		
+		
+		local curline, _ = unpack(vim.api.nvim_win_get_cursor(0))
+		local num_lines = vim.api.nvim_buf_line_count(0)
+		for i=2,#drawing do
+		  local lnum = curline + (i-1)
+		  if lnum > num_lines then
+		    vim.api.nvim_buf_set_lines(0, -1, -1, true, { "" })
+		  else
+		    local line = vim.api.nvim_buf_get_lines(0, lnum-1, lnum, true)[1]
+		    if line ~= "" then
+		      vim.api.nvim_buf_set_lines(0, lnum-1, lnum-1, true, { "" })
+		    end
+		  end
+		end
+		
+    local ns_id = vim.api.nvim_create_namespace("")
+    
+    local line = vim.api.nvim_get_current_line()
+    local spaces = ""
+    local len = vim.str_utfindex(line)
+    for i=1,len do
+      spaces = spaces .. " "
+    end
+    
+    for i=1,#drawing do
+      vim.api.nvim_buf_set_extmark(0, ns_id, (curline-1)+(i-1), 0, {
+        virt_text = {{drawing[i], "Visual"}, {spaces, "Normal"}},
+        virt_text_pos = "overlay",
+      })
+    end
+    
+    remove_extmark({"CursorMoved", "CursorMovedI", "BufHidden", "BufLeave"}, ns_id)
+	else
+		if type(errmsg) == "string"  then
+			print("nabla error: " .. errmsg)
+		else
+			print("nabla error!")
+		end
+	end
+end
+
 
 return {
 	init = init,
@@ -148,6 +213,8 @@ return {
 	replace_current = replace_current,
 	
 	replace_all = replace_all,
+	
+	draw_overlay = draw_overlay,
 	
 }
 

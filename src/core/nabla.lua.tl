@@ -13,6 +13,7 @@
 @init_nabla_mode
 @replace_current_line
 @replace_all_lines
+@place_virt_with_ascii_expression
 
 return {
 	@export_symbols
@@ -186,3 +187,67 @@ table.insert(result, "")
 for _, newline in ipairs(drawing) do
 	table.insert(result, newline)
 end
+
+@place_virt_with_ascii_expression+=
+local function draw_overlay()
+	@get_current_line
+	@parse_math_expression
+	if exp then
+		@generate_ascii_art
+		@add_some_additionnal_lines_if_not_enough
+    @place_extmarks_with_ascii_art
+    @add_callback_to_clear_extmark_if_cursor_moved
+	else
+		if type(errmsg) == "string"  then
+			print("nabla error: " .. errmsg)
+		else
+			print("nabla error!")
+		end
+	end
+end
+
+@export_symbols+=
+draw_overlay = draw_overlay,
+
+@add_some_additionnal_lines_if_not_enough+=
+local curline, _ = unpack(vim.api.nvim_win_get_cursor(0))
+local num_lines = vim.api.nvim_buf_line_count(0)
+for i=2,#drawing do
+  local lnum = curline + (i-1)
+  if lnum > num_lines then
+    vim.api.nvim_buf_set_lines(0, -1, -1, true, { "" })
+  else
+    local line = vim.api.nvim_buf_get_lines(0, lnum-1, lnum, true)[1]
+    if line ~= "" then
+      vim.api.nvim_buf_set_lines(0, lnum-1, lnum-1, true, { "" })
+    end
+  end
+end
+
+@place_extmarks_with_ascii_art+=
+local ns_id = vim.api.nvim_create_namespace("")
+
+local line = vim.api.nvim_get_current_line()
+local spaces = ""
+local len = vim.str_utfindex(line)
+for i=1,len do
+  spaces = spaces .. " "
+end
+
+for i=1,#drawing do
+  vim.api.nvim_buf_set_extmark(0, ns_id, (curline-1)+(i-1), 0, {
+    virt_text = {{drawing[i], "Visual"}, {spaces, "Normal"}},
+    virt_text_pos = "overlay",
+  })
+end
+
+@declare_functions+=
+local remove_extmark
+
+@functions+=
+function remove_extmark(events, ns_id)
+  vim.api.nvim_command("autocmd "..table.concat(events, ',').." <buffer> ++once lua pcall(vim.api.nvim_buf_clear_namespace, 0, "..ns_id..", 0, -1)")
+end
+
+@add_callback_to_clear_extmark_if_cursor_moved+=
+remove_extmark({"CursorMoved", "CursorMovedI", "BufHidden", "BufLeave"}, ns_id)

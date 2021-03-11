@@ -25,6 +25,14 @@ For example to bind it to <kbd>F5</kbd>:
 nnoremap <F5> :lua require("nabla").replace_current()<CR>
 ```
 
+or
+
+```
+nnoremap <F5> :lua require("nabla").draw_overlay()<CR>
+```
+
+The latter draws the formulas as a virtual text overlay.
+
 Usage
 -----
 

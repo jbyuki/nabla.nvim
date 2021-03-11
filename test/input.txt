@@ -14,17 +14,26 @@ a^2 + b^2 + c^2
 
 f_a(\frac{2}{x})
 
+
 \sum_i^{\infty} x_i^2
+
 
 \alpha_{\omega}(x)
 
 \begin{matrix} x^2 & a_H // \frac{1}{2} & d^2 \end{matrix}
 
+
+
+
+
 \int_0^{\infty} \frac{1}{x} dx
+
 
 \frac{dx}{df(x)} + \frac{dy}{df(y)} = 2
 
+
 \frac{\partial x}{\partial f(x)} + \frac{\partial y}{\partial f(y)} = 2
+
 
 \delta (x) = 2
 
