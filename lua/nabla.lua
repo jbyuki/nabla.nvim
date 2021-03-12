@@ -31,9 +31,9 @@ local function init()
 				
 				for y, line in ipairs(lines) do
 					if line ~= "" then
-						local exp = pcall(parser.parse_all, line)
+						local success, exp = pcall(parser.parse_all, line)
 						
-						if exp then
+						if success and exp then
 							local g = ascii.to_ascii(exp)
 							local drawing = {}
 							for row in vim.gsplit(tostring(g), "\n") do
@@ -78,9 +78,9 @@ local function replace_current()
 	
 	local whitespace = string.match(line, "^(%s*)%S")
 	
-	local exp = pcall(parser.parse_all, line)
+	local success, exp = pcall(parser.parse_all, line)
 	
-	if exp then
+	if success and exp then
 		local g = ascii.to_ascii(exp)
 		local drawing = {}
 		for row in vim.gsplit(tostring(g), "\n") do
@@ -116,9 +116,9 @@ local function replace_all()
 		else
 			local whitespace = string.match(line, "^(%s*)%S")
 			
-			local exp = pcall(parser.parse_all, line)
+			local success, exp = pcall(parser.parse_all, line)
 			
-			if exp then
+			if success and exp then
 				local g = ascii.to_ascii(exp)
 				local drawing = {}
 				for row in vim.gsplit(tostring(g), "\n") do
@@ -151,9 +151,9 @@ end
 local function draw_overlay()
 	local line = vim.api.nvim_get_current_line()
 	
-	local exp = pcall(parser.parse_all, line)
+	local success, exp = pcall(parser.parse_all, line)
 	
-	if exp then
+	if success and exp then
 		local g = ascii.to_ascii(exp)
 		local drawing = {}
 		for row in vim.gsplit(tostring(g), "\n") do

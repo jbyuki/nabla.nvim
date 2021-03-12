@@ -70,7 +70,7 @@ local lines = vim.api.nvim_buf_get_lines(buf, 0, -1, true)
 for y, line in ipairs(lines) do
 	if line ~= "" then
 		@parse_math_expression
-		if exp then
+		if success and exp then
 			@generate_ascii_art
 			@display_in_scratch_buffer
 		else
@@ -84,7 +84,7 @@ end
 local parser = require("nabla.latex")
 
 @parse_math_expression+=
-local exp = pcall(parser.parse_all, line)
+local success, exp = pcall(parser.parse_all, line)
 
 @script_variables+=
 local vtext = vim.api.nvim_create_namespace("nabla")
@@ -114,7 +114,7 @@ local function replace_current()
 	@get_current_line
 	@get_whilespace_before
 	@parse_math_expression
-	if exp then
+	if success and exp then
 		@generate_ascii_art
 		@replace_current_line_with_ascii_art
 	else
@@ -156,7 +156,7 @@ local function replace_all()
 		else
 			@get_whilespace_before
 			@parse_math_expression
-			if exp then
+			if success and exp then
 				@generate_ascii_art
 				@add_generated_to_result
 			else
@@ -192,7 +192,7 @@ end
 local function draw_overlay()
 	@get_current_line
 	@parse_math_expression
-	if exp then
+	if success and exp then
 		@generate_ascii_art
 		@add_some_additionnal_lines_if_not_enough
     @place_extmarks_with_ascii_art
