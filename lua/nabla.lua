@@ -31,7 +31,7 @@ local function init()
 				
 				for y, line in ipairs(lines) do
 					if line ~= "" then
-						local exp = parser.parse_all(line)
+						local exp = pcall(parser.parse_all, line)
 						
 						if exp then
 							local g = ascii.to_ascii(exp)
@@ -78,7 +78,7 @@ local function replace_current()
 	
 	local whitespace = string.match(line, "^(%s*)%S")
 	
-	local exp = parser.parse_all(line)
+	local exp = pcall(parser.parse_all, line)
 	
 	if exp then
 		local g = ascii.to_ascii(exp)
@@ -116,7 +116,7 @@ local function replace_all()
 		else
 			local whitespace = string.match(line, "^(%s*)%S")
 			
-			local exp = parser.parse_all(line)
+			local exp = pcall(parser.parse_all, line)
 			
 			if exp then
 				local g = ascii.to_ascii(exp)
@@ -151,7 +151,7 @@ end
 local function draw_overlay()
 	local line = vim.api.nvim_get_current_line()
 	
-	local exp = parser.parse_all(line)
+	local exp = pcall(parser.parse_all, line)
 	
 	if exp then
 		local g = ascii.to_ascii(exp)
@@ -191,7 +191,7 @@ local function draw_overlay()
     
     for i=1,#drawing do
       vim.api.nvim_buf_set_extmark(0, ns_id, (curline-1)+(i-1), 0, {
-        virt_text = {{drawing[i], "Visual"}, {spaces, "Normal"}},
+        virt_text = {{drawing[i], "Normal"}, {spaces, "Normal"}},
         virt_text_pos = "overlay",
       })
     end

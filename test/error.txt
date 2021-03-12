@@ -1,0 +1,1 @@
+\int_{\alpha}^{\beta} f(x) \,dx

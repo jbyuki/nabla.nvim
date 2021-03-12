@@ -84,7 +84,7 @@ end
 local parser = require("nabla.latex")
 
 @parse_math_expression+=
-local exp = parser.parse_all(line)
+local exp = pcall(parser.parse_all, line)
 
 @script_variables+=
 local vtext = vim.api.nvim_create_namespace("nabla")
@@ -236,7 +236,7 @@ end
 
 for i=1,#drawing do
   vim.api.nvim_buf_set_extmark(0, ns_id, (curline-1)+(i-1), 0, {
-    virt_text = {{drawing[i], "Visual"}, {spaces, "Normal"}},
+    virt_text = {{drawing[i], "Normal"}, {spaces, "Normal"}},
     virt_text_pos = "overlay",
   })
 end

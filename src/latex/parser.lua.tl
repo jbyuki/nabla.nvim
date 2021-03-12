@@ -229,6 +229,9 @@ elseif sym.sym == "end" then
 	return explist
 end
 
+@o+=
+local
+
 @if_space_parse_as_single_space+=
 if getc() == " " then
 	sym = {
