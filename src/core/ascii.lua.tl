@@ -1409,8 +1409,8 @@ function grid:join_sub_sup(sub, sup)
 	local upper_spacer = grid:new(self.w, sup.h)
 	local middle_spacer = grid:new(math.max(sub.w, sup.w), self.h)
 
-	local right = sub:join_vert(middle_spacer, true)
-	right = right:join_vert(sup, true)
+	local right = sup:join_vert(middle_spacer, true)
+	right = right:join_vert(sub, true)
 
 	local left = upper_spacer:join_vert(self, true)
 	local res = left:join_hori(right, true)
