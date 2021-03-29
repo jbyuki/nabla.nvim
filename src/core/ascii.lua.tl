@@ -1382,11 +1382,11 @@ elseif name == "prod" then
 @if_has_both_subscript_and_superscript_put_aside+=
 if exp.sub and exp.sup then 
 	local subscript = ""
-	local subexps = exp.sup.exps
+	local subexps = exp.sub.exps
 	@try_to_make_subscript_expression
 
 	local superscript = ""
-	local supexps = exp.sub.exps
+	local supexps = exp.sup.exps
 	@try_to_make_superscript_expression
 
 	if subscript and superscript then

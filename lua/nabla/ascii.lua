@@ -401,7 +401,7 @@ local function to_ascii(exp)
 	
 		if exp.sub and exp.sup then 
 			local subscript = ""
-			local subexps = exp.sup.exps
+			local subexps = exp.sub.exps
 			for _, exp in ipairs(subexps) do
 				if exp.kind == "numexp" and math.floor(exp.num) == exp.num then
 					local num = exp.num
@@ -436,7 +436,7 @@ local function to_ascii(exp)
 			
 		
 			local superscript = ""
-			local supexps = exp.sub.exps
+			local supexps = exp.sup.exps
 			for _, exp in ipairs(supexps) do
 				if exp.kind == "numexp" and math.floor(exp.num) == exp.num then
 					local num = exp.num
@@ -728,7 +728,7 @@ local function to_ascii(exp)
 		local g = grid:new(utf8len(sym), 1, { sym })
 		if exp.sub and exp.sup then 
 			local subscript = ""
-			local subexps = exp.sup.exps
+			local subexps = exp.sub.exps
 			for _, exp in ipairs(subexps) do
 				if exp.kind == "numexp" and math.floor(exp.num) == exp.num then
 					local num = exp.num
@@ -763,7 +763,7 @@ local function to_ascii(exp)
 			
 		
 			local superscript = ""
-			local supexps = exp.sub.exps
+			local supexps = exp.sup.exps
 			for _, exp in ipairs(supexps) do
 				if exp.kind == "numexp" and math.floor(exp.num) == exp.num then
 					local num = exp.num
@@ -1256,7 +1256,7 @@ local function to_ascii(exp)
 			local g = grid:new(utf8len(sym), 1, { sym })
 			if exp.sub and exp.sup then 
 				local subscript = ""
-				local subexps = exp.sup.exps
+				local subexps = exp.sub.exps
 				for _, exp in ipairs(subexps) do
 					if exp.kind == "numexp" and math.floor(exp.num) == exp.num then
 						local num = exp.num
@@ -1291,7 +1291,7 @@ local function to_ascii(exp)
 				
 			
 				local superscript = ""
-				local supexps = exp.sub.exps
+				local supexps = exp.sup.exps
 				for _, exp in ipairs(supexps) do
 					if exp.kind == "numexp" and math.floor(exp.num) == exp.num then
 						local num = exp.num
@@ -1845,7 +1845,7 @@ local function to_ascii(exp)
 		local g = to_ascii(exp.exp):enclose_paren()
 		if exp.sub and exp.sup then 
 			local subscript = ""
-			local subexps = exp.sup.exps
+			local subexps = exp.sub.exps
 			for _, exp in ipairs(subexps) do
 				if exp.kind == "numexp" and math.floor(exp.num) == exp.num then
 					local num = exp.num
@@ -1880,7 +1880,7 @@ local function to_ascii(exp)
 			
 		
 			local superscript = ""
-			local supexps = exp.sub.exps
+			local supexps = exp.sup.exps
 			for _, exp in ipairs(supexps) do
 				if exp.kind == "numexp" and math.floor(exp.num) == exp.num then
 					local num = exp.num
