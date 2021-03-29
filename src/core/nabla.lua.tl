@@ -4,6 +4,7 @@
 @script_variables
 @expressions
 @tokens
+@define_signs
 
 @declare_functions
 @functions
@@ -111,6 +112,7 @@ vim.api.nvim_buf_set_lines(scratch, -1, -1, true, drawing)
 
 @replace_current_line+=
 local function replace_current()
+  local line
 	@get_current_line
 	@get_whilespace_before
 	@parse_math_expression
@@ -130,7 +132,7 @@ end
 replace_current = replace_current,
 
 @get_current_line+=
-local line = vim.api.nvim_get_current_line()
+line = vim.api.nvim_get_current_line()
 
 @replace_current_line_with_ascii_art+=
 local curline, _ = unpack(vim.api.nvim_win_get_cursor(0))
@@ -190,6 +192,7 @@ end
 
 @place_virt_with_ascii_expression+=
 local function draw_overlay()
+  local line
 	@get_current_line
 	@parse_math_expression
 	if success and exp then
