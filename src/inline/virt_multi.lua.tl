@@ -65,7 +65,6 @@ end
 
 @colorize_ascii_art+=
 local ns_id = vim.api.nvim_create_namespace("")
-print("Color!")
 colorize(g, 0, 0, ns_id, drawing, 0, row)
 
 @script_variables+=

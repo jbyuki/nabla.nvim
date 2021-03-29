@@ -100,7 +100,11 @@ vim.api.nvim_buf_set_virtual_text(buf, vtext, y-1, {{ vim.inspect(errmsg), "Spec
 local ascii = require("nabla.ascii")
 
 @generate_ascii_art+=
-local g = ascii.to_ascii(exp)
+local succ, g = pcall(ascii.to_ascii, exp)
+if not succ then
+  return 0
+end
+
 local drawing = {}
 for row in vim.gsplit(tostring(g), "\n") do
 	table.insert(drawing, row)

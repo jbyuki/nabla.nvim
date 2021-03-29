@@ -87,16 +87,16 @@ local function attach()
   end
 
   vim.api.nvim_buf_attach(0, false, {
-    on_lines = function(_, _, firstline, new_lastline, lastline, _)
+    on_lines = function(_, _, _, firstline, lastline, new_lastline, _)
+      local ns_id = extmarks[buf]
+      local found
+      if ns_id then
+        -- I could optimise to retrieve only for the deleted range
+        -- in the future
+        found = vim.api.nvim_buf_get_extmarks(buf, ns_id, 0, -1, {})
+      end
+      
       if new_lastline < lastline then
-        local ns_id = extmarks[buf]
-        local found
-        if ns_id then
-          -- I could optimise to retrieve only for the deleted range
-          -- in the future
-          found = vim.api.nvim_buf_get_extmarks(buf, ns_id, 0, -1, {})
-        end
-        
         if found then
           for _, extmark in ipairs(found) do
             local id, row, col = unpack(extmark)
@@ -135,7 +135,11 @@ function place_inline(lnum)
 	local success, exp = pcall(parser.parse_all, line)
 	
 	if success and exp then
-		local g = ascii.to_ascii(exp)
+		local succ, g = pcall(ascii.to_ascii, exp)
+		if not succ then
+		  return 0
+		end
+		
 		local drawing = {}
 		for row in vim.gsplit(tostring(g), "\n") do
 			table.insert(drawing, row)
@@ -183,7 +187,6 @@ function place_inline(lnum)
     end
     
     local ns_id = vim.api.nvim_create_namespace("")
-    print("Color!")
     colorize(g, 0, 0, ns_id, drawing, 0, row)
     
 
@@ -254,7 +257,11 @@ local function init()
 						local success, exp = pcall(parser.parse_all, line)
 						
 						if success and exp then
-							local g = ascii.to_ascii(exp)
+							local succ, g = pcall(ascii.to_ascii, exp)
+							if not succ then
+							  return 0
+							end
+							
 							local drawing = {}
 							for row in vim.gsplit(tostring(g), "\n") do
 								table.insert(drawing, row)
@@ -302,7 +309,11 @@ local function replace_current()
 	local success, exp = pcall(parser.parse_all, line)
 	
 	if success and exp then
-		local g = ascii.to_ascii(exp)
+		local succ, g = pcall(ascii.to_ascii, exp)
+		if not succ then
+		  return 0
+		end
+		
 		local drawing = {}
 		for row in vim.gsplit(tostring(g), "\n") do
 			table.insert(drawing, row)
@@ -340,7 +351,11 @@ local function replace_all()
 			local success, exp = pcall(parser.parse_all, line)
 			
 			if success and exp then
-				local g = ascii.to_ascii(exp)
+				local succ, g = pcall(ascii.to_ascii, exp)
+				if not succ then
+				  return 0
+				end
+				
 				local drawing = {}
 				for row in vim.gsplit(tostring(g), "\n") do
 					table.insert(drawing, row)
@@ -376,7 +391,11 @@ local function draw_overlay()
 	local success, exp = pcall(parser.parse_all, line)
 	
 	if success and exp then
-		local g = ascii.to_ascii(exp)
+		local succ, g = pcall(ascii.to_ascii, exp)
+		if not succ then
+		  return 0
+		end
+		
 		local drawing = {}
 		for row in vim.gsplit(tostring(g), "\n") do
 			table.insert(drawing, row)

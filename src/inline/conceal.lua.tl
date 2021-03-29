@@ -7,9 +7,9 @@ local function attach()
   @run_place_inline_on_every_line
 
   vim.api.nvim_buf_attach(0, false, {
-    on_lines = function(_, _, firstline, new_lastline, lastline, _)
+    on_lines = function(_, _, _, firstline, lastline, new_lastline, _)
+      @get_extmarks_for_buffer
       @change_delete_extmark_behaviour
-      @regenerate_ascii_if_modify_formula
     end
   })
 end
@@ -23,7 +23,6 @@ vim.api.nvim_command([[set conceallevel=2]])
 
 @change_delete_extmark_behaviour+=
 if new_lastline < lastline then
-  @get_extmarks_for_buffer
   @if_there_are_extmarks_in_range_delete_them
 end
 
