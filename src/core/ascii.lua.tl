@@ -1382,16 +1382,18 @@ elseif name == "prod" then
 @if_has_both_subscript_and_superscript_put_aside+=
 if exp.sub and exp.sup then 
 	local subscript = ""
-	local subexps = exp.sub.exps
+  -- sub and sup are exchanged to
+  -- make the most compact expression
+	local subexps = exp.sup.exps
 	@try_to_make_subscript_expression
 
 	local superscript = ""
-	local supexps = exp.sup.exps
+	local supexps = exp.sub.exps
 	@try_to_make_superscript_expression
 
 	if subscript and superscript then
-		local sup_g = grid:new(utf8len(superscript), 1, { superscript })
-		local sub_g = grid:new(utf8len(subscript), 1, { subscript })
+		local sup_g = grid:new(utf8len(subscript), 1, { subscript })
+		local sub_g = grid:new(utf8len(superscript), 1, { superscript })
 		g = g:join_sub_sup(sub_g, sup_g)
 	else
 		local subgrid = to_ascii(exp.sub)

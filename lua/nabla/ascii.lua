@@ -401,7 +401,9 @@ local function to_ascii(exp)
 	
 		if exp.sub and exp.sup then 
 			local subscript = ""
-			local subexps = exp.sub.exps
+		  -- sub and sup are exchanged to
+		  -- make the most compact expression
+			local subexps = exp.sup.exps
 			for _, exp in ipairs(subexps) do
 				if exp.kind == "numexp" and math.floor(exp.num) == exp.num then
 					local num = exp.num
@@ -436,7 +438,7 @@ local function to_ascii(exp)
 			
 		
 			local superscript = ""
-			local supexps = exp.sup.exps
+			local supexps = exp.sub.exps
 			for _, exp in ipairs(supexps) do
 				if exp.kind == "numexp" and math.floor(exp.num) == exp.num then
 					local num = exp.num
@@ -471,8 +473,8 @@ local function to_ascii(exp)
 			
 		
 			if subscript and superscript then
-				local sup_g = grid:new(utf8len(superscript), 1, { superscript })
-				local sub_g = grid:new(utf8len(subscript), 1, { subscript })
+				local sup_g = grid:new(utf8len(subscript), 1, { subscript })
+				local sub_g = grid:new(utf8len(superscript), 1, { superscript })
 				g = g:join_sub_sup(sub_g, sup_g)
 			else
 				local subgrid = to_ascii(exp.sub)
@@ -728,7 +730,9 @@ local function to_ascii(exp)
 		local g = grid:new(utf8len(sym), 1, { sym })
 		if exp.sub and exp.sup then 
 			local subscript = ""
-			local subexps = exp.sub.exps
+		  -- sub and sup are exchanged to
+		  -- make the most compact expression
+			local subexps = exp.sup.exps
 			for _, exp in ipairs(subexps) do
 				if exp.kind == "numexp" and math.floor(exp.num) == exp.num then
 					local num = exp.num
@@ -763,7 +767,7 @@ local function to_ascii(exp)
 			
 		
 			local superscript = ""
-			local supexps = exp.sup.exps
+			local supexps = exp.sub.exps
 			for _, exp in ipairs(supexps) do
 				if exp.kind == "numexp" and math.floor(exp.num) == exp.num then
 					local num = exp.num
@@ -798,8 +802,8 @@ local function to_ascii(exp)
 			
 		
 			if subscript and superscript then
-				local sup_g = grid:new(utf8len(superscript), 1, { superscript })
-				local sub_g = grid:new(utf8len(subscript), 1, { subscript })
+				local sup_g = grid:new(utf8len(subscript), 1, { subscript })
+				local sub_g = grid:new(utf8len(superscript), 1, { superscript })
 				g = g:join_sub_sup(sub_g, sup_g)
 			else
 				local subgrid = to_ascii(exp.sub)
@@ -1256,7 +1260,9 @@ local function to_ascii(exp)
 			local g = grid:new(utf8len(sym), 1, { sym })
 			if exp.sub and exp.sup then 
 				local subscript = ""
-				local subexps = exp.sub.exps
+			  -- sub and sup are exchanged to
+			  -- make the most compact expression
+				local subexps = exp.sup.exps
 				for _, exp in ipairs(subexps) do
 					if exp.kind == "numexp" and math.floor(exp.num) == exp.num then
 						local num = exp.num
@@ -1291,7 +1297,7 @@ local function to_ascii(exp)
 				
 			
 				local superscript = ""
-				local supexps = exp.sup.exps
+				local supexps = exp.sub.exps
 				for _, exp in ipairs(supexps) do
 					if exp.kind == "numexp" and math.floor(exp.num) == exp.num then
 						local num = exp.num
@@ -1326,8 +1332,8 @@ local function to_ascii(exp)
 				
 			
 				if subscript and superscript then
-					local sup_g = grid:new(utf8len(superscript), 1, { superscript })
-					local sub_g = grid:new(utf8len(subscript), 1, { subscript })
+					local sup_g = grid:new(utf8len(subscript), 1, { subscript })
+					local sub_g = grid:new(utf8len(superscript), 1, { superscript })
 					g = g:join_sub_sup(sub_g, sup_g)
 				else
 					local subgrid = to_ascii(exp.sub)
@@ -1845,7 +1851,9 @@ local function to_ascii(exp)
 		local g = to_ascii(exp.exp):enclose_paren()
 		if exp.sub and exp.sup then 
 			local subscript = ""
-			local subexps = exp.sub.exps
+		  -- sub and sup are exchanged to
+		  -- make the most compact expression
+			local subexps = exp.sup.exps
 			for _, exp in ipairs(subexps) do
 				if exp.kind == "numexp" and math.floor(exp.num) == exp.num then
 					local num = exp.num
@@ -1880,7 +1888,7 @@ local function to_ascii(exp)
 			
 		
 			local superscript = ""
-			local supexps = exp.sup.exps
+			local supexps = exp.sub.exps
 			for _, exp in ipairs(supexps) do
 				if exp.kind == "numexp" and math.floor(exp.num) == exp.num then
 					local num = exp.num
@@ -1915,8 +1923,8 @@ local function to_ascii(exp)
 			
 		
 			if subscript and superscript then
-				local sup_g = grid:new(utf8len(superscript), 1, { superscript })
-				local sub_g = grid:new(utf8len(subscript), 1, { subscript })
+				local sup_g = grid:new(utf8len(subscript), 1, { subscript })
+				local sub_g = grid:new(utf8len(superscript), 1, { superscript })
 				g = g:join_sub_sup(sub_g, sup_g)
 			else
 				local subgrid = to_ascii(exp.sub)

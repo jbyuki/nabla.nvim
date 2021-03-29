@@ -52,3 +52,5 @@ C_5H_{12}(l)+8O_2(g)\rightarrow 5CO_2(g)+H_2O(l)
 w_0 + n_0 = 2
 
 Cr_2O_7^2
+
+s^{N_2}_+ [n]
