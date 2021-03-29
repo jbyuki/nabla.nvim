@@ -1,4 +1,4 @@
--- Generated from nabla.lua.tl using ntangle.nvim
+-- Generated from nabla.lua.tl, runner.lua.tl using ntangle.nvim
 -- local parser = require("nabla.parser")
 local parser = require("nabla.latex")
 
@@ -9,8 +9,18 @@ local vtext = vim.api.nvim_create_namespace("nabla")
 
 local remove_extmark
 
+local whereami
+
 function remove_extmark(events, ns_id)
   vim.api.nvim_command("autocmd "..table.concat(events, ',').." <buffer> ++once lua pcall(vim.api.nvim_buf_clear_namespace, 0, "..ns_id..", 0, -1)")
+end
+
+function whereami()
+  local info = debug.getinfo(1, "S")
+  if info and info.sub(1, 1) == "@" then
+    local path = vim.fn.fnamemodify(info.source.sub(2), ":p")
+    return path
+  end
 end
 
 
@@ -216,5 +226,6 @@ return {
 	
 	draw_overlay = draw_overlay,
 	
+	whereami = whereami,
 }
 

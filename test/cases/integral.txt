@@ -1,0 +1,5 @@
+\int_0^{\infty} \frac{1}{x} dx
+---
+∞ 1  
+∫ ―dx
+0 x  
