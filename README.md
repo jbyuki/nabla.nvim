@@ -1,51 +1,35 @@
 nabla.nvim
 -----------
 
-Take your scientific notes in Neovim.
+[![Capture.png](https://i.postimg.cc/pTK8w7fR/Capture.png)](https://postimg.cc/MMKvR93F)
 
-[![Capture.png](https://i.postimg.cc/sDn3nNWj/Capture.png)](https://postimg.cc/PPwGJKK9)
+This might be the next iteration for **nabla.nvim**. Following Issue #2, nbCloud91 brought the idea the have a non-destructive conceal layer which would render the ASCII formulas. The main reason, it could not be realised is because conceals only allow for a single character replacement through `cchar`. Not to mention the multline problem.
 
-**nabla.nvim** is an ASCII math generator from LaTeX equations.
+This is an attempt to realise this wish without conceals. There are several "tricks" at play to pull this off.
 
-Install
--------
+It improves over the previous version by:
 
-Install using a plugin manager such as [vim-plug](https://github.com/junegunn/vim-plug).
+  * Completely concealing the LaTeX formulas for less noise
+  * Overriding the standard save/write, so that it omits the ASCII formulas
+  * Syntax highlighting of formulas
 
-```
-Plug 'jbyuki/nabla.nvim'
-```
+Requirements
+------------
 
-Configuration
--------------
+* Neovim nightly: It uses several cutting-edge features of Neovim, this means the nightly version is mandatory.
 
-For example to bind it to <kbd>F5</kbd>:
-
-```
-nnoremap <F5> :lua require("nabla").replace_current()<CR>
-```
-
-or
-
-```
-nnoremap <F5> :lua require("nabla").draw_overlay()<CR>
-```
-
-The latter draws the formulas as a virtual text overlay.
+* Treesitter: Currently it uses treesitter highligh groups to color the equation. It can be easily changed to remove this dependency.
 
 Usage
 -----
 
-Press <kbd>F5</kbd> on the math expression line.
+This is the current workflow.
 
-Reference
----------
+  * First, initiate **nabla.nvim** with `lua require"nabla".attach()` on the buffer file. This will:
+    * Init conceal syntax
+    * Override save
+    * Attach to the buffer so that extmarks are handeld correctly. The default behaviour doesn't delete extmark on line deletion.
+    * Place all valid formulas inline
+  * Regenerate ASCII with `lua require"nabla".place_inline()`
 
-See [test/input.txt](https://github.com/jbyuki/nabla.nvim/blob/master/test/input.txt) for examples.
-
-**Note**: If the notation you need is not present or there is a misaligned expression, feel free to open an [Issue](https://github.com/jbyuki/nabla.nvim/issues).
-
-Credits
--------
-
-* Thanks to jetrosut for his helpful feedback and bug troubleshoot
+For convenience, these commands should be keybindinded, or triggered on an autocommand.
