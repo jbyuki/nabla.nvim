@@ -1532,7 +1532,7 @@ local function to_ascii(exp)
 		
 		elseif name == "sqrt" then
 			assert(#exp.args == 1, "sqrt must have 2 arguments")
-			local toroot = to_ascii(exp.args[1].exps[1])
+			local toroot = to_ascii(exp.args[1])
 		
 			local left_content = {}
 			for y=1,toroot.h do 

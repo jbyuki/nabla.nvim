@@ -554,17 +554,6 @@ local result = leftgrid:join_super(rightgrid)
 @make_spacer_upper_left+=
 local spacer = grid:new(self.w, superscript.h)
 
-@transform_special_functions+=
-elseif name == "sqrt" and #exp.args == 1 then
-	local toroot = to_ascii(exp.args[1])
-
-	@make_root_symbols
-
-	local res = left_root:join_hori(toroot)
-	res = top_root:join_vert(res)
-	res.my = top_root.h + toroot.my
-	return res
-
 @style_variables+=
 root_vert_bar = "│",
 root_bottom = "\\",
@@ -1284,7 +1273,7 @@ elseif exp.kind == "parexp" then
 @transform_function_into_ascii+=
 elseif name == "sqrt" then
 	assert(#exp.args == 1, "sqrt must have 2 arguments")
-	local toroot = to_ascii(exp.args[1].exps[1])
+	local toroot = to_ascii(exp.args[1])
 
 	@make_root_symbols
 
