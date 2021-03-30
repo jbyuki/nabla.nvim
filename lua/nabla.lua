@@ -4,9 +4,22 @@ local parser = require("nabla.latex")
 
 local ascii = require("nabla.ascii")
 
+local function get_param(name, default)
+  local succ, val = pcall(vim.api.nvim_get_var, name)
+  if not succ then 
+    return default
+  else
+    return val
+  end
+end
+
+local conceal_match  = get_param("nabla_conceal_match", [[/\$\$.*\$\$/ms=s,me=e]])
+local conceal_char  = get_param("nabla_conceal_char", '.')
+
 local vtext = vim.api.nvim_create_namespace("nabla")
 
 local extmarks = {}
+local extmark_text  = get_param("nabla_extmark_text", "not saved")
 
 local attached = {}
 
@@ -74,7 +87,7 @@ end
 
 local function attach()
   local buf = vim.api.nvim_get_current_buf()
-  vim.api.nvim_command([[syn match NablaFormula /\$\$.*\$\$/ms=s+2,me=e-2 conceal cchar=.]])
+  vim.api.nvim_command([[syn match NablaFormula ]] .. conceal_match .. [[ conceal cchar=]] .. conceal_char)
   vim.api.nvim_command([[setlocal conceallevel=2]])
   vim.api.nvim_command([[setlocal concealcursor=]])
   
@@ -192,9 +205,10 @@ function place_inline(lnum)
       extmarks[buf] = vim.api.nvim_create_namespace("")
     end
     
+    
     local ns_id = extmarks[buf]
     for i=1,#drawing do
-      vim.api.nvim_buf_set_extmark(bufname, ns_id, row+i-1, -1, { virt_text = {{"not saved", "NonText"}}})
+      vim.api.nvim_buf_set_extmark(bufname, ns_id, row+i-1, -1, { virt_text = {{extmark_text, "NonText"}}})
     end
     
     local ns_id = vim.api.nvim_create_namespace("")

@@ -17,8 +17,25 @@ end
 @export_symbols+=
 attach = attach,
 
+@o+=
+local
+
+@global_var_getter+=
+local function get_param(name, default)
+  local succ, val = pcall(vim.api.nvim_get_var, name)
+  if not succ then 
+    return default
+  else
+    return val
+  end
+end
+
+@script_variables+=
+local conceal_match  = get_param("nabla_conceal_match", [[/\$\$.*\$\$/ms=s,me=e]])
+local conceal_char  = get_param("nabla_conceal_char", '.')
+
 @define_conceal_syntax_for_current_buffer+=
-vim.api.nvim_command([[syn match NablaFormula /\$\$.*\$\$/ms=s+2,me=e-2 conceal cchar=.]])
+vim.api.nvim_command([[syn match NablaFormula ]] .. conceal_match .. [[ conceal cchar=]] .. conceal_char)
 vim.api.nvim_command([[setlocal conceallevel=2]])
 vim.api.nvim_command([[setlocal concealcursor=]])
 

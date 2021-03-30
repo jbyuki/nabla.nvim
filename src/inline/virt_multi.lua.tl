@@ -72,6 +72,7 @@ colorize(g, 0, 0, ns_id, drawing, 0, row)
 
 @script_variables+=
 local extmarks = {}
+local extmark_text  = get_param("nabla_extmark_text", "not saved")
 
 @place_extmarks_at_beginning+=
 local bufname = vim.api.nvim_buf_get_name(0)
@@ -80,9 +81,10 @@ if not extmarks[buf] then
   extmarks[buf] = vim.api.nvim_create_namespace("")
 end
 
+
 local ns_id = extmarks[buf]
 for i=1,#drawing do
-  vim.api.nvim_buf_set_extmark(bufname, ns_id, row+i-1, -1, { virt_text = {{"not saved", "NonText"}}})
+  vim.api.nvim_buf_set_extmark(bufname, ns_id, row+i-1, -1, { virt_text = {{extmark_text, "NonText"}}})
 end
 
 @only_parse_inside_formula+=

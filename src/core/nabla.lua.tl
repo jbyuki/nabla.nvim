@@ -1,6 +1,7 @@
 ##../nabla
 @../lua/nabla.lua=
 @requires
+@global_var_getter
 @script_variables
 @expressions
 @tokens
