@@ -1,7 +1,7 @@
 nabla.nvim
 -----------
 
-[![Capture.png](https://i.postimg.cc/fRQ92xqn/Capture.png)](https://postimg.cc/ZCjn0yhV)
+[![Capture.png](https://i.postimg.cc/L80ByqPz/Capture.png)](https://postimg.cc/VJnCvkD6)
 
 This might be the next iteration for nabla.nvim. Following the issue #2, nbCloud91 brought up the idea to add a conceal layer [ref](https://github.com/KeitaNakamura/tex-conceal.vim) to hide the LaTeX Formula and only show the rendered ASCII Art. This is not possible due to the limitations of the conceals in VIM. It only allows a single character replacement which would be not enough. Not to mention the need to expand over multiple lines for multiline formulas.
 
