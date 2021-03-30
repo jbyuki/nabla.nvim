@@ -175,7 +175,11 @@ function place_inline(lnum)
 		end
 		
 		
-    -- @add_identation_inline
+    local indent = "  "
+    for i=1,#drawing do
+      drawing[i] = indent .. drawing[i]
+    end
+    
     local row
     if not lnum then
       row, _ = unpack(vim.api.nvim_win_get_cursor(0))
@@ -212,7 +216,7 @@ function place_inline(lnum)
     end
     
     local ns_id = vim.api.nvim_create_namespace("")
-    colorize(g, 0, 0, ns_id, drawing, 0, row)
+    colorize(g, 2, 0, ns_id, drawing, 0, row)
     
 
     return #drawing

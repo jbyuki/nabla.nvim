@@ -18,7 +18,7 @@ function place_inline(lnum)
 	@parse_math_expression
 	if success and exp then
 		@generate_ascii_art
-    -- @add_identation_inline
+    @add_identation_inline
     @place_lines_after_current_line
     -- @change_background_with_signs
     @place_extmarks_at_beginning
@@ -61,14 +61,14 @@ vim.api.nvim_buf_set_lines(0, row, row, true, drawing)
 -- end
 
 @add_identation_inline+=
-local indent = "    "
+local indent = "  "
 for i=1,#drawing do
   drawing[i] = indent .. drawing[i]
 end
 
 @colorize_ascii_art+=
 local ns_id = vim.api.nvim_create_namespace("")
-colorize(g, 0, 0, ns_id, drawing, 0, row)
+colorize(g, 2, 0, ns_id, drawing, 0, row)
 
 @script_variables+=
 local extmarks = {}
