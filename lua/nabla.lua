@@ -13,8 +13,10 @@ local function get_param(name, default)
   end
 end
 
-local conceal_match  = get_param("nabla_conceal_match", [[/\$\$.*\$\$/ms=s,me=e]])
-local conceal_char  = get_param("nabla_conceal_char", '.')
+local conceal_match  = get_param("nabla_conceal_match", [[/^\$\$.*\$\$/ms=s,me=e]])
+local conceal_inline_match = get_param("nabla_conceal_inline_match", [[/\(^\|[^$]\)\zs\$[^$]\{-1,}\$\ze\($\|[^$]\)/]])
+local conceal_char  = get_param("nabla_conceal_char", '')
+local conceal_inline_char = get_param("nabla_conceal_inline_char", '')
 
 local vtext = vim.api.nvim_create_namespace("nabla")
 
@@ -87,46 +89,23 @@ end
 
 local function attach()
   local buf = vim.api.nvim_get_current_buf()
-  vim.api.nvim_command([[syn match NablaFormula ]] .. conceal_match .. [[ conceal cchar=]] .. conceal_char)
+  local cchar = ""
+  if string.len(conceal_char) == 1 then
+    cchar = [[cchar=]] .. conceal_char
+  end
+  
+  local cchar_inline = ""
+  if string.len(conceal_inline_char) == 1 then
+    cchar_inline = [[cchar=]] .. conceal_inline_char
+  end
+  
+  vim.api.nvim_command([[syn match NablaFormula ]] .. conceal_match .. [[ conceal ]] .. cchar)
+  vim.api.nvim_command([[syn match NablaInlineFormula ]] .. conceal_inline_match .. [[ conceal ]] .. cchar_inline)
   vim.api.nvim_command([[setlocal conceallevel=2]])
   vim.api.nvim_command([[setlocal concealcursor=]])
   
-  vim.api.nvim_buf_set_option(buf, "buftype", "acwrite")
-  vim.api.nvim_command("autocmd BufWriteCmd <buffer=" .. buf .. [[> lua require"nabla".save(]] .. buf .. ")")
-  
-  local line_count = vim.api.nvim_buf_line_count(buf)
-  local i = 1
-  while i <= line_count do
-    local added = place_inline(i)
-    i = i + added + 1
-    line_count = line_count + added
-  end
-
-  vim.api.nvim_buf_attach(0, false, {
-    on_lines = function(_, _, _, firstline, lastline, new_lastline, _)
-      local ns_id = extmarks[buf]
-      local found
-      if ns_id then
-        -- I could optimise to retrieve only for the deleted range
-        -- in the future
-        found = vim.api.nvim_buf_get_extmarks(buf, ns_id, 0, -1, {})
-      end
-      
-      if new_lastline < lastline then
-        if found then
-          for _, extmark in ipairs(found) do
-            local id, row, col = unpack(extmark)
-            if col == 0 then
-              vim.api.nvim_buf_del_extmark(buf, ns_id, id)
-              
-            end
-          end
-        end
-        
-      end
-      
-    end
-  })
+  -- @change_save_behaviour
+  -- @run_place_inline_on_every_line
 end
 
 function remove_extmark(events, ns_id)
@@ -140,6 +119,7 @@ function place_inline(lnum)
     attach()
     return
   end
+  
 
   local line
   if not lnum then
@@ -149,13 +129,42 @@ function place_inline(lnum)
     line = vim.api.nvim_buf_get_lines(0, lnum-1, lnum, true)[1]
     
   end
-	local whitespace = string.match(line, "^(%s*)%S")
-	
-  line = string.match(line, "^%$%$(.*)%$%$$")
-  if not line then
-    return 0
+
+  local row, col = unpack(vim.api.nvim_win_get_cursor(0))
+  local back, forward, back_del, forward_del
+  local char_ind = vim.str_byteindex(line, col-1)
+  local _, back = string.find(line:sub(1, char_ind+1), "^%$%$")
+  if back then
+    back = back + 1
+    back_del = "$$"
+  else
+    _, back = string.find(line:sub(1, char_ind+1), ".*%$")
+    if back then
+      back = back + 1
+      back_del = "$"
+    end
   end
   
+  local char_ind = vim.str_byteindex(line, col)
+  local forward = string.find(line:sub(char_ind+1), "%$%$")
+  if forward then
+    forward = forward -1+char_ind
+    forward_del = "$$"
+  else
+    forward = string.find(line:sub(char_ind+1), "%$")
+    if forward then
+      forward = forward -1+char_ind
+      forward_del = "$"
+    end
+  end
+  
+  assert(back and forward, "Could not find formula delimiter")
+  assert(back_del == forward_del, "Could not find formula delimiter")
+  line = line:sub(back, forward)
+  
+  local del = back_del
+  
+
 	local success, exp = pcall(parser.parse_all, line)
 	
 	if success and exp then
@@ -175,49 +184,93 @@ function place_inline(lnum)
 		end
 		
 		
-    local indent = "  "
-    for i=1,#drawing do
-      drawing[i] = indent .. drawing[i]
-    end
-    
-    local row
-    if not lnum then
-      row, _ = unpack(vim.api.nvim_win_get_cursor(0))
-    else
-      row = lnum
-    end
-    
-    vim.api.nvim_buf_set_lines(0, row, row, true, drawing)
-    
-    -- @define_signs+=
-    -- vim.fn.sign_define("nablaBackground", {
-      -- text = "$$",
-    -- })
-    -- 
-    -- @change_background_with_signs+=
-    -- local bufname = vim.api.nvim_buf_get_name(0)
-    -- for i=1,#drawing do
-      -- vim.fn.sign_place(0, "", "nablaBackground", bufname, {
-        -- lnum = row+i,
+    if del == "$$" then
+      local indent = "  "
+      for i=1,#drawing do
+        drawing[i] = indent .. drawing[i]
+      end
+      
+      local row
+      if not lnum then
+        row, _ = unpack(vim.api.nvim_win_get_cursor(0))
+      else
+        row = lnum
+      end
+      
+      vim.api.nvim_buf_set_lines(0, row, row, true, drawing)
+      
+      -- @define_signs+=
+      -- vim.fn.sign_define("nablaBackground", {
+        -- text = "$$",
       -- })
-    -- end
-    
-    -- @change_background_with_signs
-    local bufname = vim.api.nvim_buf_get_name(0)
-    local buf = vim.api.nvim_get_current_buf()
-    if not extmarks[buf] then
-      extmarks[buf] = vim.api.nvim_create_namespace("")
+      -- 
+      -- @change_background_with_signs+=
+      -- local bufname = vim.api.nvim_buf_get_name(0)
+      -- for i=1,#drawing do
+        -- vim.fn.sign_place(0, "", "nablaBackground", bufname, {
+          -- lnum = row+i,
+        -- })
+      -- end
+      
+      -- @change_background_with_signs
+      local buf = vim.api.nvim_get_current_buf()
+      if not extmarks[buf] then
+        extmarks[buf] = vim.api.nvim_create_namespace("")
+      end
+      local ns_id = extmarks[buf]
+      
+      vim.api.nvim_buf_set_extmark(bufname, ns_id, row-1, -1, { 
+        end_line = row-1 + #drawing + 1,
+        end_col = 0,
+        -- hl_group = "Search",
+      })
+      
+      local ns_id = vim.api.nvim_create_namespace("")
+      colorize(g, 2, 0, ns_id, drawing, 0, row)
+      
+    elseif del == "$" then
+      line = vim.api.nvim_get_current_line()
+      
+      local before = line:sub(1, forward+1)
+      local after = line:sub(forward+2)
+      local start_col, end_col
+      local start_row
+      
+      local new_lines = {}
+      if #drawing == 1 then
+        local new_line = before .. drawing[1] .. after
+        table.insert(new_lines, new_line)
+        start_col = vim.str_utfindex(before)
+        start_row = row-1
+        end_col = string.len(before .. drawing[1])
+      else
+        table.insert(new_lines, before)
+        for i=1,#drawing do
+          table.insert(new_lines, drawing[i])
+        end
+        table.insert(new_lines, after)
+        start_col = 0
+        start_row = row
+        end_col = 0
+      end
+      
+      vim.api.nvim_buf_set_lines(buf, row-1, row, true, new_lines)
+      
+      local buf = vim.api.nvim_get_current_buf()
+      if not extmarks[buf] then
+        extmarks[buf] = vim.api.nvim_create_namespace("")
+      end
+      local ns_id = extmarks[buf]
+      
+      vim.api.nvim_buf_set_extmark(buf, ns_id, row-1, string.len(before), {
+        end_line = row-1+(#new_lines-1),
+        end_col = end_col,
+      })
+      
+      local ns_id = vim.api.nvim_create_namespace("")
+      local col = vim.str_utfindex(line, string.len(before))
+      colorize(g, 0, 0, ns_id, drawing, start_col, start_row)
     end
-    
-    
-    local ns_id = extmarks[buf]
-    for i=1,#drawing do
-      vim.api.nvim_buf_set_extmark(bufname, ns_id, row+i-1, -1, { virt_text = {{extmark_text, "NonText"}}})
-    end
-    
-    local ns_id = vim.api.nvim_create_namespace("")
-    colorize(g, 2, 0, ns_id, drawing, 0, row)
-    
 
     return #drawing
 	else

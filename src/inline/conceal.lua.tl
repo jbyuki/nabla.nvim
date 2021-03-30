@@ -3,15 +3,8 @@
 local function attach()
   local buf = vim.api.nvim_get_current_buf()
   @define_conceal_syntax_for_current_buffer
-  @change_save_behaviour
-  @run_place_inline_on_every_line
-
-  vim.api.nvim_buf_attach(0, false, {
-    on_lines = function(_, _, _, firstline, lastline, new_lastline, _)
-      @get_extmarks_for_buffer
-      @change_delete_extmark_behaviour
-    end
-  })
+  -- @change_save_behaviour
+  -- @run_place_inline_on_every_line
 end
 
 @export_symbols+=
@@ -31,11 +24,24 @@ local function get_param(name, default)
 end
 
 @script_variables+=
-local conceal_match  = get_param("nabla_conceal_match", [[/\$\$.*\$\$/ms=s,me=e]])
-local conceal_char  = get_param("nabla_conceal_char", '.')
+local conceal_match  = get_param("nabla_conceal_match", [[/^\$\$.*\$\$/ms=s,me=e]])
+local conceal_inline_match = get_param("nabla_conceal_inline_match", [[/\(^\|[^$]\)\zs\$[^$]\{-1,}\$\ze\($\|[^$]\)/]])
+local conceal_char  = get_param("nabla_conceal_char", '')
+local conceal_inline_char = get_param("nabla_conceal_inline_char", '')
 
 @define_conceal_syntax_for_current_buffer+=
-vim.api.nvim_command([[syn match NablaFormula ]] .. conceal_match .. [[ conceal cchar=]] .. conceal_char)
+local cchar = ""
+if string.len(conceal_char) == 1 then
+  cchar = [[cchar=]] .. conceal_char
+end
+
+local cchar_inline = ""
+if string.len(conceal_inline_char) == 1 then
+  cchar_inline = [[cchar=]] .. conceal_inline_char
+end
+
+vim.api.nvim_command([[syn match NablaFormula ]] .. conceal_match .. [[ conceal ]] .. cchar)
+vim.api.nvim_command([[syn match NablaInlineFormula ]] .. conceal_inline_match .. [[ conceal ]] .. cchar_inline)
 vim.api.nvim_command([[setlocal conceallevel=2]])
 vim.api.nvim_command([[setlocal concealcursor=]])
 
