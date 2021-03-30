@@ -1106,7 +1106,7 @@ local sub_letters = {
 }
 
 @append_characters_subscript+=
-if sub_letters[exp.sym] then
+if sub_letters[exp.sym] and not exp.sub and not exp.sup then
 	subscript = subscript .. sub_letters[exp.sym]
 else
 	subscript = nil
@@ -1253,7 +1253,7 @@ else
 end
 
 @append_characters_superscript+=
-if sup_letters[exp.sym] then
+if sup_letters[exp.sym] and not exp.sub and not exp.sup then
 	superscript = superscript .. sup_letters[exp.sym]
 else
 	superscript = nil

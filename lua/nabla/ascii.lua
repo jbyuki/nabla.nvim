@@ -448,7 +448,7 @@ local function to_ascii(exp)
 					end
 					
 				elseif exp.kind == "symexp" then
-					if sub_letters[exp.sym] then
+					if sub_letters[exp.sym] and not exp.sub and not exp.sup then
 						subscript = subscript .. sub_letters[exp.sym]
 					else
 						subscript = nil
@@ -491,7 +491,7 @@ local function to_ascii(exp)
 					end
 					
 				elseif exp.kind == "symexp" then
-					if sup_letters[exp.sym] then
+					if sup_letters[exp.sym] and not exp.sub and not exp.sup then
 						superscript = superscript .. sup_letters[exp.sym]
 					else
 						superscript = nil
@@ -548,7 +548,7 @@ local function to_ascii(exp)
 					end
 					
 				elseif exp.kind == "symexp" then
-					if sub_letters[exp.sym] then
+					if sub_letters[exp.sym] and not exp.sub and not exp.sup then
 						subscript = subscript .. sub_letters[exp.sym]
 					else
 						subscript = nil
@@ -648,7 +648,7 @@ local function to_ascii(exp)
 					end
 					
 				elseif exp.kind == "symexp" then
-					if sup_letters[exp.sym] then
+					if sup_letters[exp.sym] and not exp.sub and not exp.sup then
 						superscript = superscript .. sup_letters[exp.sym]
 					else
 						superscript = nil
@@ -811,7 +811,7 @@ local function to_ascii(exp)
 					end
 					
 				elseif exp.kind == "symexp" then
-					if sub_letters[exp.sym] then
+					if sub_letters[exp.sym] and not exp.sub and not exp.sup then
 						subscript = subscript .. sub_letters[exp.sym]
 					else
 						subscript = nil
@@ -854,7 +854,7 @@ local function to_ascii(exp)
 					end
 					
 				elseif exp.kind == "symexp" then
-					if sup_letters[exp.sym] then
+					if sup_letters[exp.sym] and not exp.sub and not exp.sup then
 						superscript = superscript .. sup_letters[exp.sym]
 					else
 						superscript = nil
@@ -911,7 +911,7 @@ local function to_ascii(exp)
 					end
 					
 				elseif exp.kind == "symexp" then
-					if sub_letters[exp.sym] then
+					if sub_letters[exp.sym] and not exp.sub and not exp.sup then
 						subscript = subscript .. sub_letters[exp.sym]
 					else
 						subscript = nil
@@ -1011,7 +1011,7 @@ local function to_ascii(exp)
 					end
 					
 				elseif exp.kind == "symexp" then
-					if sup_letters[exp.sym] then
+					if sup_letters[exp.sym] and not exp.sub and not exp.sup then
 						superscript = superscript .. sup_letters[exp.sym]
 					else
 						superscript = nil
@@ -1385,7 +1385,7 @@ local function to_ascii(exp)
 						end
 						
 					elseif exp.kind == "symexp" then
-						if sub_letters[exp.sym] then
+						if sub_letters[exp.sym] and not exp.sub and not exp.sup then
 							subscript = subscript .. sub_letters[exp.sym]
 						else
 							subscript = nil
@@ -1428,7 +1428,7 @@ local function to_ascii(exp)
 						end
 						
 					elseif exp.kind == "symexp" then
-						if sup_letters[exp.sym] then
+						if sup_letters[exp.sym] and not exp.sub and not exp.sup then
 							superscript = superscript .. sup_letters[exp.sym]
 						else
 							superscript = nil
@@ -1485,7 +1485,7 @@ local function to_ascii(exp)
 						end
 						
 					elseif exp.kind == "symexp" then
-						if sub_letters[exp.sym] then
+						if sub_letters[exp.sym] and not exp.sub and not exp.sup then
 							subscript = subscript .. sub_letters[exp.sym]
 						else
 							subscript = nil
@@ -1585,7 +1585,7 @@ local function to_ascii(exp)
 						end
 						
 					elseif exp.kind == "symexp" then
-						if sup_letters[exp.sym] then
+						if sup_letters[exp.sym] and not exp.sub and not exp.sup then
 							superscript = superscript .. sup_letters[exp.sym]
 						else
 							superscript = nil
@@ -2010,7 +2010,7 @@ local function to_ascii(exp)
 					end
 					
 				elseif exp.kind == "symexp" then
-					if sub_letters[exp.sym] then
+					if sub_letters[exp.sym] and not exp.sub and not exp.sup then
 						subscript = subscript .. sub_letters[exp.sym]
 					else
 						subscript = nil
@@ -2053,7 +2053,7 @@ local function to_ascii(exp)
 					end
 					
 				elseif exp.kind == "symexp" then
-					if sup_letters[exp.sym] then
+					if sup_letters[exp.sym] and not exp.sub and not exp.sup then
 						superscript = superscript .. sup_letters[exp.sym]
 					else
 						superscript = nil
@@ -2110,7 +2110,7 @@ local function to_ascii(exp)
 					end
 					
 				elseif exp.kind == "symexp" then
-					if sub_letters[exp.sym] then
+					if sub_letters[exp.sym] and not exp.sub and not exp.sup then
 						subscript = subscript .. sub_letters[exp.sym]
 					else
 						subscript = nil
@@ -2210,7 +2210,7 @@ local function to_ascii(exp)
 					end
 					
 				elseif exp.kind == "symexp" then
-					if sup_letters[exp.sym] then
+					if sup_letters[exp.sym] and not exp.sub and not exp.sup then
 						superscript = superscript .. sup_letters[exp.sym]
 					else
 						superscript = nil

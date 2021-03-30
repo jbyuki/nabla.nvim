@@ -4,6 +4,9 @@ local place_inline
 
 @functions+=
 function place_inline(lnum)
+  local buf = vim.api.nvim_get_current_buf()
+  @attach_to_buffer_if_not
+
   local line
   if not lnum then
     @get_current_line
@@ -90,3 +93,13 @@ end
 
 @get_line_at_lnum+=
 line = vim.api.nvim_buf_get_lines(0, lnum-1, lnum, true)[1]
+
+@script_variables+=
+local attached = {}
+
+@attach_to_buffer_if_not+=
+if not attached[buf] then 
+  attached[buf] = true
+  attach()
+  return
+end

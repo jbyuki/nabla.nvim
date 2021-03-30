@@ -8,6 +8,8 @@ local vtext = vim.api.nvim_create_namespace("nabla")
 
 local extmarks = {}
 
+local attached = {}
+
 
 local colorize
 
@@ -73,7 +75,8 @@ end
 local function attach()
   local buf = vim.api.nvim_get_current_buf()
   vim.api.nvim_command([[syn match NablaFormula /\$\$.*\$\$/ms=s+2,me=e-2 conceal cchar=.]])
-  vim.api.nvim_command([[set conceallevel=2]])
+  vim.api.nvim_command([[setlocal conceallevel=2]])
+  vim.api.nvim_command([[setlocal concealcursor=]])
   
   vim.api.nvim_buf_set_option(buf, "buftype", "acwrite")
   vim.api.nvim_command("autocmd BufWriteCmd <buffer=" .. buf .. [[> lua require"nabla".save(]] .. buf .. ")")
@@ -118,12 +121,20 @@ function remove_extmark(events, ns_id)
 end
 
 function place_inline(lnum)
+  local buf = vim.api.nvim_get_current_buf()
+  if not attached[buf] then 
+    attached[buf] = true
+    attach()
+    return
+  end
+
   local line
   if not lnum then
     line = vim.api.nvim_get_current_line()
     
   else
     line = vim.api.nvim_buf_get_lines(0, lnum-1, lnum, true)[1]
+    
   end
 	local whitespace = string.match(line, "^(%s*)%S")
 	

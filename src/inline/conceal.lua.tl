@@ -19,7 +19,8 @@ attach = attach,
 
 @define_conceal_syntax_for_current_buffer+=
 vim.api.nvim_command([[syn match NablaFormula /\$\$.*\$\$/ms=s+2,me=e-2 conceal cchar=.]])
-vim.api.nvim_command([[set conceallevel=2]])
+vim.api.nvim_command([[setlocal conceallevel=2]])
+vim.api.nvim_command([[setlocal concealcursor=]])
 
 @change_delete_extmark_behaviour+=
 if new_lastline < lastline then
