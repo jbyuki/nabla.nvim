@@ -7,6 +7,8 @@ Take your scientific notes in Neovim.
 
 **nabla.nvim** is an ASCII math generator from LaTeX equations.
 
+Note: See [nabla.nvim/inline](https://github.com/jbyuki/nabla.nvim/tree/inline) for a more experimental version.
+
 Install
 -------
 
