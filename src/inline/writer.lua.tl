@@ -48,4 +48,6 @@ f:close()
 
 @set_file_as_written+=
 vim.bo.modified = false
-print("\"" .. vim.api.nvim_buf_get_name(buf) .. "\" written")
+local bufname = vim.api.nvim_buf_get_name(buf)
+bufname = vim.fn.fnamemodify(bufname, ":.")
+print("\"" .. bufname .. "\" written")
