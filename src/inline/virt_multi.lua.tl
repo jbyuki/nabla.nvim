@@ -157,40 +157,25 @@ end
 line = line:sub(back, forward)
 
 @insert_inline_after_formula+=
-line = vim.api.nvim_get_current_line()
-
-local before = line:sub(1, forward+1)
-local after = line:sub(forward+2)
-local start_col, end_col
-local start_row
-
-local new_lines = {}
+local start_byte, end_byte
+start_byte = forward+1
+local end_col
 if #drawing == 1 then
-  local new_line = before .. drawing[1] .. after
-  table.insert(new_lines, new_line)
-  start_col = vim.str_utfindex(before)
-  start_row = row-1
-  end_col = string.len(before .. drawing[1])
+  end_byte = forward+1+string.len(drawing[1])
 else
-  table.insert(new_lines, before)
-  for i=1,#drawing do
-    table.insert(new_lines, drawing[i])
-  end
-  table.insert(new_lines, after)
-  start_col = 0
-  start_row = row
-  end_col = 0
+  end_byte = string.len(drawing[#drawing])
+  end_col = forward+1+vim.str_utfindex(drawing[#drawing])
 end
 
-vim.api.nvim_buf_set_lines(buf, row-1, row, true, new_lines)
+vim.api.nvim_buf_set_text(buf, row-1, forward+1, row-1, forward+1, drawing)
 
 @place_extmarks_inline+=
-vim.api.nvim_buf_set_extmark(buf, ns_id, row-1, string.len(before), {
-  end_line = row-1+(#new_lines-1),
-  end_col = end_col,
+vim.api.nvim_buf_set_extmark(buf, ns_id, row-1, start_byte, {
+  end_line = row-1+(#drawing-1),
+  end_col = end_byte,
+  hl_group = "Search",
 })
 
 @colorize_ascii_art_inline+=
 local ns_id = vim.api.nvim_create_namespace("")
-local col = vim.str_utfindex(line, string.len(before))
-colorize(g, 0, 0, ns_id, drawing, start_col, start_row)
+colorize(g, 0, 0, ns_id, drawing, start_byte, row-1)

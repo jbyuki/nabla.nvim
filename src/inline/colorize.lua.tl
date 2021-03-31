@@ -17,7 +17,9 @@ if g.t == "num" then
   local sx = vim.str_byteindex(drawing[dy+1], dx)
   local se = vim.str_byteindex(drawing[dy+1], dx+g.w)
 
-  vim.api.nvim_buf_add_highlight(0, ns_id, "TSNumber", py+dy, px+sx,px+se)
+  local of
+  if dy == 0 then of = px else of = 0 end
+  vim.api.nvim_buf_add_highlight(0, ns_id, "TSNumber", py+dy, of+sx,of+se)
 end
 
 @if_g_as_children_recurse+=
@@ -36,7 +38,9 @@ if g.t == "sym" then
     for y=1,g.h do
       local sx = vim.str_byteindex(drawing[dy+y], dx)
       local se = vim.str_byteindex(drawing[dy+y], dx+g.w)
-      vim.api.nvim_buf_add_highlight(0, ns_id, "TSOperator", dy+py+y-1, px+sx, px+se)
+      local of
+      if y+dy == 1 then of = px else of = 0 end
+      vim.api.nvim_buf_add_highlight(0, ns_id, "TSOperator", dy+py+y-1, of+sx, of+se)
     end
   end
 end
@@ -46,24 +50,32 @@ if g.t == "par" then
   for y=1,g.h do
     local sx = vim.str_byteindex(drawing[dy+y], dx)
     local se = vim.str_byteindex(drawing[dy+y], dx+g.w)
-    vim.api.nvim_buf_add_highlight(0, ns_id, "TSOperator", dy+py+y-1, px+sx, px+se)
+      local of
+      if y+dy == 1 then of = px else of = 0 end
+    vim.api.nvim_buf_add_highlight(0, ns_id, "TSOperator", dy+py+y-1, of+sx, of+se)
   end
 end
 
 @if_start_with_letter_unknown+=
 if string.match(g.content[1], "^%a") then
-    vim.api.nvim_buf_add_highlight(0, ns_id, "TSString", dy+py, px+sx, px+se)
+  local of
+  if dy == 0 then of = px else of = 0 end
+  vim.api.nvim_buf_add_highlight(0, ns_id, "TSString", dy+py, of+sx, of+se)
 
 @if_start_with_number_number+=
 elseif string.match(g.content[1], "^%d") then
-    vim.api.nvim_buf_add_highlight(0, ns_id, "TSNumber", dy+py, px+sx, px+se)
+  local of
+  if dy == 0 then of = px else of = 0 end
+  vim.api.nvim_buf_add_highlight(0, ns_id, "TSNumber", dy+py, of+sx, of+se)
 
 @if_g_type_variable_colorize_as_variable+=
 if g.t == "var" then
   local sx = vim.str_byteindex(drawing[dy+1], dx)
   local se = vim.str_byteindex(drawing[dy+1], dx+g.w)
 
-  vim.api.nvim_buf_add_highlight(0, ns_id, "TSString", dy+py, px+sx, px+se)
+  local of
+  if dy == 0 then of = px else of = 0 end
+  vim.api.nvim_buf_add_highlight(0, ns_id, "TSString", dy+py, of+sx, of+se)
 end
 
 @if_g_type_operator_colorize_as_operator+=
@@ -71,6 +83,8 @@ if g.t == "op" then
   for y=1,g.h do
     local sx = vim.str_byteindex(drawing[dy+y], dx)
     local se = vim.str_byteindex(drawing[dy+y], dx+g.w)
-    vim.api.nvim_buf_add_highlight(0, ns_id, "TSOperator", dy+py+y-1, px+sx, px+se)
+    local of
+    if dy+y == 1 then of = px else of = 0 end
+    vim.api.nvim_buf_add_highlight(0, ns_id, "TSOperator", dy+py+y-1, of+sx, of+se)
   end
 end
