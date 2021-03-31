@@ -118,7 +118,9 @@ local function attach()
   vim.api.nvim_command([[setlocal conceallevel=2]])
   vim.api.nvim_command([[setlocal concealcursor=]])
   
-  -- @change_save_behaviour
+  vim.api.nvim_buf_set_option(buf, "buftype", "acwrite")
+  vim.api.nvim_command("autocmd BufWriteCmd <buffer=" .. buf .. [[> lua require"nabla".save(]] .. buf .. ")")
+  
   local single_formula = vim.regex(conceal_match)
   
   local inline_formula = vim.regex(conceal_inline_match)
@@ -372,25 +374,50 @@ local function save(buf)
   fname = vim.fn.fnamemodify(fname, ":p")
   
   local f = io.open(fname, "w")
-  for lnum, line in ipairs(lines) do
-    -- some double negation to complicate 
-    -- the code for no reason
-    if not notsave[lnum] then
-      f:write(line .. "\n")
-    end
+  
+  local ns_id = extmarks[buf]
+  local extmarks = {}
+  if ns_id then
+    -- I could optimise to retrieve only for the deleted range
+    -- in the future
+    extmarks = vim.api.nvim_buf_get_extmarks(buf, ns_id, 0, -1, { details = true })
   end
+  
+  local scratch = vim.api.nvim_create_buf(false, true)
+  
+  local tempbuf = vim.api.nvim_create_buf(false, true)
+  
+  vim.api.nvim_buf_set_lines(tempbuf, 0, -1, true, lines)
+  
+  for _, extmark in ipairs(extmarks) do
+    local _, srow, scol, details = unpack(extmark)
+    local erow, ecol = details.end_line or srow, details.end_col or scol
+  
+    vim.api.nvim_buf_set_text(tempbuf, srow, scol, erow, ecol, {})
+  end
+  
+  local output_lines = vim.api.nvim_buf_get_lines(tempbuf, 0, -1, true)
+  
+  for _, line in ipairs(output_lines) do
+    f:write(line .. "\n")
+  end
+  
   f:close()
   
   vim.bo.modified = false
   local bufname = vim.api.nvim_buf_get_name(buf)
   bufname = vim.fn.fnamemodify(bufname, ":.")
   print("\"" .. bufname .. "\" written")
+  
+  
 end
 
 
 
 local function init()
 	local scratch = vim.api.nvim_create_buf(false, true)
+	
+	local tempbuf = vim.api.nvim_create_buf(false, true)
 	
 
 	local curbuf = vim.api.nvim_get_current_buf()

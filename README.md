@@ -32,15 +32,6 @@ Bind the following command:
 nnoremap <F5> :lua require("nabla").place_inline()<CR>
 ```
 
-Optional customizations:
-
-```vim
-let g:nabla_extmark_text = ""
-let g:nabla_conceal_text = ""
-let g:nabla_conceal_char = ""
-```
-
-
 Usage
 -----
 

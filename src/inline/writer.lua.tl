@@ -9,7 +9,7 @@ local function save(buf)
   @mark_all_lines_not_to_save
   @read_lines_in_current_buffer
   @get_current_filename
-  @write_all_lines_except_extmarks
+  @write_except_extmarks
   @set_file_as_written
 end
 
@@ -51,3 +51,45 @@ vim.bo.modified = false
 local bufname = vim.api.nvim_buf_get_name(buf)
 bufname = vim.fn.fnamemodify(bufname, ":.")
 print("\"" .. bufname .. "\" written")
+
+
+@write_except_extmarks+=
+local f = io.open(fname, "w")
+
+@get_extmarks_detailed_for_buffer
+@create_scratch_buffer
+@copy_text_over_to_scratch_buffer
+@remove_text_at_every_extmarks
+@retrieve_content_of_scratch_buffer
+
+for _, line in ipairs(output_lines) do
+  f:write(line .. "\n")
+end
+
+f:close()
+
+@get_extmarks_detailed_for_buffer+=
+local ns_id = extmarks[buf]
+local extmarks = {}
+if ns_id then
+  -- I could optimise to retrieve only for the deleted range
+  -- in the future
+  extmarks = vim.api.nvim_buf_get_extmarks(buf, ns_id, 0, -1, { details = true })
+end
+
+@create_scratch_buffer+=
+local tempbuf = vim.api.nvim_create_buf(false, true)
+
+@copy_text_over_to_scratch_buffer+=
+vim.api.nvim_buf_set_lines(tempbuf, 0, -1, true, lines)
+
+@remove_text_at_every_extmarks+=
+for _, extmark in ipairs(extmarks) do
+  local _, srow, scol, details = unpack(extmark)
+  local erow, ecol = details.end_line or srow, details.end_col or scol
+
+  vim.api.nvim_buf_set_text(tempbuf, srow, scol, erow, ecol, {})
+end
+
+@retrieve_content_of_scratch_buffer+=
+local output_lines = vim.api.nvim_buf_get_lines(tempbuf, 0, -1, true)
