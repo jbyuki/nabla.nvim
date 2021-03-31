@@ -118,61 +118,21 @@ if not row then
   row, col = unpack(vim.api.nvim_win_get_cursor(0))
 end
 
-local back, forward, back_del, forward_del
-@go_backwards_to_find_formula_delimiter
-@go_forwards_to_find_formula_delimiter
-assert(back and forward, "Could not find formula delimiter")
-assert(back_del == forward_del, "Could not find formula delimiter")
-@extract_formula_from_delimiter
-local del = back_del
-
-@go_backwards_to_find_formula_delimiter+=
-if col-1 < 0 then
-  return
-end
-
-local char_ind = vim.str_byteindex(line, col-1)
-local _, back = string.find(line:sub(1, char_ind+1), "^%$%$")
-if back then
-  back = back + 1
-  back_del = "$$"
-else
-  _, back = string.find(line:sub(1, char_ind+1), ".*%$")
-  if back then
-    back = back + 1
-    back_del = "$"
-  end
-end
-
-@go_forwards_to_find_formula_delimiter+=
-local char_ind = vim.str_byteindex(line, col)
-local forward = string.find(line:sub(char_ind+1), "%$%$")
-if forward then
-  forward = forward -1+char_ind
-  forward_del = "$$"
-else
-  forward = string.find(line:sub(char_ind+1), "%$")
-  if forward then
-    forward = forward -1+char_ind
-    forward_del = "$"
-  end
-end
-
-@extract_formula_from_delimiter+=
-line = line:sub(back, forward)
+local back, forward, del = find_latex_at(buf, row, col)
+line = line:sub(back+string.len(del)+1, forward-string.len(del))
 
 @insert_inline_after_formula+=
 local start_byte, end_byte
-start_byte = forward+1
+start_byte = forward
 local end_col
 if #drawing == 1 then
-  end_byte = forward+1+string.len(drawing[1])
+  end_byte = forward+string.len(drawing[1])
 else
   end_byte = string.len(drawing[#drawing])
-  end_col = forward+1+vim.str_utfindex(drawing[#drawing])
+  end_col = forward+vim.str_utfindex(drawing[#drawing])
 end
 
-vim.api.nvim_buf_set_text(buf, row-1, forward+1, row-1, forward+1, drawing)
+vim.api.nvim_buf_set_text(buf, row-1, forward, row-1, forward, drawing)
 
 @place_extmarks_inline+=
 vim.api.nvim_buf_set_extmark(buf, ns_id, row-1, start_byte, {

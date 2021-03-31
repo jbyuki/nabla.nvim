@@ -1,4 +1,4 @@
--- Generated from colorize.lua.tl, conceal.lua.tl, nabla.lua.tl, regen.lua.tl, virt_multi.lua.tl, writer.lua.tl using ntangle.nvim
+-- Generated from colorize.lua.tl, conceal.lua.tl, matcher.lua.tl, nabla.lua.tl, regen.lua.tl, virt_multi.lua.tl, writer.lua.tl using ntangle.nvim
 -- local parser = require("nabla.parser")
 local parser = require("nabla.latex")
 
@@ -27,6 +27,8 @@ local attached = {}
 
 
 local colorize
+
+local find_latex_at
 
 local remove_extmark
 
@@ -187,6 +189,42 @@ local function attach()
   
 end
 
+function find_latex_at(buf, row, col)
+  local single_formula = vim.regex(conceal_match)
+  
+  local inline_formula = vim.regex(conceal_inline_match)
+  
+
+  local n = 0
+  while true do
+    local s, e = single_formula:match_line(buf, row-1, n)
+    if not s then
+      break
+    end
+  
+    if n+s <= col and col <= n+e then
+      return s+n, e+n, "$$"
+    end
+  
+    n = n+e
+  end
+  
+  n = 0
+  
+  while true do
+    local s, e = inline_formula:match_line(buf, row-1, n)
+    if not s then
+      break
+    end
+  
+    if n+s <= col and col <= n+e then
+      return n+s, n+e, "$"
+    end
+  
+    n = n+e
+  end
+end
+
 function remove_extmark(events, ns_id)
   vim.api.nvim_command("autocmd "..table.concat(events, ',').." <buffer> ++once lua pcall(vim.api.nvim_buf_clear_namespace, 0, "..ns_id..", 0, -1)")
 end
@@ -213,42 +251,8 @@ function place_inline(row, col)
     row, col = unpack(vim.api.nvim_win_get_cursor(0))
   end
   
-  local back, forward, back_del, forward_del
-  if col-1 < 0 then
-    return
-  end
-  
-  local char_ind = vim.str_byteindex(line, col-1)
-  local _, back = string.find(line:sub(1, char_ind+1), "^%$%$")
-  if back then
-    back = back + 1
-    back_del = "$$"
-  else
-    _, back = string.find(line:sub(1, char_ind+1), ".*%$")
-    if back then
-      back = back + 1
-      back_del = "$"
-    end
-  end
-  
-  local char_ind = vim.str_byteindex(line, col)
-  local forward = string.find(line:sub(char_ind+1), "%$%$")
-  if forward then
-    forward = forward -1+char_ind
-    forward_del = "$$"
-  else
-    forward = string.find(line:sub(char_ind+1), "%$")
-    if forward then
-      forward = forward -1+char_ind
-      forward_del = "$"
-    end
-  end
-  
-  assert(back and forward, "Could not find formula delimiter")
-  assert(back_del == forward_del, "Could not find formula delimiter")
-  line = line:sub(back, forward)
-  
-  local del = back_del
+  local back, forward, del = find_latex_at(buf, row, col)
+  line = line:sub(back+string.len(del)+1, forward-string.len(del))
   
 
 	local success, exp = pcall(parser.parse_all, line)
@@ -316,16 +320,16 @@ function place_inline(row, col)
       
     elseif del == "$" then
       local start_byte, end_byte
-      start_byte = forward+1
+      start_byte = forward
       local end_col
       if #drawing == 1 then
-        end_byte = forward+1+string.len(drawing[1])
+        end_byte = forward+string.len(drawing[1])
       else
         end_byte = string.len(drawing[#drawing])
-        end_col = forward+1+vim.str_utfindex(drawing[#drawing])
+        end_col = forward+vim.str_utfindex(drawing[#drawing])
       end
       
-      vim.api.nvim_buf_set_text(buf, row-1, forward+1, row-1, forward+1, drawing)
+      vim.api.nvim_buf_set_text(buf, row-1, forward, row-1, forward, drawing)
       
       local buf = vim.api.nvim_get_current_buf()
       if not extmarks[buf] then
