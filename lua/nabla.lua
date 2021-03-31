@@ -155,7 +155,6 @@ local function attach()
       if not s then
         break
       end
-      print(s .. " " .. e)
       vim.api.nvim_buf_set_extmark(buf, initial_ns, i-1, s, {
         end_col = e,
         hl_group = "Search",

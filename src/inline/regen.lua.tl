@@ -51,7 +51,6 @@ for i=1,lnum do
     if not s then
       break
     end
-    print(s .. " " .. e)
     @create_extmark_for_search
     start = e
   end
