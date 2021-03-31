@@ -1,4 +1,4 @@
--- Generated from colorize.lua.tl, conceal.lua.tl, nabla.lua.tl, virt_multi.lua.tl, writer.lua.tl using ntangle.nvim
+-- Generated from colorize.lua.tl, conceal.lua.tl, nabla.lua.tl, regen.lua.tl, virt_multi.lua.tl, writer.lua.tl using ntangle.nvim
 -- local parser = require("nabla.parser")
 local parser = require("nabla.latex")
 
@@ -13,8 +13,8 @@ local function get_param(name, default)
   end
 end
 
-local conceal_match  = get_param("nabla_conceal_match", [[/^\$\$.*\$\$/ms=s,me=e]])
-local conceal_inline_match = get_param("nabla_conceal_inline_match", [[/\(^\|[^$]\)\zs\$[^$]\{-1,}\$\ze\($\|[^$]\)/]])
+local conceal_match  = get_param("nabla_conceal_match", [[^\$\$.*\$\$]])
+local conceal_inline_match = get_param("nabla_conceal_inline_match", [[\(^\|[^$]\)\zs\$[^$]\{-1,}\$\ze\($\|[^$]\)]])
 local conceal_char  = get_param("nabla_conceal_char", '')
 local conceal_inline_char = get_param("nabla_conceal_inline_char", '')
 
@@ -113,20 +113,84 @@ local function attach()
     cchar_inline = [[cchar=]] .. conceal_inline_char
   end
   
-  vim.api.nvim_command([[syn match NablaFormula ]] .. conceal_match .. [[ conceal ]] .. cchar)
-  vim.api.nvim_command([[syn match NablaInlineFormula ]] .. conceal_inline_match .. [[ conceal ]] .. cchar_inline)
+  vim.api.nvim_command([[syn match NablaFormula /]] .. conceal_match .. [[/ conceal ]] .. cchar)
+  vim.api.nvim_command([[syn match NablaInlineFormula /]] .. conceal_inline_match .. [[/ conceal ]] .. cchar_inline)
   vim.api.nvim_command([[setlocal conceallevel=2]])
   vim.api.nvim_command([[setlocal concealcursor=]])
   
   -- @change_save_behaviour
-  -- @run_place_inline_on_every_line
+  local single_formula = vim.regex(conceal_match)
+  
+  local inline_formula = vim.regex(conceal_inline_match)
+  
+  
+  local initial_ns = vim.api.nvim_create_namespace("")
+  
+  local lnum = vim.api.nvim_buf_line_count(buf)
+  
+  for i=1,lnum do
+    local start = 0
+    while true do
+      local s, e = single_formula:match_line(buf, i-1, start)
+      if not s then
+        break
+      end
+      vim.api.nvim_buf_set_extmark(buf, initial_ns, i-1, s, {
+        end_col = e,
+        hl_group = "Search",
+      })
+      
+      start = e
+    end
+  end
+  
+  local lnum = vim.api.nvim_buf_line_count(buf)
+  
+  for i=1,lnum do
+    local start = 0
+    while true do
+      local s, e = inline_formula:match_line(buf, i-1, start)
+      if not s then
+        break
+      end
+      print(s .. " " .. e)
+      vim.api.nvim_buf_set_extmark(buf, initial_ns, i-1, s, {
+        end_col = e,
+        hl_group = "Search",
+      })
+      
+      start = e
+    end
+  end
+  
+  local i = 1
+  while true do
+    local matches = vim.api.nvim_buf_get_extmarks(buf, initial_ns, 0, -1, { details = true})
+    if not matches[i] then
+      break
+    end
+  
+    local id, row, col, details = unpack(matches[i])
+    local end_col = details.end_col
+    
+    local middlecol = math.ceil((col+end_col)/2)
+    
+    place_inline(row+1, middlecol)
+    
+    i = i + 1
+  end
+  
+  
+  vim.api.nvim_buf_clear_namespace(buf, initial_ns, 0, -1)
+  
+  
 end
 
 function remove_extmark(events, ns_id)
   vim.api.nvim_command("autocmd "..table.concat(events, ',').." <buffer> ++once lua pcall(vim.api.nvim_buf_clear_namespace, 0, "..ns_id..", 0, -1)")
 end
 
-function place_inline(lnum)
+function place_inline(row, col)
   local buf = vim.api.nvim_get_current_buf()
   if not attached[buf] then 
     attached[buf] = true
@@ -136,16 +200,23 @@ function place_inline(lnum)
   
 
   local line
-  if not lnum then
+  if not col then
     line = vim.api.nvim_get_current_line()
     
   else
-    line = vim.api.nvim_buf_get_lines(0, lnum-1, lnum, true)[1]
+    line = vim.api.nvim_buf_get_lines(0, row-1, row, true)[1]
     
   end
 
-  local row, col = unpack(vim.api.nvim_win_get_cursor(0))
+  if not row then
+    row, col = unpack(vim.api.nvim_win_get_cursor(0))
+  end
+  
   local back, forward, back_del, forward_del
+  if col-1 < 0 then
+    return
+  end
+  
   local char_ind = vim.str_byteindex(line, col-1)
   local _, back = string.find(line:sub(1, char_ind+1), "^%$%$")
   if back then
@@ -264,14 +335,11 @@ function place_inline(lnum)
       vim.api.nvim_buf_set_extmark(buf, ns_id, row-1, start_byte, {
         end_line = row-1+(#drawing-1),
         end_col = end_byte,
-        hl_group = "Search",
       })
       
       local ns_id = vim.api.nvim_create_namespace("")
       colorize(g, 0, 0, ns_id, drawing, start_byte, row-1)
     end
-
-    return #drawing
 	else
 		if type(errmsg) == "string"  then
 			print("nabla error: " .. errmsg)

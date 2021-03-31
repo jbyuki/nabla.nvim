@@ -3,12 +3,12 @@
 local place_inline
 
 @functions+=
-function place_inline(lnum)
+function place_inline(row, col)
   local buf = vim.api.nvim_get_current_buf()
   @attach_to_buffer_if_not
 
   local line
-  if not lnum then
+  if not col then
     @get_current_line
   else
     @get_line_at_lnum
@@ -32,8 +32,6 @@ function place_inline(lnum)
       @place_extmarks_inline
       @colorize_ascii_art_inline
     end
-
-    return #drawing
 	else
 		if type(errmsg) == "string"  then
 			print("nabla error: " .. errmsg)
@@ -103,7 +101,7 @@ vim.api.nvim_buf_set_extmark(bufname, ns_id, row-1, -1, {
 })
 
 @get_line_at_lnum+=
-line = vim.api.nvim_buf_get_lines(0, lnum-1, lnum, true)[1]
+line = vim.api.nvim_buf_get_lines(0, row-1, row, true)[1]
 
 @script_variables+=
 local attached = {}
@@ -116,7 +114,10 @@ if not attached[buf] then
 end
 
 @extract_latex_formula+=
-local row, col = unpack(vim.api.nvim_win_get_cursor(0))
+if not row then
+  row, col = unpack(vim.api.nvim_win_get_cursor(0))
+end
+
 local back, forward, back_del, forward_del
 @go_backwards_to_find_formula_delimiter
 @go_forwards_to_find_formula_delimiter
@@ -126,6 +127,10 @@ assert(back_del == forward_del, "Could not find formula delimiter")
 local del = back_del
 
 @go_backwards_to_find_formula_delimiter+=
+if col-1 < 0 then
+  return
+end
+
 local char_ind = vim.str_byteindex(line, col-1)
 local _, back = string.find(line:sub(1, char_ind+1), "^%$%$")
 if back then
@@ -173,7 +178,6 @@ vim.api.nvim_buf_set_text(buf, row-1, forward+1, row-1, forward+1, drawing)
 vim.api.nvim_buf_set_extmark(buf, ns_id, row-1, start_byte, {
   end_line = row-1+(#drawing-1),
   end_col = end_byte,
-  hl_group = "Search",
 })
 
 @colorize_ascii_art_inline+=

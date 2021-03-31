@@ -1,2 +1,9 @@
-$\alpha_1$α₁ is variable
+$\alpha_3$α₃ is different.
+hello $\alpha_2$α₂ is 
 
+$x_1+x_2+x_3 = y$x₁+x₂+x₃=y
+
+$\frac{1}{3} + \sqrt{\frac{3+a}{b} + c}$   ┌─────
+1  │3+a  
+―+ │―――+c
+3 \│ b   
