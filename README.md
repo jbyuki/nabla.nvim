@@ -3,7 +3,7 @@ nabla.nvim
 
 Take your scentific notes in Neovim.
 
-[![Capture.png](https://i.postimg.cc/L80ByqPz/Capture.png)](https://postimg.cc/VJnCvkD6)
+[![Capture.png](https://i.postimg.cc/prmHHkTR/Capture.png)](https://postimg.cc/PvncbWYR)
 
 
 The next iteration on the ASCII math formula generator.
