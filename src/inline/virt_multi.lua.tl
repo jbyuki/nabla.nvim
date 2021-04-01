@@ -45,14 +45,12 @@ end
 place_inline = place_inline,
 
 @place_lines_after_current_line+=
-local row
-if not lnum then
-  row, _ = unpack(vim.api.nvim_win_get_cursor(0))
+local line_count = vim.api.nvim_buf_line_count(0)
+if row < line_count then
+  vim.api.nvim_buf_set_lines(0, row, row, true, drawing)
 else
-  row = lnum
+  vim.api.nvim_buf_set_lines(0, -1, -1, true, drawing)
 end
-
-vim.api.nvim_buf_set_lines(0, row, row, true, drawing)
 
 -- @define_signs+=
 -- vim.fn.sign_define("nablaBackground", {
@@ -88,12 +86,9 @@ if not extmarks[buf] then
 end
 local ns_id = extmarks[buf]
 
-@place_extmarks_at_beginning+=
-local bufname = vim.api.nvim_buf_get_name(0)
-for i=1,#drawing do
-end
-
 @place_extmarks_multiline+=
+print("start " .. (row-1))
+print("end_line " .. (row-1+#drawing+1))
 vim.api.nvim_buf_set_extmark(bufname, ns_id, row-1, -1, { 
   end_line = row-1 + #drawing + 1,
   end_col = 0,

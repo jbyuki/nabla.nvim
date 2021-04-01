@@ -84,11 +84,18 @@ local tempbuf = vim.api.nvim_create_buf(false, true)
 vim.api.nvim_buf_set_lines(tempbuf, 0, -1, true, lines)
 
 @remove_text_at_every_extmarks+=
+
 for _, extmark in ipairs(extmarks) do
   local _, srow, scol, details = unpack(extmark)
   local erow, ecol = details.end_line or srow, details.end_col or scol
+  local line_count = vim.api.nvim_buf_line_count(tempbuf)
 
-  vim.api.nvim_buf_set_text(tempbuf, srow, scol, erow, ecol, {})
+  if srow < line_count then
+    local line = vim.api.nvim_buf_get_lines(tempbuf, srow-1, srow, true)[1]
+    if scol < string.len(line) then
+      vim.api.nvim_buf_set_text(tempbuf, srow, scol, erow, ecol, {})
+    end
+  end
 end
 
 @retrieve_content_of_scratch_buffer+=

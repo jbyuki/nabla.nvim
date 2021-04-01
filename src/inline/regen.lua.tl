@@ -21,20 +21,20 @@ vim.api.nvim_buf_clear_namespace(buf, initial_ns, 0, -1)
 local lnum = vim.api.nvim_buf_line_count(buf)
 
 for i=1,lnum do
-  local start = 0
+  local n = 0
   while true do
-    local s, e = single_formula:match_line(buf, i-1, start)
+    local s, e = single_formula:match_line(buf, i-1, n)
     if not s then
       break
     end
     @create_extmark_for_search
-    start = e
+    n = e+n
   end
 end
 
 @create_extmark_for_search+=
-vim.api.nvim_buf_set_extmark(buf, initial_ns, i-1, s, {
-  end_col = e,
+vim.api.nvim_buf_set_extmark(buf, initial_ns, i-1, s+n, {
+  end_col = e+n,
   hl_group = "Search",
 })
 
@@ -45,14 +45,14 @@ local inline_formula = vim.regex(conceal_inline_match)
 local lnum = vim.api.nvim_buf_line_count(buf)
 
 for i=1,lnum do
-  local start = 0
+  local n = 0
   while true do
-    local s, e = inline_formula:match_line(buf, i-1, start)
+    local s, e = inline_formula:match_line(buf, i-1, n)
     if not s then
       break
     end
     @create_extmark_for_search
-    start = e
+    n = e+n
   end
 end
 

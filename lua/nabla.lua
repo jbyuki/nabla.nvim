@@ -133,36 +133,36 @@ local function attach()
   local lnum = vim.api.nvim_buf_line_count(buf)
   
   for i=1,lnum do
-    local start = 0
+    local n = 0
     while true do
-      local s, e = single_formula:match_line(buf, i-1, start)
+      local s, e = single_formula:match_line(buf, i-1, n)
       if not s then
         break
       end
-      vim.api.nvim_buf_set_extmark(buf, initial_ns, i-1, s, {
-        end_col = e,
+      vim.api.nvim_buf_set_extmark(buf, initial_ns, i-1, s+n, {
+        end_col = e+n,
         hl_group = "Search",
       })
       
-      start = e
+      n = e+n
     end
   end
   
   local lnum = vim.api.nvim_buf_line_count(buf)
   
   for i=1,lnum do
-    local start = 0
+    local n = 0
     while true do
-      local s, e = inline_formula:match_line(buf, i-1, start)
+      local s, e = inline_formula:match_line(buf, i-1, n)
       if not s then
         break
       end
-      vim.api.nvim_buf_set_extmark(buf, initial_ns, i-1, s, {
-        end_col = e,
+      vim.api.nvim_buf_set_extmark(buf, initial_ns, i-1, s+n, {
+        end_col = e+n,
         hl_group = "Search",
       })
       
-      start = e
+      n = e+n
     end
   end
   
@@ -280,14 +280,12 @@ function place_inline(row, col)
         drawing[i] = indent .. drawing[i]
       end
       
-      local row
-      if not lnum then
-        row, _ = unpack(vim.api.nvim_win_get_cursor(0))
+      local line_count = vim.api.nvim_buf_line_count(0)
+      if row < line_count then
+        vim.api.nvim_buf_set_lines(0, row, row, true, drawing)
       else
-        row = lnum
+        vim.api.nvim_buf_set_lines(0, -1, -1, true, drawing)
       end
-      
-      vim.api.nvim_buf_set_lines(0, row, row, true, drawing)
       
       -- @define_signs+=
       -- vim.fn.sign_define("nablaBackground", {
@@ -309,6 +307,8 @@ function place_inline(row, col)
       end
       local ns_id = extmarks[buf]
       
+      print("start " .. (row-1))
+      print("end_line " .. (row-1+#drawing+1))
       vim.api.nvim_buf_set_extmark(bufname, ns_id, row-1, -1, { 
         end_line = row-1 + #drawing + 1,
         end_col = 0,
@@ -392,11 +392,18 @@ local function save(buf)
   
   vim.api.nvim_buf_set_lines(tempbuf, 0, -1, true, lines)
   
+  
   for _, extmark in ipairs(extmarks) do
     local _, srow, scol, details = unpack(extmark)
     local erow, ecol = details.end_line or srow, details.end_col or scol
+    local line_count = vim.api.nvim_buf_line_count(tempbuf)
   
-    vim.api.nvim_buf_set_text(tempbuf, srow, scol, erow, ecol, {})
+    if srow < line_count then
+      local line = vim.api.nvim_buf_get_lines(tempbuf, srow-1, srow, true)[1]
+      if scol < string.len(line) then
+        vim.api.nvim_buf_set_text(tempbuf, srow, scol, erow, ecol, {})
+      end
+    end
   end
   
   local output_lines = vim.api.nvim_buf_get_lines(tempbuf, 0, -1, true)
