@@ -307,8 +307,6 @@ function place_inline(row, col)
       end
       local ns_id = extmarks[buf]
       
-      print("start " .. (row-1))
-      print("end_line " .. (row-1+#drawing+1))
       vim.api.nvim_buf_set_extmark(bufname, ns_id, row-1, -1, { 
         end_line = row-1 + #drawing + 1,
         end_col = 0,
@@ -392,21 +390,53 @@ local function save(buf)
   
   vim.api.nvim_buf_set_lines(tempbuf, 0, -1, true, lines)
   
-  
+  local scratch_id = vim.api.nvim_create_namespace("")
+  local line_count = vim.api.nvim_buf_line_count(tempbuf)
   for _, extmark in ipairs(extmarks) do
     local _, srow, scol, details = unpack(extmark)
-    local erow, ecol = details.end_line or srow, details.end_col or scol
+    local erow, ecol = details.end_row or srow, details.end_col or scol
+  
+    if erow >= line_count then
+      erow = line_count-1
+      local lastline = vim.api.nvim_buf_get_lines(tempbuf, erow, erow+1, true)[1]
+      ecol = string.len(lastline)
+    end
+    
+  
+    vim.api.nvim_buf_set_extmark(tempbuf, scratch_id, srow, scol, {
+      end_line = erow,
+      end_col = ecol,
+    })
+  end
+  
+  local ex = 1
+  for i=1,#extmarks do
+    extmarks = vim.api.nvim_buf_get_extmarks(tempbuf, scratch_id, 0, -1, { details = true})
+    local extmark = extmarks[i]
+  
+    local _, srow, scol, details = unpack(extmark)
+    local erow, ecol = details.end_row or srow, details.end_col or scol
     local line_count = vim.api.nvim_buf_line_count(tempbuf)
   
     if srow < line_count then
-      local line = vim.api.nvim_buf_get_lines(tempbuf, srow-1, srow, true)[1]
-      if scol < string.len(line) then
+      local line = vim.api.nvim_buf_get_lines(tempbuf, srow, srow+1, true)[1]
+      if scol <= string.len(line) then
+        if erow >= line_count then
+          erow = line_count-1
+          local lastline = vim.api.nvim_buf_get_lines(tempbuf, erow, erow+1, true)[1]
+          ecol = string.len(lastline)
+        end
+        
         vim.api.nvim_buf_set_text(tempbuf, srow, scol, erow, ecol, {})
       end
     end
   end
   
   local output_lines = vim.api.nvim_buf_get_lines(tempbuf, 0, -1, true)
+  
+  vim.api.nvim_buf_delete(tempbuf, {force = true})
+  
+  
   
   for _, line in ipairs(output_lines) do
     f:write(line .. "\n")

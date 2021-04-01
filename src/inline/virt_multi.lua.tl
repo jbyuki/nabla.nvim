@@ -87,8 +87,6 @@ end
 local ns_id = extmarks[buf]
 
 @place_extmarks_multiline+=
-print("start " .. (row-1))
-print("end_line " .. (row-1+#drawing+1))
 vim.api.nvim_buf_set_extmark(bufname, ns_id, row-1, -1, { 
   end_line = row-1 + #drawing + 1,
   end_col = 0,
