@@ -32,7 +32,7 @@ end
 local lines = vim.api.nvim_buf_get_lines(buf, 0, -1, true)
 
 @get_current_filename+=
-local fname = vim.api.nvim_buf_get_name(buf)
+local fname = vim.fn.expand("<afile>")
 fname = vim.fn.fnamemodify(fname, ":p")
 
 @write_all_lines_except_extmarks+=

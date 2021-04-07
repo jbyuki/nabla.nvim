@@ -2,6 +2,8 @@
 @*=
 @retrieve_nabla_directory
 @retrieve_nabla_test_directory
+-- local add = [[\\.\pipe\nvim-24652-0]]
+-- local conn = vim.fn.sockconnect("pipe", add, {rpc = true})
 @create_neovim_instance
 
 local files = {}
@@ -14,6 +16,21 @@ for _, file in ipairs(files) do
   @print_test_result
 end
 
+@retrieve_nabla_doc_directory
+
+local files = {}
+@glob_all_tests
+for _, file in ipairs(files) do
+  @read_input_document
+  @run_init_nabla_on_document
+  @write_nabla_document_in_temp_file
+  @buffer_wipeout_nabla_document
+
+  @read_from_nabla_temp_document_file
+  @read_from_nabla_original_document_file
+  @compare_original_and_write_document
+end
+
 @close_neovim_instance
 
 @retrieve_nabla_directory+=
@@ -23,6 +40,7 @@ if info and info.source:sub(1, 1) == "@" then
   path = vim.fn.fnamemodify(info.source:sub(2), ":p")
 end
 path = vim.fn.fnamemodify(path, ":h:h:h")
+local nabla_path = path
 
 @retrieve_nabla_test_directory+=
 path = path .. "/test/cases"

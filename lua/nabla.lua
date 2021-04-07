@@ -371,7 +371,7 @@ local function save(buf)
   
   local lines = vim.api.nvim_buf_get_lines(buf, 0, -1, true)
   
-  local fname = vim.api.nvim_buf_get_name(buf)
+  local fname = vim.fn.expand("<afile>")
   fname = vim.fn.fnamemodify(fname, ":p")
   
   local f = io.open(fname, "w")

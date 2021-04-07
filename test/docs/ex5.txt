@@ -1,0 +1,1 @@
+$\sum_i^{\infty}x_i^2$
