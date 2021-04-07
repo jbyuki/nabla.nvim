@@ -14,8 +14,6 @@ Requirements
 * Neovim nightly
 * A colorscheme which supports treesitter [see here](https://github.com/rockerBOO/awesome-neovim#treesitter-supported-colorschemes)
 
-Note: See [nabla.nvim/inline](https://github.com/jbyuki/nabla.nvim/tree/inline) for a more experimental version.
-
 Install
 -------
 
