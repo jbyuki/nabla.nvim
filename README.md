@@ -20,7 +20,7 @@ Install
 Using [vim-plug](https://github.com/junegunn/vim-plug)
 
 ```vim
-Plug 'jbyuki/nabla.nvim' , {'branch': 'inline'}
+Plug 'jbyuki/nabla.nvim'
 ```
 
 Configuration
