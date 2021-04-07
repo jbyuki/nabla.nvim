@@ -43,7 +43,8 @@ Usage
 Reference
 ---------
 
-See [test/docs/dirichlet.txt](https://github.com/jbyuki/nabla.nvim/blob/master/test/docs/dirichlet.txt) for an example.
+See [test/input.txt](https://github.com/jbyuki/nabla.nvim/blob/master/test/input.txt) or [test/docs/dirichlet.txt](https://github.com/jbyuki/nabla.nvim/blob/master/test/docs/dirichlet.txt) for examples.
+ 
 
 **Note**: If the notation you need is not present or there is a misaligned expression, feel free to open an [Issue](https://github.com/jbyuki/nabla.nvim/issues).
 
