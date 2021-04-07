@@ -40,11 +40,12 @@ Usage
   * `$ ... $` : inline form
   * `$$ ... $$` : wrapped form
 
+See [test/docs/dirichlet.txt](https://github.com/jbyuki/nabla.nvim/blob/master/test/docs/dirichlet.txt) for a document using nabla.nvim.
+
 Reference
 ---------
 
-See [test/input.txt](https://github.com/jbyuki/nabla.nvim/blob/master/test/input.txt) or [test/docs/dirichlet.txt](https://github.com/jbyuki/nabla.nvim/blob/master/test/docs/dirichlet.txt) for examples.
- 
+See [test/input.txt](https://github.com/jbyuki/nabla.nvim/blob/master/test/input.txt) or  for examples.
 
 **Note**: If the notation you need is not present or there is a misaligned expression, feel free to open an [Issue](https://github.com/jbyuki/nabla.nvim/issues).
 
