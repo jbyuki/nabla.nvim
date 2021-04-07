@@ -1,0 +1,15 @@
+Dirichlet Distribution
+
+The symmetric Dirichlet distribution (DD) can be considered a distribution of distributions. Each sample from the DD is a categorial distribution over $K$ categories. It is parameterized $G_0$, a distribution over $K$ categories and $\alpha$, a scale factor.
+
+The expected value of the DD is $G_0$. The variance of the DD is a function of the scale factor. When $\alpha$ is large, samples from $DD(\alpha\cdot G_0)$ will be very close to $G_0$. When $\alpha$ is small, samples will vary more widely.
+
+We demonstrate below by setting $G_0=[.2, .2, .6]$ and varying $\alpha$ from 0.1 to 1000. In each case, the mean of the samples is roughly $G_0$, but the standard deviation is decreases as $\alpha$ increases.
+
+Dirichlet Process
+
+The Dirichlet Process can be considered a way to generalize the Dirichlet distribution. While the Dirichlet distribution is parameterized by a discrete distribution $G_0$ and generates samples that are similar discrete distributions, the Dirichlet process is parameterized by a generic distribution $H_0$ and generates samples which are distributions similar to $H_0$. The Dirichlet process also has a parameter $\alpha$ that determines how similar how widely samples will vary from $H_0$.
+
+We can construct a sample $H$ (recall that $H$ is a probability distribution) from a Dirichlet process $\text{DP}(\alpha H_0)$ by drawing a countably infinite number of samples $\theta_k$ from $H_0$) and setting:
+
+$$H=\sum_{k=1}^{\infty} \pi_k \cdot\delta(x-\theta_k)$$
