@@ -1,44 +1,46 @@
 nabla.nvim
 -----------
 
-Take your scientific notes in Neovim.
+Take your scentific notes in Neovim.
 
-[![Capture.png](https://i.postimg.cc/sDn3nNWj/Capture.png)](https://postimg.cc/PPwGJKK9)
+[![Capture.png](https://i.postimg.cc/prmHHkTR/Capture.png)](https://postimg.cc/PvncbWYR)
 
-**nabla.nvim** is an ASCII math generator from LaTeX equations.
+
+The next iteration on the ASCII math formula generator.
+
+Requirements
+------------
+
+* Neovim nightly
+* A colorscheme which supports treesitter [see here](https://github.com/rockerBOO/awesome-neovim#treesitter-supported-colorschemes)
 
 Note: See [nabla.nvim/inline](https://github.com/jbyuki/nabla.nvim/tree/inline) for a more experimental version.
 
 Install
 -------
 
-Install using a plugin manager such as [vim-plug](https://github.com/junegunn/vim-plug).
+Using [vim-plug](https://github.com/junegunn/vim-plug)
 
-```
+```vim
 Plug 'jbyuki/nabla.nvim'
 ```
 
 Configuration
 -------------
 
-For example to bind it to <kbd>F5</kbd>:
+Bind the following command:
 
+```vim
+nnoremap <F5> :lua require("nabla").place_inline()<CR>
 ```
-nnoremap <F5> :lua require("nabla").replace_current()<CR>
-```
-
-or
-
-```
-nnoremap <F5> :lua require("nabla").draw_overlay()<CR>
-```
-
-The latter draws the formulas as a virtual text overlay.
 
 Usage
 -----
 
-Press <kbd>F5</kbd> on the math expression line.
+* Press <kbd>F5</kbd> to initiate **nabla.nvim**.
+* Press <kbd>F5</kbd> on a LaTeX formula to generate the ASCII Formula.
+  * `$ ... $` : inline form
+  * `$$ ... $$` : wrapped form
 
 Reference
 ---------
@@ -51,3 +53,4 @@ Credits
 -------
 
 * Thanks to jetrosut for his helpful feedback and bug troubleshoot
+* Thanks to nbCloud91 for pointing me to VIM conceals

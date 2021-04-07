@@ -7,6 +7,14 @@ local style = {
 	@style_variables
 }
 
+local greek_etc = {
+  @greek_etc
+}
+
+local special_nums = {
+  @special_numbers
+}
+
 local special_syms = {
 	@special_symbols
 }
@@ -40,11 +48,13 @@ end
 
 @grid_prototype+=
 local grid = {}
-function grid:new(w, h, content)
+function grid:new(w, h, content, t)
 	@make_blank_content_if_not_provided
 	local o = { 
 		w = w or 0, 
 		h = h or 0, 
+    t = t,
+    children = {},
 		content = content or {},
 		@grid_data
 	}
@@ -75,13 +85,9 @@ function grid:join_hori(g, top_align)
 
 	local c = grid:new(self.w+g.w, h, combined)
 	@set_result_horizontal_middle
+  @put_children_join_horiz
 	return c
 end
-
-@compute_spacers+=
-local s1 = math.floor((h-self.h)/2)
-local s2 = math.floor((h-g.h)/2)
-
 
 @grid_prototype+=
 function grid:get_row(y)
@@ -106,7 +112,7 @@ plus_sign = " + ",
 @transform_exp_to_grid+=
 if exp.kind == "numexp" then
 	local numstr = tostring(exp.num)
-	local g = grid:new(string.len(numstr), 1, { tostring(numstr) })
+	local g = grid:new(string.len(numstr), 1, { tostring(numstr) }, "num")
 
 	@if_has_both_subscript_and_superscript_put_aside
 	@if_has_subscript_put_them_to_g
@@ -118,7 +124,7 @@ if exp.kind == "numexp" then
 elseif exp.kind == "addexp" then
 	local leftgrid = to_ascii(exp.left):put_paren(exp.left, exp)
 	local rightgrid = to_ascii(exp.right):put_paren(exp.right, exp)
-	local opgrid = grid:new(utf8len(style.plus_sign), 1, { style.plus_sign })
+	local opgrid = grid:new(utf8len(style.plus_sign), 1, { style.plus_sign }, "op")
 	local c1 = leftgrid:join_hori(opgrid)
 	local c2 = c1:join_hori(rightgrid)
 	return c2
@@ -176,7 +182,9 @@ function grid:join_vert(g, align_left)
 	end
 
 	@transpose_columns
-	return grid:new(w, h, rows)
+	local c = grid:new(w, h, rows)
+  @put_children_join_vert
+  return c
 end
 
 @compute_spacers_vertical+=
@@ -324,7 +332,7 @@ else
 	end
 end
 
-local left_paren = grid:new(1, self.h, left_content)
+local left_paren = grid:new(1, self.h, left_content, "par")
 left_paren.my = self.my
 
 @create_right_paren_with_correct_height+=
@@ -340,7 +348,7 @@ else
 	end
 end
 
-local right_paren = grid:new(1, self.h, right_content)
+local right_paren = grid:new(1, self.h, right_content, "par")
 right_paren.my = self.my
 
 @transform_exp_to_grid+=
@@ -349,7 +357,7 @@ elseif exp.kind == "symexp" then
 	-- if special_syms[sym] then
 		-- sym = special_syms[sym]
 	-- end
-	local g = grid:new(utf8len(sym), 1, { sym })
+	local g = grid:new(utf8len(sym), 1, { sym }, "sym")
 	@if_has_both_subscript_and_superscript_put_aside
 	@if_has_subscript_put_them_to_g
 	@if_has_superscript_put_them_to_g
@@ -418,7 +426,7 @@ elseif exp.kind == "eqexp" then
 	end
 
 
-@special_symbols+=
+@greek_etc+=
 ["Alpha"] = "Α", ["Beta"] = "Β", ["Gamma"] = "Γ", ["Delta"] = "Δ", ["Epsilon"] = "Ε", ["Zeta"] = "Ζ", ["Eta"] = "Η", ["Theta"] = "Θ", ["Iota"] = "Ι", ["Kappa"] = "Κ", ["Lambda"] = "Λ", ["Mu"] = "Μ", ["Nu"] = "Ν", ["Xi"] = "Ξ", ["Omicron"] = "Ο", ["Pi"] = "Π", ["Rho"] = "Ρ", ["Sigma"] = "Σ", ["Tau"] = "Τ", ["Upsilon"] = "Υ", ["Phi"] = "Φ", ["Chi"] = "Χ", ["Psi"] = "Ψ", ["Omega"] = "Ω",
 
 ["alpha"] = "α", ["beta"] = "β", ["gamma"] = "γ", ["delta"] = "δ", ["epsilon"] = "ε", ["zeta"] = "ζ", ["eta"] = "η", ["theta"] = "θ", ["iota"] = "ι", ["kappa"] = "κ", ["lambda"] = "λ", ["mu"] = "μ", ["nu"] = "ν", ["xi"] = "ξ", ["omicron"] = "ο", ["pi"] = "π", ["rho"] = "ρ", ["final"] = "ς", ["sigma"] = "σ", ["tau"] = "τ", ["upsilon"] = "υ", ["phi"] = "φ", ["chi"] = "χ", ["psi"] = "ψ", ["omega"] = "ω",
@@ -459,7 +467,7 @@ end
 local int_bar = grid:new(1, integrand.h+1, int_content)
 local col_spacer = grid:new(1, 1, { " " })
 
-@special_symbols+=
+@special_numbers+=
 ["infty"] = "∞",
 
 @style_variables+=
@@ -571,7 +579,7 @@ for y=1,toroot.h do
 	end
 end
 
-local left_root = grid:new(2, toroot.h, left_content)
+local left_root = grid:new(2, toroot.h, left_content, "sym")
 left_root.my = toroot.my
 
 local up_str = " " .. style.root_upper_left
@@ -580,7 +588,7 @@ for x=1,toroot.w do
 end
 up_str = up_str .. style.root_upper_right
 
-local top_root = grid:new(toroot.w+2, 1, { up_str })
+local top_root = grid:new(toroot.w+2, 1, { up_str }, "sym")
 
 @declare_functions+=
 local hassubscript
@@ -1000,9 +1008,11 @@ else
 end
 
 @transform_function_into_ascii+=
-elseif special_syms[name] then
-	local sym = special_syms[name]
-	local g = grid:new(utf8len(sym), 1, { sym })
+elseif special_syms[name] or special_nums[name] or greek_etc[name] then
+	local sym = special_syms[name] or special_nums[name] or greek_etc[name]
+  local t
+  @determine_type_special
+	local g = grid:new(utf8len(sym), 1, { sym }, t)
 	@if_has_both_subscript_and_superscript_put_aside
 	@if_has_subscript_put_them_to_g
 	@if_has_superscript_put_them_to_g
@@ -1024,6 +1034,7 @@ elseif special_syms[name] then
 if exp.sub and not exp.sup then 
 	local subscript = ""
 	local subexps = exp.sub.exps
+  local sub_t
 	@try_to_make_subscript_expression
 	if subscript and string.len(subscript) > 0 then
 		@combine_subscript_to_align_bottom
@@ -1033,6 +1044,7 @@ if exp.sub and not exp.sup then
 end
 
 @try_to_make_subscript_expression+=
+@determine_subscript_type
 for _, exp in ipairs(subexps) do
 	if exp.kind == "numexp" and math.floor(exp.num) == exp.num then
 		@append_number_subscript
@@ -1094,7 +1106,7 @@ local sub_letters = {
 }
 
 @append_characters_subscript+=
-if sub_letters[exp.sym] then
+if sub_letters[exp.sym] and not exp.sub and not exp.sup then
 	subscript = subscript .. sub_letters[exp.sym]
 else
 	subscript = nil
@@ -1102,7 +1114,7 @@ else
 end
 
 @combine_subscript_to_align_bottom+=
-local sub_g = grid:new(utf8len(subscript), 1, { subscript })
+local sub_g = grid:new(utf8len(subscript), 1, { subscript }, sub_t)
 g = g:join_hori(sub_g)
 
 @combine_subscript_diagonally+=
@@ -1178,6 +1190,7 @@ end
 if exp.sup and not exp.sub then 
 	local superscript = ""
 	local supexps = exp.sup.exps
+  local sup_t
 	@try_to_make_superscript_expression
 	if superscript and string.len(superscript) > 0 then
 		@combine_superscript_to_align_top
@@ -1187,6 +1200,7 @@ if exp.sup and not exp.sub then
 end
 
 @try_to_make_superscript_expression+=
+@determine_superscript_type
 for _, exp in ipairs(supexps) do
 	if exp.kind == "numexp" and math.floor(exp.num) == exp.num then
 		@append_number_superscript
@@ -1239,7 +1253,7 @@ else
 end
 
 @append_characters_superscript+=
-if sup_letters[exp.sym] then
+if sup_letters[exp.sym] and not exp.sub and not exp.sup then
 	superscript = superscript .. sup_letters[exp.sym]
 else
 	superscript = nil
@@ -1247,7 +1261,7 @@ else
 end
 
 @combine_superscript_to_align_top+=
-local sup_g = grid:new(utf8len(superscript), 1, { superscript })
+local sup_g = grid:new(utf8len(superscript), 1, { superscript }, sup_t)
 g = g:join_hori(sup_g, true)
 
 @combine_superscript_diagonally+=
@@ -1284,7 +1298,7 @@ elseif name == "sqrt" then
 
 @transform_function_into_ascii+=
 elseif name == "int" then
-	local g = grid:new(1, 1, { "∫" })
+	local g = grid:new(1, 1, { "∫" }, "sym")
 
 	@if_has_both_subscript_and_superscript_stack
 	@if_has_subscript_stack_with_g
@@ -1301,7 +1315,7 @@ elseif name == "int" then
 
 @transform_function_into_ascii+=
 elseif name == "iint" then
-	local g = grid:new(1, 1, { "∬" })
+	local g = grid:new(1, 1, { "∬" }, "sym")
 
 	@if_has_both_subscript_and_superscript_stack
 	@if_has_subscript_stack_with_g
@@ -1310,7 +1324,7 @@ elseif name == "iint" then
 	return g
 
 elseif name == "iiint" then
-	local g = grid:new(1, 1, { "∭" })
+	local g = grid:new(1, 1, { "∭" }, "sym")
 
 	@if_has_both_subscript_and_superscript_stack
 	@if_has_subscript_stack_with_g
@@ -1319,7 +1333,7 @@ elseif name == "iiint" then
 	return g
 
 elseif name == "oint" then
-	local g = grid:new(1, 1, { "∮" })
+	local g = grid:new(1, 1, { "∮" }, "sym")
 
 	@if_has_both_subscript_and_superscript_stack
 	@if_has_subscript_stack_with_g
@@ -1328,7 +1342,7 @@ elseif name == "oint" then
 	return g
 
 elseif name == "oiint" then
-	local g = grid:new(1, 1, { "∯" })
+	local g = grid:new(1, 1, { "∯" }, "sym")
 
 	@if_has_both_subscript_and_superscript_stack
 	@if_has_subscript_stack_with_g
@@ -1337,7 +1351,7 @@ elseif name == "oiint" then
 	return g
 
 elseif name == "oiiint" then
-	local g = grid:new(1, 1, { "∰" })
+	local g = grid:new(1, 1, { "∰" }, "sym")
 
 	@if_has_both_subscript_and_superscript_stack
 	@if_has_subscript_stack_with_g
@@ -1346,7 +1360,7 @@ elseif name == "oiiint" then
 	return g
 
 elseif name == "sum" then
-	local g = grid:new(1, 1, { "∑" })
+	local g = grid:new(1, 1, { "∑" }, "sym")
 
 	@if_has_both_subscript_and_superscript_stack
 	@if_has_subscript_stack_with_g
@@ -1355,7 +1369,7 @@ elseif name == "sum" then
 	return g
 
 elseif name == "prod" then
-	local g = grid:new(1, 1, { "∏" })
+	local g = grid:new(1, 1, { "∏" }, "sym")
 
 	@if_has_both_subscript_and_superscript_stack
 	@if_has_subscript_stack_with_g
@@ -1374,15 +1388,17 @@ if exp.sub and exp.sup then
   -- sub and sup are exchanged to
   -- make the most compact expression
 	local subexps = exp.sup.exps
+  local sub_t
 	@try_to_make_subscript_expression
 
 	local superscript = ""
 	local supexps = exp.sub.exps
+  local sup_t
 	@try_to_make_superscript_expression
 
 	if subscript and superscript then
-		local sup_g = grid:new(utf8len(subscript), 1, { subscript })
-		local sub_g = grid:new(utf8len(superscript), 1, { superscript })
+		local sup_g = grid:new(utf8len(subscript), 1, { subscript }, sub_t)
+		local sub_g = grid:new(utf8len(superscript), 1, { superscript }, sup_t)
 		g = g:join_sub_sup(sub_g, sup_g)
 	else
 		local subgrid = to_ascii(exp.sub)
@@ -1427,7 +1443,7 @@ end
 
 @transform_function_into_ascii+=
 elseif name == "lim" then
-local g = grid:new(3, 1, { "lim" })
+local g = grid:new(3, 1, { "lim" }, "op")
 
 @if_has_subscript_stack_with_g
 @put_col_spacer_to_g
@@ -1554,3 +1570,39 @@ return res
 ["cdots"] = "⋯",
 ["vdots"] = "⋮",
 ["ddots"] = "⋱",
+
+@put_children_join_horiz+=
+table.insert(c.children, { self, 0, s1 })
+table.insert(c.children, { g, self.w, s2 })
+
+@put_children_join_vert+=
+table.insert(c.children, { self, s1, 0 })
+table.insert(c.children, { g, s2, self.h })
+
+@determine_type_special+=
+if special_syms[name] then
+  t = "sym"
+elseif special_nums[name] then
+  t = "num"
+elseif greek_etc[name] then
+  t = "var"
+end
+
+
+@determine_subscript_type+=
+if #subexps == 1 and subexps[1].kind == "numexp" or (subexps[1].kind == "symexp" and string.match(subexps[1].sym, "^%d+$")) then
+  sub_t = "num"
+elseif subexps[1].kind == "symexp" and string.match(subexps[1].sym, "^%a+$") then
+  sub_t = "var"
+else
+  sub_t = "sym"
+end
+
+@determine_superscript_type+=
+if #supexps == 1 and supexps[1].kind == "numexp" or (supexps[1].kind == "symexp" and string.match(supexps[1].sym, "^%d+$")) then
+  sup_t = "num"
+elseif supexps[1].kind == "symexp" and string.match(supexps[1].sym, "^%a+$") then
+  sup_t = "var"
+else
+  sup_t = "sym"
+end
