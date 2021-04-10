@@ -6,7 +6,7 @@ Take your scentific notes in Neovim.
 [![Capture.png](https://i.postimg.cc/prmHHkTR/Capture.png)](https://postimg.cc/PvncbWYR)
 
 
-The next iteration on the ASCII math formula generator.
+The next iteration on the ASCII math generator from LaTeX formulas.
 
 Requirements
 ------------
