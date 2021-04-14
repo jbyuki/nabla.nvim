@@ -77,7 +77,6 @@ colorize(g, 2, 0, ns_id, drawing, 0, row)
 
 @script_variables+=
 local extmarks = {}
-local extmark_text  = get_param("nabla_extmark_text", "not saved")
 
 @create_extmark_namespace_for_buffer_if_not_done+=
 local buf = vim.api.nvim_get_current_buf()

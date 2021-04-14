@@ -1,4 +1,4 @@
--- Generated from parser.lua.tl using ntangle.nvim
+-- Generated from parser.lua.t using ntangle.nvim
 local parse_all
 
 local tokenize

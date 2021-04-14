@@ -1,4 +1,4 @@
--- Generated from ascii.lua.tl using ntangle.nvim
+-- Generated from ascii.lua.t using ntangle.nvim
 local utf8len, utf8char
 
 local hassuperscript

@@ -1,4 +1,4 @@
--- Generated from colorize.lua.tl, conceal.lua.tl, matcher.lua.tl, nabla.lua.tl, regen.lua.tl, virt_multi.lua.tl, writer.lua.tl using ntangle.nvim
+-- Generated from colorize.lua.t, conceal.lua.t, matcher.lua.t, nabla.lua.t, regen.lua.t, virt_multi.lua.t, writer.lua.t using ntangle.nvim
 -- local parser = require("nabla.parser")
 local parser = require("nabla.latex")
 
@@ -21,7 +21,6 @@ local conceal_inline_char = get_param("nabla_conceal_inline_char", '')
 local vtext = vim.api.nvim_create_namespace("nabla")
 
 local extmarks = {}
-local extmark_text  = get_param("nabla_extmark_text", "not saved")
 
 local attached = {}
 
