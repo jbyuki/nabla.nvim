@@ -306,10 +306,10 @@ function place_inline(row, col)
       end
       local ns_id = extmarks[buf]
       
+      local lastline = vim.api.nvim_buf_get_lines(0, row-1 + #drawing, row-1 + #drawing+1, true)[1]
       vim.api.nvim_buf_set_extmark(bufname, ns_id, row-1, -1, { 
-        end_line = row-1 + #drawing + 1,
-        end_col = 0,
-        -- hl_group = "Search",
+        end_line = row-1 + #drawing,
+        end_col = string.len(lastline),
       })
       
       local ns_id = vim.api.nvim_create_namespace("")
