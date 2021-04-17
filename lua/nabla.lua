@@ -307,10 +307,9 @@ function place_inline(row, col)
       local ns_id = extmarks[buf]
       
       local lastline = vim.api.nvim_buf_get_lines(0, row-1 + #drawing, row-1 + #drawing+1, true)[1]
-      vim.api.nvim_buf_set_extmark(bufname, ns_id, row-1, -1, { 
+      local new_id = vim.api.nvim_buf_set_extmark(bufname, ns_id, row-1, -1, { 
         end_line = row-1 + #drawing,
         end_col = string.len(lastline),
-        hl_group = "Search",
       })
       
       local ns_id = vim.api.nvim_create_namespace("")
@@ -412,9 +411,9 @@ local function save(buf)
   local ex = 1
   for i=1,#extmarks do
     extmarks = vim.api.nvim_buf_get_extmarks(tempbuf, scratch_id, 0, -1, { details = true})
-    local extmark = extmarks[i]
+    local extmark = extmarks[1]
   
-    local _, srow, scol, details = unpack(extmark)
+    local id, srow, scol, details = unpack(extmark)
     local erow, ecol = details.end_row or srow, details.end_col or scol
     local line_count = vim.api.nvim_buf_line_count(tempbuf)
   
@@ -430,6 +429,8 @@ local function save(buf)
         vim.api.nvim_buf_set_text(tempbuf, srow, scol, erow, ecol, {})
       end
     end
+  
+    vim.api.nvim_buf_del_extmark(tempbuf, scratch_id, id)
   end
   
   local output_lines = vim.api.nvim_buf_get_lines(tempbuf, 0, -1, true)

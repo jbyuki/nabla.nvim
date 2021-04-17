@@ -93,9 +93,9 @@ vim.api.nvim_buf_set_lines(tempbuf, 0, -1, true, lines)
 local ex = 1
 for i=1,#extmarks do
   extmarks = vim.api.nvim_buf_get_extmarks(tempbuf, scratch_id, 0, -1, { details = true})
-  local extmark = extmarks[i]
+  local extmark = extmarks[1]
 
-  local _, srow, scol, details = unpack(extmark)
+  local id, srow, scol, details = unpack(extmark)
   local erow, ecol = details.end_row or srow, details.end_col or scol
   local line_count = vim.api.nvim_buf_line_count(tempbuf)
 
@@ -106,6 +106,8 @@ for i=1,#extmarks do
       vim.api.nvim_buf_set_text(tempbuf, srow, scol, erow, ecol, {})
     end
   end
+
+  vim.api.nvim_buf_del_extmark(tempbuf, scratch_id, id)
 end
 
 @retrieve_content_of_scratch_buffer+=
