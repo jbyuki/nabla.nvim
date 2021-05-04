@@ -3,10 +3,11 @@ nabla.nvim
 
 Take your scentific notes in Neovim.
 
-[![Capture.png](https://i.postimg.cc/prmHHkTR/Capture.png)](https://postimg.cc/PvncbWYR)
+<img src="https://i.postimg.cc/CL9MPM7g/Capture.png" width="400">
 
+The colorscheme used here is [tokyonight](https://github.com/folke/tokyonight.nvim).
 
-The next iteration on the ASCII math generator from LaTeX formulas.
+An ASCII math generator from LaTeX equations.
 
 Requirements
 ------------
