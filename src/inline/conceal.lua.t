@@ -45,11 +45,6 @@ vim.api.nvim_command([[syn match NablaInlineFormula /]] .. conceal_inline_match 
 vim.api.nvim_command([[setlocal conceallevel=2]])
 vim.api.nvim_command([[setlocal concealcursor=]])
 
-@change_delete_extmark_behaviour+=
-if new_lastline < lastline then
-  @if_there_are_extmarks_in_range_delete_them
-end
-
 @get_extmarks_for_buffer+=
 local ns_id = extmarks[buf]
 local found
@@ -58,16 +53,3 @@ if ns_id then
   -- in the future
   found = vim.api.nvim_buf_get_extmarks(buf, ns_id, 0, -1, {})
 end
-
-@if_there_are_extmarks_in_range_delete_them+=
-if found then
-  for _, extmark in ipairs(found) do
-    local id, row, col = unpack(extmark)
-    if col == 0 then
-      @delete_extmark
-    end
-  end
-end
-
-@delete_extmark+=
-vim.api.nvim_buf_del_extmark(buf, ns_id, id)

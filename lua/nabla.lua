@@ -1,4 +1,4 @@
--- Generated from colorize.lua.t, conceal.lua.t, matcher.lua.t, nabla.lua.t, regen.lua.t, virt_multi.lua.t, writer.lua.t using ntangle.nvim
+-- Generated using ntangle.nvim
 -- local parser = require("nabla.parser")
 local parser = require("nabla.latex")
 
@@ -13,25 +13,29 @@ local function get_param(name, default)
   end
 end
 
+local vtext = vim.api.nvim_create_namespace("nabla")
+
 local conceal_match  = get_param("nabla_conceal_match", [[^\$\$.*\$\$]])
 local conceal_inline_match = get_param("nabla_conceal_inline_match", [[\(^\|[^$]\)\zs\$[^$]\{-1,}\$\ze\($\|[^$]\)]])
 local conceal_char  = get_param("nabla_conceal_char", '')
 local conceal_inline_char = get_param("nabla_conceal_inline_char", '')
-
-local vtext = vim.api.nvim_create_namespace("nabla")
 
 local extmarks = {}
 
 local attached = {}
 
 
+local remove_extmark
+
 local colorize
 
 local find_latex_at
 
-local remove_extmark
-
 local place_inline
+
+function remove_extmark(events, ns_id)
+  vim.api.nvim_command("autocmd "..table.concat(events, ',').." <buffer> ++once lua pcall(vim.api.nvim_buf_clear_namespace, 0, "..ns_id..", 0, -1)")
+end
 
 function colorize(g, dx, dy, ns_id, drawing, px, py)
   if g.t == "num" then
@@ -224,10 +228,6 @@ function find_latex_at(buf, row, col)
   end
 end
 
-function remove_extmark(events, ns_id)
-  vim.api.nvim_command("autocmd "..table.concat(events, ',').." <buffer> ++once lua pcall(vim.api.nvim_buf_clear_namespace, 0, "..ns_id..", 0, -1)")
-end
-
 function place_inline(row, col)
   local buf = vim.api.nvim_get_current_buf()
   if not attached[buf] then 
@@ -359,7 +359,6 @@ local function save(buf)
     -- in the future
     found = vim.api.nvim_buf_get_extmarks(buf, ns_id, 0, -1, {})
   end
-  
   local notsave = {}
   if found then
     for _, extmark in ipairs(found) do
@@ -426,7 +425,9 @@ local function save(buf)
           ecol = string.len(lastline)
         end
         
-        vim.api.nvim_buf_set_text(tempbuf, srow, scol, erow, ecol, {})
+        if erow > srow or ecol >= ecol then
+          vim.api.nvim_buf_set_text(tempbuf, srow, scol, erow, ecol, {})
+        end
       end
     end
   
@@ -668,8 +669,6 @@ end
 
 
 return {
-	attach = attach,
-	
 	init = init,
 	
 	replace_current = replace_current,
@@ -677,6 +676,8 @@ return {
 	replace_all = replace_all,
 	
 	draw_overlay = draw_overlay,
+	
+	attach = attach,
 	
 	place_inline = place_inline,
 	
