@@ -137,3 +137,9 @@ for _, extmark in ipairs(extmarks) do
   })
 end
 
+
+@save_written_file_state+=
+local save_written = vim.bo.modified
+
+@restore_written_file_state+=
+vim.bo.modified = save_written

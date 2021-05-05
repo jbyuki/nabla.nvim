@@ -4,7 +4,9 @@ local function attach()
   local buf = vim.api.nvim_get_current_buf()
   @define_conceal_syntax_for_current_buffer
   @change_save_behaviour
+  @save_written_file_state
   @run_place_inline_on_every_line
+  @restore_written_file_state
 end
 
 @export_symbols+=

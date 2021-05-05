@@ -126,6 +126,8 @@ local function attach()
   vim.api.nvim_buf_set_option(buf, "buftype", "acwrite")
   vim.api.nvim_command("autocmd BufWriteCmd <buffer=" .. buf .. [[> lua require"nabla".save(]] .. buf .. ")")
   
+  local save_written = vim.bo.modified
+  
   local single_formula = vim.regex(conceal_match)
   
   local inline_formula = vim.regex(conceal_inline_match)
@@ -190,6 +192,7 @@ local function attach()
   vim.api.nvim_buf_clear_namespace(buf, initial_ns, 0, -1)
   
   
+  vim.bo.modified = save_written
 end
 
 function find_latex_at(buf, row, col)
@@ -406,6 +409,7 @@ local function save(buf)
       end_col = ecol,
     })
   end
+  
   
   local ex = 1
   for i=1,#extmarks do
