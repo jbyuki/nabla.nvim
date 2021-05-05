@@ -429,7 +429,7 @@ local function save(buf)
           ecol = string.len(lastline)
         end
         
-        if erow > srow or ecol >= ecol then
+        if erow > srow or (erow == srow and ecol >= scol) then
           vim.api.nvim_buf_set_text(tempbuf, srow, scol, erow, ecol, {})
         end
       end

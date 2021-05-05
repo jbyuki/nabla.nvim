@@ -103,7 +103,7 @@ for i=1,#extmarks do
     local line = vim.api.nvim_buf_get_lines(tempbuf, srow, srow+1, true)[1]
     if scol <= string.len(line) then
       @if_endrow_out_of_bounds_correct
-      if erow > srow or ecol >= ecol then
+      if erow > srow or (erow == srow and ecol >= scol) then
         vim.api.nvim_buf_set_text(tempbuf, srow, scol, erow, ecol, {})
       end
     end
