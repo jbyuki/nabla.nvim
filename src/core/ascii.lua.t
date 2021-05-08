@@ -488,52 +488,6 @@ function grid:put_paren(exp, parent)
 	end
 end
 
-@declare_functions+=
-local hassuperscript
-
-@functions+=
-function hassuperscript(x)
-	if x.kind == "numexp" and math.floor(x.num) == x.num then
-		return x.num >= 0 and x.num <= 9
-	elseif x.kind == "symexp" and x.sym == "n" then
-		return true
-	end
-	return false
-end
-
-@transform_exp_to_grid+=
-elseif exp.kind == "expexp" then
-	local leftgrid = to_ascii(exp.left):put_paren(exp.left, exp)
-	if exp.right.kind == "numexp" and hassuperscript(exp.right) then
-		@get_superscript_number
-		@combine_superscript_char
-		return result
-	elseif exp.right.kind == "symexp" and hassuperscript(exp.right) then
-		@get_superscript_n
-		@combine_superscript_char
-		return result
-	end
-
-	local rightgrid = to_ascii(exp.right):put_paren(exp.right, exp)
-
-	@combine_diagonally_for_superscript
-	return result
-
-@combine_superscript_char+=
-local my = leftgrid.my
-leftgrid.my = 0
-local result = leftgrid:join_hori(superscript)
-result.my = my
-
-@script_variables+=
-local super_num = { "⁰", "¹", "²", "³", "⁴", "⁵", "⁶", "⁷", "⁸", "⁹" }
-
-@get_superscript_number+=
-local superscript = grid:new(1, 1, { super_num[exp.right.num+1] })
-
-@get_superscript_n+=
-local superscript = grid:new(1, 1, { "ⁿ" })
-
 @make_blank_content_if_not_provided+=
 if not content and w and h and w > 0 and h > 0 then
 	content = {}
@@ -589,77 +543,6 @@ end
 up_str = up_str .. style.root_upper_right
 
 local top_root = grid:new(toroot.w+2, 1, { up_str }, "sym")
-
-@declare_functions+=
-local hassubscript
-
-@functions+=
-function hassubscript(x)
-	if x.kind == "numexp" and math.floor(x.num) == x.num then
-		return true
-	elseif x.kind == "symexp" and string.len(x.sym) == 1 and string.find("aeoxhklmnpst", x.sym) then
-		return true
-	end
-	return false
-end
-
-@transform_exp_to_grid+=
-elseif exp.kind == "indexp" then
-	local leftgrid = to_ascii(exp.left):put_paren(exp.left, exp)
-	if exp.right.kind == "numexp" and hassubscript(exp.right) then
-		@get_subscript_number
-		@combine_subscript_char
-		return result
-	elseif exp.right.kind == "symexp" and hassubscript(exp.right) then
-		@get_subscript_letter
-		@combine_subscript_char
-		return result
-	end
-
-	local rightgrid = to_ascii(exp.right):put_paren(exp.right, exp)
-
-	-- @combine_diagonally_for_subscript
-	return result
-
-
-@get_subscript_number+=
-local sub_num = { "₀","₁","₂","₃","₄","₅","₆","₇","₈","₉" }
-local num = exp.right.num
-local sub_str = ""
-while num ~= 0 do
-	sub_str = sub_num[(num%10)+1] .. sub_str
-	num = math.floor(num / 10)
-end
-
-if string.len(sub_str) == 0 then
-	sub_str = sub_num[1]
-end
-
-local subscript = grid:new(string.len(sub_str), 1, { sub_str })
-
-@combine_subscript_char+=
-local my = leftgrid.my
-leftgrid.my = 0
-local result = leftgrid:join_hori(subscript)
-result.my = my
-
-@get_subscript_letter+=
-local sletter = { 
-	["a"] = "ₐ", 
-	["e"] = "ₑ", 
-	["o"] = "ₒ", 
-	["x"] = "ₓ", 
-	["h"] = "ₕ", 
-	["k"] = "ₖ", 
-	["l"] = "ₗ", 
-	["m"] = "ₘ", 
-	["n"] = "ₙ", 
-	["p"] = "ₚ", 
-	["s"] = "ₛ", 
-	["t"] = "ₜ",
-}
-
-local subscript = grid:new(1, 1, { sletter[exp.right.sym] })
 
 @grid_prototype+=
 function grid:combine_sub(other)
@@ -1075,34 +958,9 @@ end
 
 @script_variables+=
 local sub_letters = { 
-	["+"] = "₊",
-	["-"] = "₋",
-	["="] = "₌",
-	["("] = "₍",
-	[")"] = "₎",
-	["a"] = "ₐ",
-	["e"] = "ₑ",
-	["o"] = "ₒ",
-	["x"] = "ₓ",
-	["ə"] = "ₔ",
-	["h"] = "ₕ",
-	["k"] = "ₖ",
-	["l"] = "ₗ",
-	["m"] = "ₘ",
-	["n"] = "ₙ",
-	["p"] = "ₚ",
-	["s"] = "ₛ",
-	["t"] = "ₜ",
-	["0"] = "₀",
-	["1"] = "₁",
-	["2"] = "₂",
-	["3"] = "₃",
-	["4"] = "₄",
-	["5"] = "₅",
-	["6"] = "₆",
-	["7"] = "₇",
-	["8"] = "₈",
-	["9"] = "₉",
+	["+"] = "₊", ["-"] = "₋", ["="] = "₌", ["("] = "₍", [")"] = "₎",
+	["a"] = "ₐ", ["e"] = "ₑ", ["o"] = "ₒ", ["x"] = "ₓ", ["ə"] = "ₔ", ["h"] = "ₕ", ["k"] = "ₖ", ["l"] = "ₗ", ["m"] = "ₘ", ["n"] = "ₙ", ["p"] = "ₚ", ["s"] = "ₛ", ["t"] = "ₜ",
+	["0"] = "₀", ["1"] = "₁", ["2"] = "₂", ["3"] = "₃", ["4"] = "₄", ["5"] = "₅", ["6"] = "₆", ["7"] = "₇", ["8"] = "₈", ["9"] = "₉",
 }
 
 @append_characters_subscript+=
@@ -1214,25 +1072,11 @@ end
 
 @script_variables+=
 local sup_letters = { 
-	["+"] = "⁺",
-	["-"] = "⁻",
-	["="] = "⁼",
-	["("] = "⁽",
-	[")"] = "⁾",
+	["+"] = "⁺", ["-"] = "⁻", ["="] = "⁼", ["("] = "⁽", [")"] = "⁾",
 	["n"] = "ⁿ",
-	["0"] = "⁰",
-	["1"] = "¹",
-	["2"] = "²",
-	["3"] = "³",
-	["4"] = "⁴",
-	["5"] = "⁵",
-	["6"] = "⁶",
-	["7"] = "⁷",
-	["8"] = "⁸",
-	["9"] = "⁹",
-	["i"] = "ⁱ",
-	["j"] = "ʲ",
-	["w"] = "ʷ",
+	["0"] = "⁰", ["1"] = "¹", ["2"] = "²", ["3"] = "³", ["4"] = "⁴", ["5"] = "⁵", ["6"] = "⁶", ["7"] = "⁷", ["8"] = "⁸", ["9"] = "⁹",
+	["i"] = "ⁱ", ["j"] = "ʲ", ["w"] = "ʷ",
+  ["T"] = "ᵀ", ["A"] = "ᴬ", ["B"] = "ᴮ", ["D"] = "ᴰ", ["E"] = "ᴱ", ["G"] = "ᴳ", ["H"] = "ᴴ", ["I"] = "ᴵ", ["J"] = "ᴶ", ["K"] = "ᴷ", ["L"] = "ᴸ", ["M"] = "ᴹ", ["N"] = "ᴺ", ["O"] = "ᴼ", ["P"] = "ᴾ", ["R"] = "ᴿ", ["U"] = "ᵁ", ["V"] = "ⱽ", ["W"] = "ᵂ",
 }
 
 @append_number_superscript+=

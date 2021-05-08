@@ -1,10 +1,6 @@
 -- Generated using ntangle.nvim
 local utf8len, utf8char
 
-local hassuperscript
-
-local hassubscript
-
 local join_sub_sup
 
 
@@ -352,37 +348,10 @@ end
 
 
 
-local super_num = { "⁰", "¹", "²", "³", "⁴", "⁵", "⁶", "⁷", "⁸", "⁹" }
-
 local sub_letters = { 
-	["+"] = "₊",
-	["-"] = "₋",
-	["="] = "₌",
-	["("] = "₍",
-	[")"] = "₎",
-	["a"] = "ₐ",
-	["e"] = "ₑ",
-	["o"] = "ₒ",
-	["x"] = "ₓ",
-	["ə"] = "ₔ",
-	["h"] = "ₕ",
-	["k"] = "ₖ",
-	["l"] = "ₗ",
-	["m"] = "ₘ",
-	["n"] = "ₙ",
-	["p"] = "ₚ",
-	["s"] = "ₛ",
-	["t"] = "ₜ",
-	["0"] = "₀",
-	["1"] = "₁",
-	["2"] = "₂",
-	["3"] = "₃",
-	["4"] = "₄",
-	["5"] = "₅",
-	["6"] = "₆",
-	["7"] = "₇",
-	["8"] = "₈",
-	["9"] = "₉",
+	["+"] = "₊", ["-"] = "₋", ["="] = "₌", ["("] = "₍", [")"] = "₎",
+	["a"] = "ₐ", ["e"] = "ₑ", ["o"] = "ₒ", ["x"] = "ₓ", ["ə"] = "ₔ", ["h"] = "ₕ", ["k"] = "ₖ", ["l"] = "ₗ", ["m"] = "ₘ", ["n"] = "ₙ", ["p"] = "ₚ", ["s"] = "ₛ", ["t"] = "ₜ",
+	["0"] = "₀", ["1"] = "₁", ["2"] = "₂", ["3"] = "₃", ["4"] = "₄", ["5"] = "₅", ["6"] = "₆", ["7"] = "₇", ["8"] = "₈", ["9"] = "₉",
 }
 
 local frac_set = {
@@ -396,25 +365,11 @@ local frac_set = {
 }
 
 local sup_letters = { 
-	["+"] = "⁺",
-	["-"] = "⁻",
-	["="] = "⁼",
-	["("] = "⁽",
-	[")"] = "⁾",
+	["+"] = "⁺", ["-"] = "⁻", ["="] = "⁼", ["("] = "⁽", [")"] = "⁾",
 	["n"] = "ⁿ",
-	["0"] = "⁰",
-	["1"] = "¹",
-	["2"] = "²",
-	["3"] = "³",
-	["4"] = "⁴",
-	["5"] = "⁵",
-	["6"] = "⁶",
-	["7"] = "⁷",
-	["8"] = "⁸",
-	["9"] = "⁹",
-	["i"] = "ⁱ",
-	["j"] = "ʲ",
-	["w"] = "ʷ",
+	["0"] = "⁰", ["1"] = "¹", ["2"] = "²", ["3"] = "³", ["4"] = "⁴", ["5"] = "⁵", ["6"] = "⁶", ["7"] = "⁷", ["8"] = "⁸", ["9"] = "⁹",
+	["i"] = "ⁱ", ["j"] = "ʲ", ["w"] = "ʷ",
+  ["T"] = "ᵀ", ["A"] = "ᴬ", ["B"] = "ᴮ", ["D"] = "ᴰ", ["E"] = "ᴱ", ["G"] = "ᴳ", ["H"] = "ᴴ", ["I"] = "ᴵ", ["J"] = "ᴶ", ["K"] = "ᴷ", ["L"] = "ᴸ", ["M"] = "ᴹ", ["N"] = "ᴺ", ["O"] = "ᴼ", ["P"] = "ᴾ", ["R"] = "ᴿ", ["U"] = "ᵁ", ["V"] = "ⱽ", ["W"] = "ᵂ",
 }
 
 
@@ -1145,89 +1100,6 @@ local function to_ascii(exp)
 		local minus = grid:new(utf8len(style.prefix_minus_sign), 1, { style.prefix_minus_sign })
 		local leftgrid = to_ascii(exp.left):put_paren(exp.left, exp)
 		return minus:join_hori(leftgrid)
-	
-	elseif exp.kind == "expexp" then
-		local leftgrid = to_ascii(exp.left):put_paren(exp.left, exp)
-		if exp.right.kind == "numexp" and hassuperscript(exp.right) then
-			local superscript = grid:new(1, 1, { super_num[exp.right.num+1] })
-			
-			local my = leftgrid.my
-			leftgrid.my = 0
-			local result = leftgrid:join_hori(superscript)
-			result.my = my
-			
-			return result
-		elseif exp.right.kind == "symexp" and hassuperscript(exp.right) then
-			local superscript = grid:new(1, 1, { "ⁿ" })
-			
-			local my = leftgrid.my
-			leftgrid.my = 0
-			local result = leftgrid:join_hori(superscript)
-			result.my = my
-			
-			return result
-		end
-	
-		local rightgrid = to_ascii(exp.right):put_paren(exp.right, exp)
-	
-		local result = leftgrid:join_super(rightgrid)
-		
-		return result
-	
-	elseif exp.kind == "indexp" then
-		local leftgrid = to_ascii(exp.left):put_paren(exp.left, exp)
-		if exp.right.kind == "numexp" and hassubscript(exp.right) then
-			local sub_num = { "₀","₁","₂","₃","₄","₅","₆","₇","₈","₉" }
-			local num = exp.right.num
-			local sub_str = ""
-			while num ~= 0 do
-				sub_str = sub_num[(num%10)+1] .. sub_str
-				num = math.floor(num / 10)
-			end
-			
-			if string.len(sub_str) == 0 then
-				sub_str = sub_num[1]
-			end
-			
-			local subscript = grid:new(string.len(sub_str), 1, { sub_str })
-			
-			local my = leftgrid.my
-			leftgrid.my = 0
-			local result = leftgrid:join_hori(subscript)
-			result.my = my
-			
-			return result
-		elseif exp.right.kind == "symexp" and hassubscript(exp.right) then
-			local sletter = { 
-				["a"] = "ₐ", 
-				["e"] = "ₑ", 
-				["o"] = "ₒ", 
-				["x"] = "ₓ", 
-				["h"] = "ₕ", 
-				["k"] = "ₖ", 
-				["l"] = "ₗ", 
-				["m"] = "ₘ", 
-				["n"] = "ₙ", 
-				["p"] = "ₚ", 
-				["s"] = "ₛ", 
-				["t"] = "ₜ",
-			}
-			
-			local subscript = grid:new(1, 1, { sletter[exp.right.sym] })
-			
-			local my = leftgrid.my
-			leftgrid.my = 0
-			local result = leftgrid:join_hori(subscript)
-			result.my = my
-			
-			return result
-		end
-	
-		local rightgrid = to_ascii(exp.right):put_paren(exp.right, exp)
-	
-		-- @combine_diagonally_for_subscript
-		return result
-	
 	
 	elseif exp.kind == "matexp" then
 		if #exp.rows > 0 then
@@ -2600,24 +2472,6 @@ function utf8char(str, i)
 	local s1 = vim.str_byteindex(str, i)
 	local s2 = vim.str_byteindex(str, i+1)
 	return string.sub(str, s1+1, s2)
-end
-
-function hassuperscript(x)
-	if x.kind == "numexp" and math.floor(x.num) == x.num then
-		return x.num >= 0 and x.num <= 9
-	elseif x.kind == "symexp" and x.sym == "n" then
-		return true
-	end
-	return false
-end
-
-function hassubscript(x)
-	if x.kind == "numexp" and math.floor(x.num) == x.num then
-		return true
-	elseif x.kind == "symexp" and string.len(x.sym) == 1 and string.find("aeoxhklmnpst", x.sym) then
-		return true
-	end
-	return false
 end
 
 
