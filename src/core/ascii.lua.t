@@ -1443,11 +1443,11 @@ end
 
 @transform_function_into_ascii+=
 elseif name == "lim" then
-local g = grid:new(3, 1, { "lim" }, "op")
+  local g = grid:new(3, 1, { "lim" }, "op")
 
-@if_has_subscript_stack_with_g
-@put_col_spacer_to_g
-return g
+  @if_has_subscript_stack_with_g
+  @put_col_spacer_to_g
+  return g
 
 @if_has_subscript_stack_with_g+=
 if exp.sub and not exp.sup then
@@ -1606,3 +1606,18 @@ elseif supexps[1].kind == "symexp" and string.match(supexps[1].sym, "^%a+$") the
 else
   sup_t = "sym"
 end
+
+@special_symbols+=
+["otimes"] = "⊗",
+["oplus"] = "⊕",
+["times"] = "⨯",
+["perp"] = "⟂",
+["perp"] = "⟂",
+["circ"] = "∘",
+["langle"] = "⟨",
+["rangle"] = "⟩",
+["dagger"] = "†",
+["intercal"] = "⊺",
+["wedge"] = "∧",
+["vert"] = "|",
+["Vert"] = "‖",

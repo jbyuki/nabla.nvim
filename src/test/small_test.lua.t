@@ -1,0 +1,3 @@
+##small-test
+@*=
+print("Done!")

@@ -127,6 +127,19 @@ local special_syms = {
 	["vdots"] = "⋮",
 	["ddots"] = "⋱",
 	
+	["otimes"] = "⊗",
+	["oplus"] = "⊕",
+	["times"] = "⨯",
+	["perp"] = "⟂",
+	["perp"] = "⟂",
+	["circ"] = "∘",
+	["langle"] = "⟨",
+	["rangle"] = "⟩",
+	["dagger"] = "†",
+	["intercal"] = "⊺",
+	["wedge"] = "∧",
+	["vert"] = "|",
+	["Vert"] = "‖",
 }
 
 local grid = {}
@@ -472,6 +485,7 @@ local function to_ascii(exp)
 			else
 			  sup_t = "sym"
 			end
+			
 			for _, exp in ipairs(supexps) do
 				if exp.kind == "numexp" and math.floor(exp.num) == exp.num then
 					local num = exp.num
@@ -629,6 +643,7 @@ local function to_ascii(exp)
 			else
 			  sup_t = "sym"
 			end
+			
 			for _, exp in ipairs(supexps) do
 				if exp.kind == "numexp" and math.floor(exp.num) == exp.num then
 					local num = exp.num
@@ -835,6 +850,7 @@ local function to_ascii(exp)
 			else
 			  sup_t = "sym"
 			end
+			
 			for _, exp in ipairs(supexps) do
 				if exp.kind == "numexp" and math.floor(exp.num) == exp.num then
 					local num = exp.num
@@ -992,6 +1008,7 @@ local function to_ascii(exp)
 			else
 			  sup_t = "sym"
 			end
+			
 			for _, exp in ipairs(supexps) do
 				if exp.kind == "numexp" and math.floor(exp.num) == exp.num then
 					local num = exp.num
@@ -1409,6 +1426,7 @@ local function to_ascii(exp)
 				else
 				  sup_t = "sym"
 				end
+				
 				for _, exp in ipairs(supexps) do
 					if exp.kind == "numexp" and math.floor(exp.num) == exp.num then
 						local num = exp.num
@@ -1566,6 +1584,7 @@ local function to_ascii(exp)
 				else
 				  sup_t = "sym"
 				end
+				
 				for _, exp in ipairs(supexps) do
 					if exp.kind == "numexp" and math.floor(exp.num) == exp.num then
 						local num = exp.num
@@ -1954,21 +1973,21 @@ local function to_ascii(exp)
 			return g
 		
 		elseif name == "lim" then
-		local g = grid:new(3, 1, { "lim" }, "op")
+		  local g = grid:new(3, 1, { "lim" }, "op")
 		
-		if exp.sub and not exp.sup then
-			local my = g.my
-			local subgrid = to_ascii(exp.sub)
-			g = g:join_vert(subgrid)
-			g.my = my
-		end
-		
-			local col_spacer = grid:new(1, 1, { " " })
-			if g then
-				g = g:join_hori(col_spacer)
-			end
-		
-		return g
+		  if exp.sub and not exp.sup then
+		  	local my = g.my
+		  	local subgrid = to_ascii(exp.sub)
+		  	g = g:join_vert(subgrid)
+		  	g.my = my
+		  end
+		  
+		  	local col_spacer = grid:new(1, 1, { " " })
+		  	if g then
+		  		g = g:join_hori(col_spacer)
+		  	end
+		  
+		  return g
 		
 		else
 			return grid:new(utf8len(name), 1, { name })
@@ -2034,6 +2053,7 @@ local function to_ascii(exp)
 			else
 			  sup_t = "sym"
 			end
+			
 			for _, exp in ipairs(supexps) do
 				if exp.kind == "numexp" and math.floor(exp.num) == exp.num then
 					local num = exp.num
@@ -2191,6 +2211,7 @@ local function to_ascii(exp)
 			else
 			  sup_t = "sym"
 			end
+			
 			for _, exp in ipairs(supexps) do
 				if exp.kind == "numexp" and math.floor(exp.num) == exp.num then
 					local num = exp.num
