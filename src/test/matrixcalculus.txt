@@ -1,0 +1,38 @@
+*matrixcalculus*
+------------------------------------------------------------
+
+Ref: https://github.com/LynnHo/Matrix-Calculus
+
+Layout~
+
+  * numerator layout
+  * denominator layout
+  * mixed layout
+
+not clear yet 
+
+Identities~
+
+* [1] $d(X+Y)\ =\ dX + dY$
+
+* [2] $d(XY)\ =\ (dX)Y + X(dY)$
+
+* [3] $d(AXB + C)\ =\ A(dX)B$
+
+    $A, B, C$ are constants thus get canceled.
+
+* [4] $d(X \otimes Y)\ =\ (dX)\otimes Y\ +\ X\otimes (dY)$
+    Kronecker product: Multiply every cell of X and the complete matrix Y 
+* [5] $d(X\circ Y)\ =\ (dX)\circ Y\ +\ X\circ (dY)
+    Hadammard product: Multiply element-wise
+* [6] 
+$$d(X^{\intercal}) = (dX)^{\intercal}$$
+
+* [7] $d(X^{-1})\ =\ -X^{-1}(dX)X^{-1}$
+* [8] $d(tr(X))\ =\ tr(dX)$
+
+
+Examples~
+
+$\frac{d(x\intercal x)}{dx}$
+ vim:tw=78:ts=8:noet:ft=help:norl:nowrap
