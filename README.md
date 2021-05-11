@@ -41,8 +41,6 @@ Usage
   * `$ ... $` : inline form
   * `$$ ... $$` : wrapped form
 
-See [test/docs/dirichlet.txt](https://github.com/jbyuki/nabla.nvim/blob/master/test/docs/dirichlet.txt) for a document using nabla.nvim.
-
 Reference
 ---------
 
