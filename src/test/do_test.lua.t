@@ -1,5 +1,6 @@
 ##../nabla-test
-@*=
+@../test/test.lua=
+@declare
 @retrieve_nabla_directory
 @retrieve_nabla_test_directory
 -- local add = [[\\.\pipe\nvim-24652-0]]
@@ -32,6 +33,7 @@ for _, file in ipairs(files) do
 end
 
 @close_neovim_instance
+@output_result_txt
 
 @retrieve_nabla_directory+=
 local info = debug.getinfo(1, "S")
@@ -39,7 +41,7 @@ local path
 if info and info.source:sub(1, 1) == "@" then
   path = vim.fn.fnamemodify(info.source:sub(2), ":p")
 end
-path = vim.fn.fnamemodify(path, ":h:h:h")
+path = vim.fn.fnamemodify(path, ":h:h")
 local nabla_path = path
 
 @retrieve_nabla_test_directory+=
@@ -52,7 +54,7 @@ for _, file in ipairs(vim.split(all_files, "\n")) do
 end
 
 @create_neovim_instance+=
-local conn = vim.fn.jobstart({'nvim', '--embed', '--headless'}, {rpc = true})
+local conn = vim.fn.jobstart({vim.v.progpath, '--embed', '--headless'}, {rpc = true})
 
 @close_neovim_instance+=
 vim.fn.jobstop(conn)
@@ -103,4 +105,16 @@ else
   print("Input: " .. vim.inspect(input))
   print("Expected: " .. vim.inspect(output))
   print("Result: " .. vim.inspect(result))
+  fail = true
+end
+
+@declare+=
+local fail = false
+
+@output_result_txt+=
+if not fail then
+  local f = io.open("result.txt", "w")
+  f:write("OK")
+  f:close()
+  print("OK")
 end

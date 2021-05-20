@@ -9,7 +9,19 @@ Layout~
   * denominator layout
   * mixed layout
 
-not clear yet 
+The following use the numberator layout.
+
+$\frac{dy}{dx}\ =\ \begin{bmatrix} \frac{\partial y}{\partial x_1} & \frac{\partial y}{\partial x_2} & \cdots & \frac{\partial y}{\partial x_n} \end{bmatrix}$
+
+$\frac{dy}{dx}\ =\ \begin{bmatrix} \partial y_1/ \partial x // \partial y_2/ \partial x // \vdots // \partial y_n / \partial x \end{bmatrix}$
+
+$\frac{dy}{dx}\ =\ \begin{bmatrix} \partial y_1/ \partial x_1 & \partial y_1/ \partial x_2 & \cdots & \partial y_1 / \partial x_n // \partial y_2/ \partial x_1 & \partial y_2/ \partial x_2 & \cdots & \partial y_2 / \partial x_n // \vdots & \vdots & \ddots & \vdots // \partial y_m/ \partial x_1 & \partial y_m/ \partial x_2 & \cdots & \partial y_m / \partial x_n \end{bmatrix}$
+
+$\frac{dy}{dX}\ =\ \begin{bmatrix} \partial y/ \partial x_{11} & \partial y/ \partial x_{21} & \cdots & \partial y / \partial x_{n 1} // \partial y/ \partial x_{12} & \partial y/ \partial x_{22} & \cdots & \partial y / \partial x_{n 2} // \vdots & \vdots & \ddots & \vdots // \partial y/ \partial x_{1 m} & \partial y/ \partial x_{2 m} & \cdots & \partial y / \partial x_{n m} \end{bmatrix}$
+
+Properties~
+
+* $tr(ABC)\ =\ tr(CAB)\ =\ tr(BCA)$  
 
 Identities~
 
@@ -23,16 +35,32 @@ Identities~
 
 * [4] $d(X \otimes Y)\ =\ (dX)\otimes Y\ +\ X\otimes (dY)$
     Kronecker product: Multiply every cell of X and the complete matrix Y 
-* [5] $d(X\circ Y)\ =\ (dX)\circ Y\ +\ X\circ (dY)
+* [5] $d(X\circ Y)\ =\ (dX)\circ Y\ +\ X\circ (dY)$
     Hadammard product: Multiply element-wise
-* [6] 
-$$d(X^{\intercal}) = (dX)^{\intercal}$$
-
+* [6] $d(X^T) = (dX)^T$
 * [7] $d(X^{-1})\ =\ -X^{-1}(dX)X^{-1}$
 * [8] $d(tr(X))\ =\ tr(dX)$
+* [9] 
+$dy\ =\ tr(\frac{dy}{dX} dX)$
+
+Other properties~
+
+Element-wise function $\sigma(x)$
+
+* [10] $d(\sigma(x))\ =\ \sigma'(x) \circ dx$
+* [11] $x^T (y \circ z)\ =\ (x \circ y)^T z$
 
 
-Examples~
+Example~
 
-$\frac{d(x\intercal x)}{dx}$
+$\frac{d(x^T x)}{dx}$
+
+$d(x^T x)\ =\ d(x^T)x\ +\ x^T dx$  Using [2]
+$(dx)^T x\ +\ x^T dx$           Using [6]
+$x^T dx\ +\ x^T dx$             Using the property $x^T y\ =\ y^T x$ when vectors
+$2x^T dx$
+
+So the derivative is $2x^T$!
+
+
  vim:tw=78:ts=8:noet:ft=help:norl:nowrap
