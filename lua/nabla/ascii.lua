@@ -6,26 +6,26 @@ local join_sub_sup
 
 local style = {
 	plus_sign = " + ",
-	
+
 	minus_sign = " − ",
-	
+
 	multiply_sign = " ∙ ",
-	
+
 	div_bar = "―",
-	
+
 	left_top_par    = '⎛',
 	left_middle_par = '⎜',
 	left_bottom_par = '⎝',
-	
+
 	right_top_par    = '⎞',
 	right_middle_par = '⎟',
 	right_bottom_par = '⎠',
-	
+
 	left_single_par = '(',
 	right_single_par = ')',
-	
+
 	comma_sign = ", ", 
-	
+
 	eq_sign = {
 		["="] = " = ",
 		["<"] = " < ",
@@ -37,28 +37,28 @@ local style = {
 		["~="] = " ≈ ",
 		["!="] = " ≠ ",
 		["=>"] = " → ",
-		
+
 		["->"] = " → ",
 		["<-"] = " ← ",
-		
+
 	},
-	
+
 	int_top = "⌠",
 	int_middle = "⎮",
 	int_single = "∫",
 	int_bottom = "⌡",
-	
+
 	prefix_minus_sign = "‐",
-	
+
 	root_vert_bar = "│",
 	root_bottom = "\\",
 	root_upper_left = "┌",
 	root_upper = "─",
 	root_upper_right = "┐",
-	
+
 	limit = "lim",
 	limit_arrow = " → ",
-	
+
 	matrix_upper_left = "⎡", 
 	matrix_upper_right = "⎤", 
 	matrix_vert_left = "⎢",
@@ -67,36 +67,36 @@ local style = {
 	matrix_vert_right = "⎥",
 	matrix_single_left = "[",
 	matrix_single_right = "]",
-	
+
 	sum_up   = "⎲",
 	sum_down = "⎳",
-	
+
 	derivative = "d",
-	
+
 	partial_derivative = "∂",
-	
+
 	abs_bar_left = "⎮",
 	abs_bar_right = "⎮",
-	
+
 }
 
 local greek_etc = {
   ["Alpha"] = "Α", ["Beta"] = "Β", ["Gamma"] = "Γ", ["Delta"] = "Δ", ["Epsilon"] = "Ε", ["Zeta"] = "Ζ", ["Eta"] = "Η", ["Theta"] = "Θ", ["Iota"] = "Ι", ["Kappa"] = "Κ", ["Lambda"] = "Λ", ["Mu"] = "Μ", ["Nu"] = "Ν", ["Xi"] = "Ξ", ["Omicron"] = "Ο", ["Pi"] = "Π", ["Rho"] = "Ρ", ["Sigma"] = "Σ", ["Tau"] = "Τ", ["Upsilon"] = "Υ", ["Phi"] = "Φ", ["Chi"] = "Χ", ["Psi"] = "Ψ", ["Omega"] = "Ω",
-  
+
   ["alpha"] = "α", ["beta"] = "β", ["gamma"] = "γ", ["delta"] = "δ", ["epsilon"] = "ε", ["zeta"] = "ζ", ["eta"] = "η", ["theta"] = "θ", ["iota"] = "ι", ["kappa"] = "κ", ["lambda"] = "λ", ["mu"] = "μ", ["nu"] = "ν", ["xi"] = "ξ", ["omicron"] = "ο", ["pi"] = "π", ["rho"] = "ρ", ["final"] = "ς", ["sigma"] = "σ", ["tau"] = "τ", ["upsilon"] = "υ", ["phi"] = "φ", ["chi"] = "χ", ["psi"] = "ψ", ["omega"] = "ω",
-  
+
   ["nabla"] = "∇",
-  
+
 }
 
 local special_nums = {
   ["infty"] = "∞",
-  
+
 }
 
 local special_syms = {
 	["..."] = "…",
-	
+
 	["cdot"] = "∙",
 	["approx"] = "≈",
 	["simeq"] = "≃",
@@ -106,23 +106,23 @@ local special_syms = {
 	["doteq"] = "≐",
 	["leq"] = "≤",
 	["cong"] = "≥",
-	
+
 		["pm"] = "±",
 		["mp"] = "∓",
 		["to"] = "→",
-	
+
 	["rightarrow"] = "→",
 	["implies"] = "→",
 	["leftarrow"] = "⭠",
 	["ast"] = "∗",
-	
+
 	["partial"] = "∂",
-	
-	
+
+
 	["cdots"] = "⋯",
 	["vdots"] = "⋮",
 	["ddots"] = "⋱",
-	
+
 	["otimes"] = "⊗",
 	["oplus"] = "⊕",
 	["times"] = "⨯",
@@ -150,7 +150,7 @@ function grid:new(w, h, content, t)
 			table.insert(content, row)
 		end
 	end
-	
+
 	local o = { 
 		w = w or 0, 
 		h = h or 0, 
@@ -158,13 +158,13 @@ function grid:new(w, h, content, t)
     children = {},
 		content = content or {},
 		my = 0, -- middle y (might not be h/2, for example fractions with big denominator, etc )
-		
+
 	}
 	return setmetatable(o, { 
 		__tostring = function(g)
 			return table.concat(g.content, "\n")
 		end,
-		
+
 		__index = grid,
 	})
 end
@@ -174,7 +174,7 @@ function grid:join_hori(g, top_align)
 
 	local num_max = math.max(self.my, g.my)
 	local den_max = math.max(self.h - self.my, g.h - g.my)
-	
+
 	local s1, s2
 	if not top_align then
 		s1 = num_max - self.my
@@ -183,29 +183,29 @@ function grid:join_hori(g, top_align)
 		s1 = 0
 		s2 = 0
 	end
-	
+
 	local h 
 	if not top_align then
 		h = den_max + num_max
 	else
 		h = math.max(self.h, g.h)
 	end
-	
+
 
 	for y=1,h do
 		local r1 = self:get_row(y-s1)
 		local r2 = g:get_row(y-s2)
-		
+
 		table.insert(combined, r1 .. r2)
-		
+
 	end
 
 	local c = grid:new(self.w+g.w, h, combined)
 	c.my = num_max
-	
+
   table.insert(c.children, { self, 0, s1 })
   table.insert(c.children, { g, self.w, s2 })
-  
+
 	return c
 end
 
@@ -231,13 +231,13 @@ function grid:join_vert(g, align_left)
 		s1 = 0
 		s2 = 0
 	end
-	
+
 	for x=1,w do
 		local c1 = self:get_col(x-s1)
 		local c2 = g:get_col(x-s2)
-		
+
 		table.insert(combined, c1 .. c2)
-		
+
 	end
 
 	local rows = {}
@@ -248,11 +248,11 @@ function grid:join_vert(g, align_left)
 		end
 		table.insert(rows, row)
 	end
-	
+
 	local c = grid:new(w, h, rows)
   table.insert(c.children, { self, s1, 0 })
   table.insert(c.children, { g, s2, self.h })
-  
+
   return c
 end
 
@@ -280,10 +280,10 @@ function grid:enclose_paren()
 			end
 		end
 	end
-	
+
 	local left_paren = grid:new(1, self.h, left_content, "par")
 	left_paren.my = self.my
-	
+
 	local right_content = {}
 	if self.h == 1 then
 		right_content = { style.right_single_par }
@@ -295,10 +295,10 @@ function grid:enclose_paren()
 			end
 		end
 	end
-	
+
 	local right_paren = grid:new(1, self.h, right_content, "par")
 	right_paren.my = self.my
-	
+
 
 	local c1 = left_paren:join_hori(self)
 	local c2 = c1:join_hori(right_paren)
@@ -315,7 +315,7 @@ end
 
 function grid:join_super(superscript)
 	local spacer = grid:new(self.w, superscript.h)
-	
+
 
 	local upper = spacer:join_hori(superscript, true)
 	local result = upper:join_vert(self, true)
@@ -325,7 +325,7 @@ end
 
 function grid:combine_sub(other)
 	local spacer = grid:new(self.w, other.h)
-	
+
 
 	local lower = spacer:join_hori(other)
 	local result = self:join_vert(lower, true)
@@ -378,11 +378,11 @@ local function to_ascii(exp)
 	if not exp then
 		print(debug.traceback())
 	end
-	
+
 	if exp.kind == "numexp" then
 		local numstr = tostring(exp.num)
 		local g = grid:new(string.len(numstr), 1, { tostring(numstr) }, "num")
-	
+
 		if exp.sub and exp.sup then 
 			local subscript = ""
 		  -- sub and sup are exchanged to
@@ -396,7 +396,7 @@ local function to_ascii(exp)
 			else
 			  sub_t = "sym"
 			end
-			
+
 			for _, exp in ipairs(subexps) do
 				if exp.kind == "numexp" and math.floor(exp.num) == exp.num then
 					local num = exp.num
@@ -414,7 +414,7 @@ local function to_ascii(exp)
 						end
 						subscript = subscript .. num_subscript 
 					end
-					
+
 				elseif exp.kind == "symexp" then
 					if sub_letters[exp.sym] and not exp.sub and not exp.sup then
 						subscript = subscript .. sub_letters[exp.sym]
@@ -422,14 +422,14 @@ local function to_ascii(exp)
 						subscript = nil
 						break
 					end
-					
+
 				else
 					subscript = nil
 					break
 				end
 			end
-			
-		
+
+
 			local superscript = ""
 			local supexps = exp.sub.exps
 		  local sup_t
@@ -440,7 +440,7 @@ local function to_ascii(exp)
 			else
 			  sup_t = "sym"
 			end
-			
+
 			for _, exp in ipairs(supexps) do
 				if exp.kind == "numexp" and math.floor(exp.num) == exp.num then
 					local num = exp.num
@@ -458,7 +458,7 @@ local function to_ascii(exp)
 						end
 						superscript = superscript .. num_superscript 
 					end
-					
+
 				elseif exp.kind == "symexp" then
 					if sup_letters[exp.sym] and not exp.sub and not exp.sup then
 						superscript = superscript .. sup_letters[exp.sym]
@@ -466,14 +466,14 @@ local function to_ascii(exp)
 						superscript = nil
 						break
 					end
-					
+
 				else
 					superscript = nil
 					break
 				end
 			end
-			
-		
+
+
 			if subscript and superscript then
 				local sup_g = grid:new(utf8len(subscript), 1, { subscript }, sub_t)
 				local sub_g = grid:new(utf8len(superscript), 1, { superscript }, sup_t)
@@ -483,9 +483,9 @@ local function to_ascii(exp)
 				local supgrid = to_ascii(exp.sup)
 				g = g:join_sub_sup(subgrid, supgrid)
 			end
-		
+
 		end
-		
+
 		if exp.sub and not exp.sup then 
 			local subscript = ""
 			local subexps = exp.sub.exps
@@ -497,7 +497,7 @@ local function to_ascii(exp)
 			else
 			  sub_t = "sym"
 			end
-			
+
 			for _, exp in ipairs(subexps) do
 				if exp.kind == "numexp" and math.floor(exp.num) == exp.num then
 					local num = exp.num
@@ -515,7 +515,7 @@ local function to_ascii(exp)
 						end
 						subscript = subscript .. num_subscript 
 					end
-					
+
 				elseif exp.kind == "symexp" then
 					if sub_letters[exp.sym] and not exp.sub and not exp.sup then
 						subscript = subscript .. sub_letters[exp.sym]
@@ -523,17 +523,17 @@ local function to_ascii(exp)
 						subscript = nil
 						break
 					end
-					
+
 				else
 					subscript = nil
 					break
 				end
 			end
-			
+
 			if subscript and string.len(subscript) > 0 then
 				local sub_g = grid:new(utf8len(subscript), 1, { subscript }, sub_t)
 				g = g:join_hori(sub_g)
-				
+
 			else
 				local subgrid
 				local frac_exps = exp.sub.exps
@@ -559,34 +559,34 @@ local function to_ascii(exp)
 										num_str = num_str .. sup_letters[string.sub(s, i, i)]
 									end
 								end
-								
+
 								if math.floor(B) == B then
 									local s = tostring(B)
 									for i=1,string.len(s) do
 										den_str = den_str .. sub_letters[string.sub(s, i, i)]
 									end
 								end
-								
+
 								if string.len(num_str) > 0 and string.len(den_str) > 0 then
 									local frac_str = num_str .. "⁄" .. den_str
 									frac_exp = grid:new(utf8len(frac_str), 1, { frac_str })
 								end
 							end
 						end
-						
+
 					end
 				end
-				
+
 				if not frac_exp then
 					subgrid = to_ascii(exp.sub)
 				else
 					subgrid = frac_exp
 				end
 				g = g:combine_sub(subgrid)
-				
+
 			end
 		end
-		
+
 		if exp.sup and not exp.sub then 
 			local superscript = ""
 			local supexps = exp.sup.exps
@@ -598,7 +598,7 @@ local function to_ascii(exp)
 			else
 			  sup_t = "sym"
 			end
-			
+
 			for _, exp in ipairs(supexps) do
 				if exp.kind == "numexp" and math.floor(exp.num) == exp.num then
 					local num = exp.num
@@ -616,7 +616,7 @@ local function to_ascii(exp)
 						end
 						superscript = superscript .. num_superscript 
 					end
-					
+
 				elseif exp.kind == "symexp" then
 					if sup_letters[exp.sym] and not exp.sub and not exp.sup then
 						superscript = superscript .. sup_letters[exp.sym]
@@ -624,17 +624,17 @@ local function to_ascii(exp)
 						superscript = nil
 						break
 					end
-					
+
 				else
 					superscript = nil
 					break
 				end
 			end
-			
+
 			if superscript and string.len(superscript) > 0 then
 				local sup_g = grid:new(utf8len(superscript), 1, { superscript }, sup_t)
 				g = g:join_hori(sup_g, true)
-				
+
 			else
 				local supgrid = to_ascii(exp.sup)
 				local frac_exps = exp.sup.exps
@@ -660,38 +660,38 @@ local function to_ascii(exp)
 										num_str = num_str .. sup_letters[string.sub(s, i, i)]
 									end
 								end
-								
+
 								if math.floor(B) == B then
 									local s = tostring(B)
 									for i=1,string.len(s) do
 										den_str = den_str .. sub_letters[string.sub(s, i, i)]
 									end
 								end
-								
+
 								if string.len(num_str) > 0 and string.len(den_str) > 0 then
 									local frac_str = num_str .. "⁄" .. den_str
 									frac_exp = grid:new(utf8len(frac_str), 1, { frac_str })
 								end
 							end
 						end
-						
+
 					end
 				end
-				
+
 				if not frac_exp then
 					supgrid = to_ascii(exp.sup)
 				else
 					supgrid = frac_exp
 				end
 				g = g:join_super(supgrid)
-				
+
 			end
 		end
-		
-	
+
+
 		return g
-	
-	
+
+
 	elseif exp.kind == "addexp" then
 		local leftgrid = to_ascii(exp.left):put_paren(exp.left, exp)
 		local rightgrid = to_ascii(exp.right):put_paren(exp.right, exp)
@@ -699,7 +699,7 @@ local function to_ascii(exp)
 		local c1 = leftgrid:join_hori(opgrid)
 		local c2 = c1:join_hori(rightgrid)
 		return c2
-	
+
 	elseif exp.kind == "subexp" then
 		local leftgrid = to_ascii(exp.left):put_paren(exp.left, exp)
 		local rightgrid = to_ascii(exp.right):put_paren(exp.right, exp)
@@ -707,7 +707,7 @@ local function to_ascii(exp)
 		local c1 = leftgrid:join_hori(opgrid)
 		local c2 = c1:join_hori(rightgrid)
 		return c2
-	
+
 	elseif exp.kind == "mulexp" then
 		local leftgrid = to_ascii(exp.left):put_paren(exp.left, exp)
 		local rightgrid = to_ascii(exp.right):put_paren(exp.right, exp)
@@ -716,32 +716,32 @@ local function to_ascii(exp)
 			local opgrid = grid:new(utf8len(style.multiply_sign), 1, { style.multiply_sign })
 			local c1 = leftgrid:join_hori(opgrid)
 			c2 = c1:join_hori(rightgrid)
-			
+
 		else
 			c2 = leftgrid:join_hori(rightgrid)
-			
+
 		end
 		return c2
-	
+
 	elseif exp.kind == "divexp" then
 		local leftgrid = to_ascii(exp.left)
 		local rightgrid = to_ascii(exp.right)
-	
+
 		local bar = ""
 		local w = math.max(leftgrid.w, rightgrid.w)
 		for x=1,w do
 			bar = bar .. style.div_bar
 		end
-		
-	
+
+
 		local opgrid = grid:new(w, 1, { bar })
-	
+
 		local c1 = leftgrid:join_vert(opgrid)
 		local c2 = c1:join_vert(rightgrid)
 		c2.my = leftgrid.h
-		
+
 		return c2
-	
+
 	elseif exp.kind == "symexp" then
 		local sym = exp.sym
 		-- if special_syms[sym] then
@@ -761,7 +761,7 @@ local function to_ascii(exp)
 			else
 			  sub_t = "sym"
 			end
-			
+
 			for _, exp in ipairs(subexps) do
 				if exp.kind == "numexp" and math.floor(exp.num) == exp.num then
 					local num = exp.num
@@ -779,7 +779,7 @@ local function to_ascii(exp)
 						end
 						subscript = subscript .. num_subscript 
 					end
-					
+
 				elseif exp.kind == "symexp" then
 					if sub_letters[exp.sym] and not exp.sub and not exp.sup then
 						subscript = subscript .. sub_letters[exp.sym]
@@ -787,14 +787,14 @@ local function to_ascii(exp)
 						subscript = nil
 						break
 					end
-					
+
 				else
 					subscript = nil
 					break
 				end
 			end
-			
-		
+
+
 			local superscript = ""
 			local supexps = exp.sub.exps
 		  local sup_t
@@ -805,7 +805,7 @@ local function to_ascii(exp)
 			else
 			  sup_t = "sym"
 			end
-			
+
 			for _, exp in ipairs(supexps) do
 				if exp.kind == "numexp" and math.floor(exp.num) == exp.num then
 					local num = exp.num
@@ -823,7 +823,7 @@ local function to_ascii(exp)
 						end
 						superscript = superscript .. num_superscript 
 					end
-					
+
 				elseif exp.kind == "symexp" then
 					if sup_letters[exp.sym] and not exp.sub and not exp.sup then
 						superscript = superscript .. sup_letters[exp.sym]
@@ -831,14 +831,14 @@ local function to_ascii(exp)
 						superscript = nil
 						break
 					end
-					
+
 				else
 					superscript = nil
 					break
 				end
 			end
-			
-		
+
+
 			if subscript and superscript then
 				local sup_g = grid:new(utf8len(subscript), 1, { subscript }, sub_t)
 				local sub_g = grid:new(utf8len(superscript), 1, { superscript }, sup_t)
@@ -848,9 +848,9 @@ local function to_ascii(exp)
 				local supgrid = to_ascii(exp.sup)
 				g = g:join_sub_sup(subgrid, supgrid)
 			end
-		
+
 		end
-		
+
 		if exp.sub and not exp.sup then 
 			local subscript = ""
 			local subexps = exp.sub.exps
@@ -862,7 +862,7 @@ local function to_ascii(exp)
 			else
 			  sub_t = "sym"
 			end
-			
+
 			for _, exp in ipairs(subexps) do
 				if exp.kind == "numexp" and math.floor(exp.num) == exp.num then
 					local num = exp.num
@@ -880,7 +880,7 @@ local function to_ascii(exp)
 						end
 						subscript = subscript .. num_subscript 
 					end
-					
+
 				elseif exp.kind == "symexp" then
 					if sub_letters[exp.sym] and not exp.sub and not exp.sup then
 						subscript = subscript .. sub_letters[exp.sym]
@@ -888,17 +888,17 @@ local function to_ascii(exp)
 						subscript = nil
 						break
 					end
-					
+
 				else
 					subscript = nil
 					break
 				end
 			end
-			
+
 			if subscript and string.len(subscript) > 0 then
 				local sub_g = grid:new(utf8len(subscript), 1, { subscript }, sub_t)
 				g = g:join_hori(sub_g)
-				
+
 			else
 				local subgrid
 				local frac_exps = exp.sub.exps
@@ -924,34 +924,34 @@ local function to_ascii(exp)
 										num_str = num_str .. sup_letters[string.sub(s, i, i)]
 									end
 								end
-								
+
 								if math.floor(B) == B then
 									local s = tostring(B)
 									for i=1,string.len(s) do
 										den_str = den_str .. sub_letters[string.sub(s, i, i)]
 									end
 								end
-								
+
 								if string.len(num_str) > 0 and string.len(den_str) > 0 then
 									local frac_str = num_str .. "⁄" .. den_str
 									frac_exp = grid:new(utf8len(frac_str), 1, { frac_str })
 								end
 							end
 						end
-						
+
 					end
 				end
-				
+
 				if not frac_exp then
 					subgrid = to_ascii(exp.sub)
 				else
 					subgrid = frac_exp
 				end
 				g = g:combine_sub(subgrid)
-				
+
 			end
 		end
-		
+
 		if exp.sup and not exp.sub then 
 			local superscript = ""
 			local supexps = exp.sup.exps
@@ -963,7 +963,7 @@ local function to_ascii(exp)
 			else
 			  sup_t = "sym"
 			end
-			
+
 			for _, exp in ipairs(supexps) do
 				if exp.kind == "numexp" and math.floor(exp.num) == exp.num then
 					local num = exp.num
@@ -981,7 +981,7 @@ local function to_ascii(exp)
 						end
 						superscript = superscript .. num_superscript 
 					end
-					
+
 				elseif exp.kind == "symexp" then
 					if sup_letters[exp.sym] and not exp.sub and not exp.sup then
 						superscript = superscript .. sup_letters[exp.sym]
@@ -989,17 +989,17 @@ local function to_ascii(exp)
 						superscript = nil
 						break
 					end
-					
+
 				else
 					superscript = nil
 					break
 				end
 			end
-			
+
 			if superscript and string.len(superscript) > 0 then
 				local sup_g = grid:new(utf8len(superscript), 1, { superscript }, sup_t)
 				g = g:join_hori(sup_g, true)
-				
+
 			else
 				local supgrid = to_ascii(exp.sup)
 				local frac_exps = exp.sup.exps
@@ -1025,37 +1025,37 @@ local function to_ascii(exp)
 										num_str = num_str .. sup_letters[string.sub(s, i, i)]
 									end
 								end
-								
+
 								if math.floor(B) == B then
 									local s = tostring(B)
 									for i=1,string.len(s) do
 										den_str = den_str .. sub_letters[string.sub(s, i, i)]
 									end
 								end
-								
+
 								if string.len(num_str) > 0 and string.len(den_str) > 0 then
 									local frac_str = num_str .. "⁄" .. den_str
 									frac_exp = grid:new(utf8len(frac_str), 1, { frac_str })
 								end
 							end
 						end
-						
+
 					end
 				end
-				
+
 				if not frac_exp then
 					supgrid = to_ascii(exp.sup)
 				else
 					supgrid = frac_exp
 				end
 				g = g:join_super(supgrid)
-				
+
 			end
 		end
-		
+
 		return g
-	
-	
+
+
 	-- elseif exp.kind == "funexp" then
 		-- local name = exp.name.kind == "symexp" and exp.name.sym
 		-- @transform_special_functions
@@ -1081,26 +1081,26 @@ local function to_ascii(exp)
 			-- end
 			-- return c0:join_hori(args)
 		-- end
-	
+
 	elseif exp.kind == "eqexp" then
 		if style.eq_sign[exp.sign] then
 			local leftgrid = to_ascii(exp.left)
 			local rightgrid = to_ascii(exp.right)
 			local opgrid = grid:new(utf8len(style.eq_sign[exp.sign]), 1, { style.eq_sign[exp.sign] })
 			local c1 = leftgrid:join_hori(opgrid)
-	
+
 			local c2 = c1:join_hori(rightgrid)
 			return c2
 		else
 			return nil
 		end
-	
-	
+
+
 	elseif exp.kind == "presubexp" then
 		local minus = grid:new(utf8len(style.prefix_minus_sign), 1, { style.prefix_minus_sign })
 		local leftgrid = to_ascii(exp.left):put_paren(exp.left, exp)
 		return minus:join_hori(leftgrid)
-	
+
 	elseif exp.kind == "matexp" then
 		if #exp.rows > 0 then
 			local cellsgrid = {}
@@ -1114,8 +1114,8 @@ local function to_ascii(exp)
 				end
 				table.insert(cellsgrid, rowgrid)
 			end
-			
-	
+
+
 			local res
 			for i=1,#cellsgrid[1] do
 				local col 
@@ -1126,26 +1126,26 @@ local function to_ascii(exp)
 					local up, down
 					if sup > 0 then up = grid:new(cell.w, sup) end
 					if sdown > 0 then down = grid:new(cell.w, sdown) end
-					
+
 					if up then cell = up:join_vert(cell) end
 					if down then cell = cell:join_vert(down) end
-					
+
 					local colspacer = grid:new(1, cell.h)
 					colspacer.my = cell.my
-					
+
 					if i < #cellsgrid[1] then
 						cell = cell:join_hori(colspacer)
 					end
-					
+
 					if not col then col = cell
 					else col = col:join_vert(cell, true) end
-					
+
 				end
 				if not res then res = col
 				else res = res:join_hori(col, true) end
-				
+
 			end
-			
+
 			local left_content, right_content = {}, {}
 			if res.h > 1 then
 				for y=1,res.h do
@@ -1164,34 +1164,34 @@ local function to_ascii(exp)
 				left_content = { style.matrix_single_left }
 				right_content = { style.matrix_single_right }
 			end
-			
+
 			local leftbracket = grid:new(1, res.h, left_content)
 			local rightbracket = grid:new(1, res.h, right_content)
-			
+
 			res = leftbracket:join_hori(res, true)
 			res = res:join_hori(rightbracket, true)
-			
+
 			res.my = math.floor(res.h/2)
 			return res
 		else
 			return nil, "empty matrix"
 		end
-	
+
 	elseif exp.kind == "derexp" then
 		local leftgrid = to_ascii(exp.left):put_paren(exp.left, exp)
-	
+
 		local super_content = ""
 		for i=1,exp.order do
 			super_content = super_content .. "'"
 		end
-		
+
 		local superscript = grid:new(exp.order, 1, { super_content })
-		
-	
+
+
 		local result = leftgrid:join_hori(superscript, true)
 		result.my = leftgrid.my
 		return result
-	
+
 	elseif exp.kind == "explist" then
 		local res
 		for _, exp_el in ipairs(exp.exps) do
@@ -1204,30 +1204,30 @@ local function to_ascii(exp)
 			end
 		end
 		return res
-	
+
 	elseif exp.kind == "funexp" then
 		local name = exp.sym
 		if name == "frac" then
 			assert(#exp.args == 2, "frac must have 2 arguments")
 			local leftgrid = to_ascii(exp.args[1])
 			local rightgrid = to_ascii(exp.args[2])
-			
+
 			local bar = ""
 			local w = math.max(leftgrid.w, rightgrid.w)
 			for x=1,w do
 				bar = bar .. style.div_bar
 			end
-			
-			
+
+
 			local opgrid = grid:new(w, 1, { bar })
-			
+
 			local c1 = leftgrid:join_vert(opgrid)
 			local c2 = c1:join_vert(rightgrid)
 			c2.my = leftgrid.h
-			
+
 			return c2
-			
-		
+
+
 		elseif special_syms[name] or special_nums[name] or greek_etc[name] then
 			local sym = special_syms[name] or special_nums[name] or greek_etc[name]
 		  local t
@@ -1238,8 +1238,8 @@ local function to_ascii(exp)
 		  elseif greek_etc[name] then
 		    t = "var"
 		  end
-		  
-		  
+
+
 			local g = grid:new(utf8len(sym), 1, { sym }, t)
 			if exp.sub and exp.sup then 
 				local subscript = ""
@@ -1254,7 +1254,7 @@ local function to_ascii(exp)
 				else
 				  sub_t = "sym"
 				end
-				
+
 				for _, exp in ipairs(subexps) do
 					if exp.kind == "numexp" and math.floor(exp.num) == exp.num then
 						local num = exp.num
@@ -1272,7 +1272,7 @@ local function to_ascii(exp)
 							end
 							subscript = subscript .. num_subscript 
 						end
-						
+
 					elseif exp.kind == "symexp" then
 						if sub_letters[exp.sym] and not exp.sub and not exp.sup then
 							subscript = subscript .. sub_letters[exp.sym]
@@ -1280,14 +1280,14 @@ local function to_ascii(exp)
 							subscript = nil
 							break
 						end
-						
+
 					else
 						subscript = nil
 						break
 					end
 				end
-				
-			
+
+
 				local superscript = ""
 				local supexps = exp.sub.exps
 			  local sup_t
@@ -1298,7 +1298,7 @@ local function to_ascii(exp)
 				else
 				  sup_t = "sym"
 				end
-				
+
 				for _, exp in ipairs(supexps) do
 					if exp.kind == "numexp" and math.floor(exp.num) == exp.num then
 						local num = exp.num
@@ -1316,7 +1316,7 @@ local function to_ascii(exp)
 							end
 							superscript = superscript .. num_superscript 
 						end
-						
+
 					elseif exp.kind == "symexp" then
 						if sup_letters[exp.sym] and not exp.sub and not exp.sup then
 							superscript = superscript .. sup_letters[exp.sym]
@@ -1324,14 +1324,14 @@ local function to_ascii(exp)
 							superscript = nil
 							break
 						end
-						
+
 					else
 						superscript = nil
 						break
 					end
 				end
-				
-			
+
+
 				if subscript and superscript then
 					local sup_g = grid:new(utf8len(subscript), 1, { subscript }, sub_t)
 					local sub_g = grid:new(utf8len(superscript), 1, { superscript }, sup_t)
@@ -1341,9 +1341,9 @@ local function to_ascii(exp)
 					local supgrid = to_ascii(exp.sup)
 					g = g:join_sub_sup(subgrid, supgrid)
 				end
-			
+
 			end
-			
+
 			if exp.sub and not exp.sup then 
 				local subscript = ""
 				local subexps = exp.sub.exps
@@ -1355,7 +1355,7 @@ local function to_ascii(exp)
 				else
 				  sub_t = "sym"
 				end
-				
+
 				for _, exp in ipairs(subexps) do
 					if exp.kind == "numexp" and math.floor(exp.num) == exp.num then
 						local num = exp.num
@@ -1373,7 +1373,7 @@ local function to_ascii(exp)
 							end
 							subscript = subscript .. num_subscript 
 						end
-						
+
 					elseif exp.kind == "symexp" then
 						if sub_letters[exp.sym] and not exp.sub and not exp.sup then
 							subscript = subscript .. sub_letters[exp.sym]
@@ -1381,17 +1381,17 @@ local function to_ascii(exp)
 							subscript = nil
 							break
 						end
-						
+
 					else
 						subscript = nil
 						break
 					end
 				end
-				
+
 				if subscript and string.len(subscript) > 0 then
 					local sub_g = grid:new(utf8len(subscript), 1, { subscript }, sub_t)
 					g = g:join_hori(sub_g)
-					
+
 				else
 					local subgrid
 					local frac_exps = exp.sub.exps
@@ -1417,34 +1417,34 @@ local function to_ascii(exp)
 											num_str = num_str .. sup_letters[string.sub(s, i, i)]
 										end
 									end
-									
+
 									if math.floor(B) == B then
 										local s = tostring(B)
 										for i=1,string.len(s) do
 											den_str = den_str .. sub_letters[string.sub(s, i, i)]
 										end
 									end
-									
+
 									if string.len(num_str) > 0 and string.len(den_str) > 0 then
 										local frac_str = num_str .. "⁄" .. den_str
 										frac_exp = grid:new(utf8len(frac_str), 1, { frac_str })
 									end
 								end
 							end
-							
+
 						end
 					end
-					
+
 					if not frac_exp then
 						subgrid = to_ascii(exp.sub)
 					else
 						subgrid = frac_exp
 					end
 					g = g:combine_sub(subgrid)
-					
+
 				end
 			end
-			
+
 			if exp.sup and not exp.sub then 
 				local superscript = ""
 				local supexps = exp.sup.exps
@@ -1456,7 +1456,7 @@ local function to_ascii(exp)
 				else
 				  sup_t = "sym"
 				end
-				
+
 				for _, exp in ipairs(supexps) do
 					if exp.kind == "numexp" and math.floor(exp.num) == exp.num then
 						local num = exp.num
@@ -1474,7 +1474,7 @@ local function to_ascii(exp)
 							end
 							superscript = superscript .. num_superscript 
 						end
-						
+
 					elseif exp.kind == "symexp" then
 						if sup_letters[exp.sym] and not exp.sub and not exp.sup then
 							superscript = superscript .. sup_letters[exp.sym]
@@ -1482,17 +1482,17 @@ local function to_ascii(exp)
 							superscript = nil
 							break
 						end
-						
+
 					else
 						superscript = nil
 						break
 					end
 				end
-				
+
 				if superscript and string.len(superscript) > 0 then
 					local sup_g = grid:new(utf8len(superscript), 1, { superscript }, sup_t)
 					g = g:join_hori(sup_g, true)
-					
+
 				else
 					local supgrid = to_ascii(exp.sup)
 					local frac_exps = exp.sup.exps
@@ -1518,41 +1518,41 @@ local function to_ascii(exp)
 											num_str = num_str .. sup_letters[string.sub(s, i, i)]
 										end
 									end
-									
+
 									if math.floor(B) == B then
 										local s = tostring(B)
 										for i=1,string.len(s) do
 											den_str = den_str .. sub_letters[string.sub(s, i, i)]
 										end
 									end
-									
+
 									if string.len(num_str) > 0 and string.len(den_str) > 0 then
 										local frac_str = num_str .. "⁄" .. den_str
 										frac_exp = grid:new(utf8len(frac_str), 1, { frac_str })
 									end
 								end
 							end
-							
+
 						end
 					end
-					
+
 					if not frac_exp then
 						supgrid = to_ascii(exp.sup)
 					else
 						supgrid = frac_exp
 					end
 					g = g:join_super(supgrid)
-					
+
 				end
 			end
-			
+
 			return g
-		
-		
+
+
 		elseif name == "sqrt" then
 			assert(#exp.args == 1, "sqrt must have 2 arguments")
 			local toroot = to_ascii(exp.args[1])
-		
+
 			local left_content = {}
 			for y=1,toroot.h do 
 				if y < toroot.h then
@@ -1561,27 +1561,27 @@ local function to_ascii(exp)
 					table.insert(left_content, style.root_bottom .. style.root_vert_bar)
 				end
 			end
-			
+
 			local left_root = grid:new(2, toroot.h, left_content, "sym")
 			left_root.my = toroot.my
-			
+
 			local up_str = " " .. style.root_upper_left
 			for x=1,toroot.w do
 				up_str = up_str .. style.root_upper
 			end
 			up_str = up_str .. style.root_upper_right
-			
+
 			local top_root = grid:new(toroot.w+2, 1, { up_str }, "sym")
-			
-		
+
+
 			local res = left_root:join_hori(toroot)
 			res = top_root:join_vert(res)
 			res.my = top_root.h + toroot.my
 			return res
-		
+
 		elseif name == "int" then
 			local g = grid:new(1, 1, { "∫" }, "sym")
-		
+
 			if exp.sub and exp.sup then 
 				local subgrid = to_ascii(exp.sub)
 				local supgrid = to_ascii(exp.sup)
@@ -1590,32 +1590,32 @@ local function to_ascii(exp)
 				g = g:join_vert(subgrid)
 				g.my = my + supgrid.h
 			end
-			
+
 			if exp.sub and not exp.sup then
 				local my = g.my
 				local subgrid = to_ascii(exp.sub)
 				g = g:join_vert(subgrid)
 				g.my = my
 			end
-			
+
 			if exp.sup and not exp.sub then
 				local my = g.my
 				local supgrid = to_ascii(exp.sup)
 				g = g:join_vert(supgrid)
 				g.my = my + supgrid.h
 			end
-			
-		
+
+
 				local col_spacer = grid:new(1, 1, { " " })
 				if g then
 					g = g:join_hori(col_spacer)
 				end
-			
+
 			return g
-		
+
 		elseif name == "iint" then
 			local g = grid:new(1, 1, { "∬" }, "sym")
-		
+
 			if exp.sub and exp.sup then 
 				local subgrid = to_ascii(exp.sub)
 				local supgrid = to_ascii(exp.sup)
@@ -1624,31 +1624,31 @@ local function to_ascii(exp)
 				g = g:join_vert(subgrid)
 				g.my = my + supgrid.h
 			end
-			
+
 			if exp.sub and not exp.sup then
 				local my = g.my
 				local subgrid = to_ascii(exp.sub)
 				g = g:join_vert(subgrid)
 				g.my = my
 			end
-			
+
 			if exp.sup and not exp.sub then
 				local my = g.my
 				local supgrid = to_ascii(exp.sup)
 				g = g:join_vert(supgrid)
 				g.my = my + supgrid.h
 			end
-			
+
 				local col_spacer = grid:new(1, 1, { " " })
 				if g then
 					g = g:join_hori(col_spacer)
 				end
-			
+
 			return g
-		
+
 		elseif name == "iiint" then
 			local g = grid:new(1, 1, { "∭" }, "sym")
-		
+
 			if exp.sub and exp.sup then 
 				local subgrid = to_ascii(exp.sub)
 				local supgrid = to_ascii(exp.sup)
@@ -1657,31 +1657,31 @@ local function to_ascii(exp)
 				g = g:join_vert(subgrid)
 				g.my = my + supgrid.h
 			end
-			
+
 			if exp.sub and not exp.sup then
 				local my = g.my
 				local subgrid = to_ascii(exp.sub)
 				g = g:join_vert(subgrid)
 				g.my = my
 			end
-			
+
 			if exp.sup and not exp.sub then
 				local my = g.my
 				local supgrid = to_ascii(exp.sup)
 				g = g:join_vert(supgrid)
 				g.my = my + supgrid.h
 			end
-			
+
 				local col_spacer = grid:new(1, 1, { " " })
 				if g then
 					g = g:join_hori(col_spacer)
 				end
-			
+
 			return g
-		
+
 		elseif name == "oint" then
 			local g = grid:new(1, 1, { "∮" }, "sym")
-		
+
 			if exp.sub and exp.sup then 
 				local subgrid = to_ascii(exp.sub)
 				local supgrid = to_ascii(exp.sup)
@@ -1690,31 +1690,31 @@ local function to_ascii(exp)
 				g = g:join_vert(subgrid)
 				g.my = my + supgrid.h
 			end
-			
+
 			if exp.sub and not exp.sup then
 				local my = g.my
 				local subgrid = to_ascii(exp.sub)
 				g = g:join_vert(subgrid)
 				g.my = my
 			end
-			
+
 			if exp.sup and not exp.sub then
 				local my = g.my
 				local supgrid = to_ascii(exp.sup)
 				g = g:join_vert(supgrid)
 				g.my = my + supgrid.h
 			end
-			
+
 				local col_spacer = grid:new(1, 1, { " " })
 				if g then
 					g = g:join_hori(col_spacer)
 				end
-			
+
 			return g
-		
+
 		elseif name == "oiint" then
 			local g = grid:new(1, 1, { "∯" }, "sym")
-		
+
 			if exp.sub and exp.sup then 
 				local subgrid = to_ascii(exp.sub)
 				local supgrid = to_ascii(exp.sup)
@@ -1723,31 +1723,31 @@ local function to_ascii(exp)
 				g = g:join_vert(subgrid)
 				g.my = my + supgrid.h
 			end
-			
+
 			if exp.sub and not exp.sup then
 				local my = g.my
 				local subgrid = to_ascii(exp.sub)
 				g = g:join_vert(subgrid)
 				g.my = my
 			end
-			
+
 			if exp.sup and not exp.sub then
 				local my = g.my
 				local supgrid = to_ascii(exp.sup)
 				g = g:join_vert(supgrid)
 				g.my = my + supgrid.h
 			end
-			
+
 				local col_spacer = grid:new(1, 1, { " " })
 				if g then
 					g = g:join_hori(col_spacer)
 				end
-			
+
 			return g
-		
+
 		elseif name == "oiiint" then
 			local g = grid:new(1, 1, { "∰" }, "sym")
-		
+
 			if exp.sub and exp.sup then 
 				local subgrid = to_ascii(exp.sub)
 				local supgrid = to_ascii(exp.sup)
@@ -1756,31 +1756,31 @@ local function to_ascii(exp)
 				g = g:join_vert(subgrid)
 				g.my = my + supgrid.h
 			end
-			
+
 			if exp.sub and not exp.sup then
 				local my = g.my
 				local subgrid = to_ascii(exp.sub)
 				g = g:join_vert(subgrid)
 				g.my = my
 			end
-			
+
 			if exp.sup and not exp.sub then
 				local my = g.my
 				local supgrid = to_ascii(exp.sup)
 				g = g:join_vert(supgrid)
 				g.my = my + supgrid.h
 			end
-			
+
 				local col_spacer = grid:new(1, 1, { " " })
 				if g then
 					g = g:join_hori(col_spacer)
 				end
-			
+
 			return g
-		
+
 		elseif name == "sum" then
 			local g = grid:new(1, 1, { "∑" }, "sym")
-		
+
 			if exp.sub and exp.sup then 
 				local subgrid = to_ascii(exp.sub)
 				local supgrid = to_ascii(exp.sup)
@@ -1789,31 +1789,31 @@ local function to_ascii(exp)
 				g = g:join_vert(subgrid)
 				g.my = my + supgrid.h
 			end
-			
+
 			if exp.sub and not exp.sup then
 				local my = g.my
 				local subgrid = to_ascii(exp.sub)
 				g = g:join_vert(subgrid)
 				g.my = my
 			end
-			
+
 			if exp.sup and not exp.sub then
 				local my = g.my
 				local supgrid = to_ascii(exp.sup)
 				g = g:join_vert(supgrid)
 				g.my = my + supgrid.h
 			end
-			
+
 				local col_spacer = grid:new(1, 1, { " " })
 				if g then
 					g = g:join_hori(col_spacer)
 				end
-			
+
 			return g
-		
+
 		elseif name == "prod" then
 			local g = grid:new(1, 1, { "∏" }, "sym")
-		
+
 			if exp.sub and exp.sup then 
 				local subgrid = to_ascii(exp.sub)
 				local supgrid = to_ascii(exp.sup)
@@ -1822,50 +1822,50 @@ local function to_ascii(exp)
 				g = g:join_vert(subgrid)
 				g.my = my + supgrid.h
 			end
-			
+
 			if exp.sub and not exp.sup then
 				local my = g.my
 				local subgrid = to_ascii(exp.sub)
 				g = g:join_vert(subgrid)
 				g.my = my
 			end
-			
+
 			if exp.sup and not exp.sub then
 				local my = g.my
 				local supgrid = to_ascii(exp.sup)
 				g = g:join_vert(supgrid)
 				g.my = my + supgrid.h
 			end
-			
+
 				local col_spacer = grid:new(1, 1, { " " })
 				if g then
 					g = g:join_hori(col_spacer)
 				end
-			
+
 			return g
-		
+
 		elseif name == "lim" then
 		  local g = grid:new(3, 1, { "lim" }, "op")
-		
+
 		  if exp.sub and not exp.sup then
 		  	local my = g.my
 		  	local subgrid = to_ascii(exp.sub)
 		  	g = g:join_vert(subgrid)
 		  	g.my = my
 		  end
-		  
+
 		  	local col_spacer = grid:new(1, 1, { " " })
 		  	if g then
 		  		g = g:join_hori(col_spacer)
 		  	end
-		  
+
 		  return g
-		
+
 		else
 			return grid:new(utf8len(name), 1, { name })
 		end
-		
-	
+
+
 	elseif exp.kind == "parexp" then
 		local g = to_ascii(exp.exp):enclose_paren()
 		if exp.sub and exp.sup then 
@@ -1881,7 +1881,7 @@ local function to_ascii(exp)
 			else
 			  sub_t = "sym"
 			end
-			
+
 			for _, exp in ipairs(subexps) do
 				if exp.kind == "numexp" and math.floor(exp.num) == exp.num then
 					local num = exp.num
@@ -1899,7 +1899,7 @@ local function to_ascii(exp)
 						end
 						subscript = subscript .. num_subscript 
 					end
-					
+
 				elseif exp.kind == "symexp" then
 					if sub_letters[exp.sym] and not exp.sub and not exp.sup then
 						subscript = subscript .. sub_letters[exp.sym]
@@ -1907,14 +1907,14 @@ local function to_ascii(exp)
 						subscript = nil
 						break
 					end
-					
+
 				else
 					subscript = nil
 					break
 				end
 			end
-			
-		
+
+
 			local superscript = ""
 			local supexps = exp.sub.exps
 		  local sup_t
@@ -1925,7 +1925,7 @@ local function to_ascii(exp)
 			else
 			  sup_t = "sym"
 			end
-			
+
 			for _, exp in ipairs(supexps) do
 				if exp.kind == "numexp" and math.floor(exp.num) == exp.num then
 					local num = exp.num
@@ -1943,7 +1943,7 @@ local function to_ascii(exp)
 						end
 						superscript = superscript .. num_superscript 
 					end
-					
+
 				elseif exp.kind == "symexp" then
 					if sup_letters[exp.sym] and not exp.sub and not exp.sup then
 						superscript = superscript .. sup_letters[exp.sym]
@@ -1951,14 +1951,14 @@ local function to_ascii(exp)
 						superscript = nil
 						break
 					end
-					
+
 				else
 					superscript = nil
 					break
 				end
 			end
-			
-		
+
+
 			if subscript and superscript then
 				local sup_g = grid:new(utf8len(subscript), 1, { subscript }, sub_t)
 				local sub_g = grid:new(utf8len(superscript), 1, { superscript }, sup_t)
@@ -1968,9 +1968,9 @@ local function to_ascii(exp)
 				local supgrid = to_ascii(exp.sup)
 				g = g:join_sub_sup(subgrid, supgrid)
 			end
-		
+
 		end
-		
+
 		if exp.sub and not exp.sup then 
 			local subscript = ""
 			local subexps = exp.sub.exps
@@ -1982,7 +1982,7 @@ local function to_ascii(exp)
 			else
 			  sub_t = "sym"
 			end
-			
+
 			for _, exp in ipairs(subexps) do
 				if exp.kind == "numexp" and math.floor(exp.num) == exp.num then
 					local num = exp.num
@@ -2000,7 +2000,7 @@ local function to_ascii(exp)
 						end
 						subscript = subscript .. num_subscript 
 					end
-					
+
 				elseif exp.kind == "symexp" then
 					if sub_letters[exp.sym] and not exp.sub and not exp.sup then
 						subscript = subscript .. sub_letters[exp.sym]
@@ -2008,17 +2008,17 @@ local function to_ascii(exp)
 						subscript = nil
 						break
 					end
-					
+
 				else
 					subscript = nil
 					break
 				end
 			end
-			
+
 			if subscript and string.len(subscript) > 0 then
 				local sub_g = grid:new(utf8len(subscript), 1, { subscript }, sub_t)
 				g = g:join_hori(sub_g)
-				
+
 			else
 				local subgrid
 				local frac_exps = exp.sub.exps
@@ -2044,34 +2044,34 @@ local function to_ascii(exp)
 										num_str = num_str .. sup_letters[string.sub(s, i, i)]
 									end
 								end
-								
+
 								if math.floor(B) == B then
 									local s = tostring(B)
 									for i=1,string.len(s) do
 										den_str = den_str .. sub_letters[string.sub(s, i, i)]
 									end
 								end
-								
+
 								if string.len(num_str) > 0 and string.len(den_str) > 0 then
 									local frac_str = num_str .. "⁄" .. den_str
 									frac_exp = grid:new(utf8len(frac_str), 1, { frac_str })
 								end
 							end
 						end
-						
+
 					end
 				end
-				
+
 				if not frac_exp then
 					subgrid = to_ascii(exp.sub)
 				else
 					subgrid = frac_exp
 				end
 				g = g:combine_sub(subgrid)
-				
+
 			end
 		end
-		
+
 		if exp.sup and not exp.sub then 
 			local superscript = ""
 			local supexps = exp.sup.exps
@@ -2083,7 +2083,7 @@ local function to_ascii(exp)
 			else
 			  sup_t = "sym"
 			end
-			
+
 			for _, exp in ipairs(supexps) do
 				if exp.kind == "numexp" and math.floor(exp.num) == exp.num then
 					local num = exp.num
@@ -2101,7 +2101,7 @@ local function to_ascii(exp)
 						end
 						superscript = superscript .. num_superscript 
 					end
-					
+
 				elseif exp.kind == "symexp" then
 					if sup_letters[exp.sym] and not exp.sub and not exp.sup then
 						superscript = superscript .. sup_letters[exp.sym]
@@ -2109,17 +2109,17 @@ local function to_ascii(exp)
 						superscript = nil
 						break
 					end
-					
+
 				else
 					superscript = nil
 					break
 				end
 			end
-			
+
 			if superscript and string.len(superscript) > 0 then
 				local sup_g = grid:new(utf8len(superscript), 1, { superscript }, sup_t)
 				g = g:join_hori(sup_g, true)
-				
+
 			else
 				local supgrid = to_ascii(exp.sup)
 				local frac_exps = exp.sup.exps
@@ -2145,36 +2145,36 @@ local function to_ascii(exp)
 										num_str = num_str .. sup_letters[string.sub(s, i, i)]
 									end
 								end
-								
+
 								if math.floor(B) == B then
 									local s = tostring(B)
 									for i=1,string.len(s) do
 										den_str = den_str .. sub_letters[string.sub(s, i, i)]
 									end
 								end
-								
+
 								if string.len(num_str) > 0 and string.len(den_str) > 0 then
 									local frac_str = num_str .. "⁄" .. den_str
 									frac_exp = grid:new(utf8len(frac_str), 1, { frac_str })
 								end
 							end
 						end
-						
+
 					end
 				end
-				
+
 				if not frac_exp then
 					supgrid = to_ascii(exp.sup)
 				else
 					supgrid = frac_exp
 				end
 				g = g:join_super(supgrid)
-				
+
 			end
 		end
-		
+
 		return g
-	
+
 	elseif exp.kind == "blockexp" then
 	local g
 	local name = exp.sym
@@ -2190,7 +2190,7 @@ local function to_ascii(exp)
 			kind = "explist",
 			exps = {},
 		}
-		
+
 		while i <= #explist do
 			if explist[i].kind == "symexp" and explist[i].sym == "&" then
 				local cellgrid = to_ascii(cell_list)
@@ -2198,35 +2198,35 @@ local function to_ascii(exp)
 				maxheight = math.max(maxheight, cellgrid.h)
 				i = i+1
 				break
-				
+
 			elseif explist[i].kind == "symexp" and explist[i].sym == "//" then
 				local cellgrid = to_ascii(cell_list)
 				table.insert(rowgrid, cellgrid)
 				maxheight = math.max(maxheight, cellgrid.h)
-				
+
 				table.insert(cellsgrid, rowgrid)
 				rowgrid = {}
 				i = i+1
 				break
-				
+
 			else
 				table.insert(cell_list.exps, explist[i])
 				i = i+1
 			end
-		
+
 			if i > #explist then
 				local cellgrid = to_ascii(cell_list)
 				table.insert(rowgrid, cellgrid)
 				maxheight = math.max(maxheight, cellgrid.h)
-			
+
 				table.insert(cellsgrid, rowgrid)
 			end
-			
+
 		end
-		
+
 	end
-	
-	
+
+
 	local res
 	for i=1,#cellsgrid[1] do
 		local col 
@@ -2237,30 +2237,30 @@ local function to_ascii(exp)
 			local up, down
 			if sup > 0 then up = grid:new(cell.w, sup) end
 			if sdown > 0 then down = grid:new(cell.w, sdown) end
-			
+
 			if up then cell = up:join_vert(cell) end
 			if down then cell = cell:join_vert(down) end
-			
+
 			local colspacer = grid:new(1, cell.h)
 			colspacer.my = cell.my
-			
+
 			if i < #cellsgrid[1] then
 				cell = cell:join_hori(colspacer)
 			end
-			
+
 			if not col then col = cell
 			else col = col:join_vert(cell, true) end
-			
+
 		end
 		if not res then res = col
 		else res = res:join_hori(col, true) end
-		
+
 	end
-	
+
 	-- @combine_matrix_brackets
 	res.my = math.floor(res.h/2)
 	return res
-	
+
 	elseif name == "pmatrix" then
 		local cells = {}
 		local cellsgrid = {}
@@ -2273,7 +2273,7 @@ local function to_ascii(exp)
 				kind = "explist",
 				exps = {},
 			}
-			
+
 			while i <= #explist do
 				if explist[i].kind == "symexp" and explist[i].sym == "&" then
 					local cellgrid = to_ascii(cell_list)
@@ -2281,35 +2281,35 @@ local function to_ascii(exp)
 					maxheight = math.max(maxheight, cellgrid.h)
 					i = i+1
 					break
-					
+
 				elseif explist[i].kind == "symexp" and explist[i].sym == "//" then
 					local cellgrid = to_ascii(cell_list)
 					table.insert(rowgrid, cellgrid)
 					maxheight = math.max(maxheight, cellgrid.h)
-					
+
 					table.insert(cellsgrid, rowgrid)
 					rowgrid = {}
 					i = i+1
 					break
-					
+
 				else
 					table.insert(cell_list.exps, explist[i])
 					i = i+1
 				end
-			
+
 				if i > #explist then
 					local cellgrid = to_ascii(cell_list)
 					table.insert(rowgrid, cellgrid)
 					maxheight = math.max(maxheight, cellgrid.h)
-				
+
 					table.insert(cellsgrid, rowgrid)
 				end
-				
+
 			end
-			
+
 		end
-		
-	
+
+
 	local res
 	for i=1,#cellsgrid[1] do
 		local col 
@@ -2320,29 +2320,29 @@ local function to_ascii(exp)
 			local up, down
 			if sup > 0 then up = grid:new(cell.w, sup) end
 			if sdown > 0 then down = grid:new(cell.w, sdown) end
-			
+
 			if up then cell = up:join_vert(cell) end
 			if down then cell = cell:join_vert(down) end
-			
+
 			local colspacer = grid:new(1, cell.h)
 			colspacer.my = cell.my
-			
+
 			if i < #cellsgrid[1] then
 				cell = cell:join_hori(colspacer)
 			end
-			
+
 			if not col then col = cell
 			else col = col:join_vert(cell, true) end
-			
+
 		end
 		if not res then res = col
 		else res = res:join_hori(col, true) end
-		
+
 	end
-	
+
 	res.my = math.floor(res.h/2)
 	return res:enclose_paren()
-	
+
 	elseif name == "bmatrix" then
 		local cells = {}
 		local cellsgrid = {}
@@ -2355,7 +2355,7 @@ local function to_ascii(exp)
 				kind = "explist",
 				exps = {},
 			}
-			
+
 			while i <= #explist do
 				if explist[i].kind == "symexp" and explist[i].sym == "&" then
 					local cellgrid = to_ascii(cell_list)
@@ -2363,35 +2363,35 @@ local function to_ascii(exp)
 					maxheight = math.max(maxheight, cellgrid.h)
 					i = i+1
 					break
-					
+
 				elseif explist[i].kind == "symexp" and explist[i].sym == "//" then
 					local cellgrid = to_ascii(cell_list)
 					table.insert(rowgrid, cellgrid)
 					maxheight = math.max(maxheight, cellgrid.h)
-					
+
 					table.insert(cellsgrid, rowgrid)
 					rowgrid = {}
 					i = i+1
 					break
-					
+
 				else
 					table.insert(cell_list.exps, explist[i])
 					i = i+1
 				end
-			
+
 				if i > #explist then
 					local cellgrid = to_ascii(cell_list)
 					table.insert(rowgrid, cellgrid)
 					maxheight = math.max(maxheight, cellgrid.h)
-				
+
 					table.insert(cellsgrid, rowgrid)
 				end
-				
+
 			end
-			
+
 		end
-		
-	
+
+
 	local res
 	for i=1,#cellsgrid[1] do
 		local col 
@@ -2402,26 +2402,26 @@ local function to_ascii(exp)
 			local up, down
 			if sup > 0 then up = grid:new(cell.w, sup) end
 			if sdown > 0 then down = grid:new(cell.w, sdown) end
-			
+
 			if up then cell = up:join_vert(cell) end
 			if down then cell = cell:join_vert(down) end
-			
+
 			local colspacer = grid:new(1, cell.h)
 			colspacer.my = cell.my
-			
+
 			if i < #cellsgrid[1] then
 				cell = cell:join_hori(colspacer)
 			end
-			
+
 			if not col then col = cell
 			else col = col:join_vert(cell, true) end
-			
+
 		end
 		if not res then res = col
 		else res = res:join_hori(col, true) end
-		
+
 	end
-	
+
 	local left_content, right_content = {}, {}
 	if res.h > 1 then
 		for y=1,res.h do
@@ -2440,26 +2440,26 @@ local function to_ascii(exp)
 		left_content = { style.matrix_single_left }
 		right_content = { style.matrix_single_right }
 	end
-	
+
 	local leftbracket = grid:new(1, res.h, left_content)
 	local rightbracket = grid:new(1, res.h, right_content)
-	
+
 	res = leftbracket:join_hori(res, true)
 	res = res:join_hori(rightbracket, true)
-	
+
 	res.my = math.floor(res.h/2)
 	return res
-	
+
 	else
 	error("Unknown block expression " .. exp.sym)
 	end
-	
+
 	return g
-	
+
 	else
 		return nil
 	end
-	
+
 	return grid
 end
 

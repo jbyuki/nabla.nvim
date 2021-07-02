@@ -18,7 +18,7 @@ local M = {}
 function M.parse_all(str)
 	buf = str
 	ptr = 1
-	
+
 	local exp = parse()
 	return exp
 end
@@ -38,21 +38,21 @@ function parse()
 		local exp
 
 		skip_ws()
-		
+
 		if string.match(getc(), "}") then
 			nextc()
 			break
 		end
-		
+
 		if getc() == ")" then
 			nextc()
 			break
 		end
-		
+
 
 		if string.match(getc(), "%d") then
 			exp = parse_number()
-		
+
 		elseif string.match(getc(), "\\") then
 			nextc()
 			local sym
@@ -62,7 +62,7 @@ function parse()
 					sym = " ",
 				}
 				nextc()
-			
+
 			else
 				sym = parse_symbol()
 			end
@@ -76,7 +76,7 @@ function parse()
 				sym = sym.sym,
 				args = args,
 			}
-			
+
 			if sym.sym == "begin" then
 				assert(#args == 1, "begin must have 1 argument")
 				local explist = parse()
@@ -85,15 +85,15 @@ function parse()
 					sym = args[1].exps[1].sym,
 					content = explist,
 				}
-			
+
 			elseif sym.sym == "end" then
 				return explist
 			end
-			
-		
+
+
 		elseif string.match(getc(), "%a") then
 			exp = parse_symbol()
-		
+
 		else
 			if getc() == "_" then
 				assert(#explist.exps > 0, "subscript no preceding token")
@@ -107,13 +107,13 @@ function parse()
 					subscript = { kind = "explist", exps = { sym_exp } }
 					nextc()
 				end
-			
+
 				explist.exps[#explist.exps].sub = subscript
-			
+
 			elseif getc() == "^" then
 				assert(#explist.exps > 0, "superscript no preceding token")
 				local superscript
-			
+
 				nextc()
 				if getc() == "{" then
 					nextc()
@@ -123,9 +123,9 @@ function parse()
 					superscript = { kind = "explist", exps = { sym_exp } }
 					nextc()
 				end
-			
+
 				explist.exps[#explist.exps].sup = superscript
-			
+
 			elseif getc() == "(" then
 				nextc()
 				local in_exp = parse()
@@ -133,7 +133,7 @@ function parse()
 					kind = "parexp",
 					exp = in_exp,
 				}
-			
+
 			elseif getc() == "/" and lookahead(1) == "/" then
 				exp = {
 					kind = "symexp",
@@ -148,9 +148,9 @@ function parse()
 				}
 				nextc()
 			end
-			
+
 		end
-		
+
 
 
 		if exp then
@@ -175,7 +175,7 @@ function parse_number()
 		kind = "numexp",
 		num = tonumber(num_str),
 	}
-	
+
 	return exp
 end
 
@@ -187,7 +187,7 @@ function parse_symbol()
 		kind = "symexp",
 		sym = sym_str,
 	}
-	
+
 	return exp
 end
 

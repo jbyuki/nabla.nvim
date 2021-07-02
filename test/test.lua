@@ -38,11 +38,11 @@ for _, file in ipairs(files) do
       table.insert(output, line)
     end
   end
-  
+
   vim.fn.rpcrequest(conn, "nvim_buf_set_lines", 0, 0, -1, true, input)
-  
+
   vim.fn.rpcrequest(conn, "nvim_exec_lua", [[require"nabla".replace_current()]], {})
-  
+
   local result = vim.fn.rpcrequest(conn, "nvim_buf_get_lines", 0, 0, -1, true)
   local correct = true
   if #result == #output then
@@ -55,7 +55,7 @@ for _, file in ipairs(files) do
   else
     correct = false
   end
-  
+
   local name = vim.fn.fnamemodify(file, ":t")
   if correct then
     print(name .. " OK!")
@@ -66,7 +66,7 @@ for _, file in ipairs(files) do
     print("Result: " .. vim.inspect(result))
     fail = true
   end
-  
+
 end
 
 path = nabla_path .. "/test/docs"
@@ -80,26 +80,26 @@ end
 
 for _, file in ipairs(files) do
   vim.fn.rpcrequest(conn, "nvim_command", "edit! " .. file)
-  
+
   vim.fn.rpcrequest(conn, "nvim_exec_lua", [[require("nabla").place_inline()]], {})
   vim.wait(500)
-  
+
   local tempname = vim.fn.tempname()
   vim.fn.rpcrequest(conn, "nvim_command", "write " .. tempname)
-  
+
   vim.fn.rpcrequest(conn, "nvim_command", "bw!")
-  
+
 
   local tempcontent = {}
   for line in io.lines(tempname) do
     table.insert(tempcontent, line)
   end
-  
+
   local originalcontent = {}
   for line in io.lines(file) do
     table.insert(originalcontent, line)
   end
-  
+
   local name = vim.fn.fnamemodify(file, ":t")
   local success = true
   if #originalcontent == #tempcontent then
@@ -111,7 +111,7 @@ for _, file in ipairs(files) do
   else
     success = false
   end
-  
+
   if success then
     print(name .. " OK")
   else
