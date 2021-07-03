@@ -24,12 +24,6 @@ local extmarks = {}
 
 local attached = {}
 
-local edit_extmark_id
-
-local edit_buf
-
-local edit_win
-
 local preview_pos = {}
 local preview_extmarks_ns = vim.api.nvim_create_namespace("")
 
@@ -502,16 +496,16 @@ function edit_formula()
       end
     end
 
+
     if on_extmark then
       extmark_id = id
       break
     end
   end
 
-  local formula
+  local formula, del
   if extmark_id then
-    edit_extmark_id = extmark_id
-    formula, _ = unpack(saved_formulas[extmark_id])
+    formula, del = unpack(saved_formulas[extmark_id])
   end
 
   if not formula then
@@ -519,65 +513,13 @@ function edit_formula()
   end
 
 
+  local extmark = vim.api.nvim_buf_get_extmark_by_id(0, ns_id, extmark_id, { details = true })
+  local srow, scol, details = unpack(extmark)
+  local erow, ecol = details.end_row or srow, details.end_col or scol
 
-  edit_buf = vim.api.nvim_create_buf(false, true)
+  vim.api.nvim_buf_set_text(0, srow, scol, erow, ecol, { del .. formula .. del })
 
-  vim.api.nvim_buf_set_lines(edit_buf, 0, -1, true, { formula })
-
-  local width = vim.api.nvim_strwidth(formula)+8
-
-  edit_win = vim.api.nvim_open_win(edit_buf, true, {
-    relative = "cursor",
-    width = width,
-    height = 1,
-    row = 1,
-    col = 1,
-    style = "minimal",
-    border = "single",
-  })
-
-
-  vim.api.nvim_buf_set_keymap(edit_buf, "n", "<CR>", [[<cmd>lua require"nabla".edit_formula_done()<CR>]], { noremap = true })
-
-  vim.api.nvim_command("autocmd WinLeave * ++once lua vim.api.nvim_win_close(" .. edit_win .. ", false)")
-
-
-  print("Press <CR> to validate changes.")
   return true
-end
-
-local function edit_formula_done()
-  local formula = vim.api.nvim_buf_get_lines(edit_buf, 0, 1, true)[1]
-
-  vim.api.nvim_win_close(edit_win, true)
-  vim.api.nvim_buf_delete(edit_buf, { force = true })
-
-  
-  if edit_extmark_id then
-    local _, del = unpack(saved_formulas[edit_extmark_id])
-    if not formula or formula == "" or not del then
-      return
-    end
-    local buf = vim.api.nvim_get_current_buf()
-    local ns_id = extmarks[buf]
-    local extmark = vim.api.nvim_buf_get_extmark_by_id(0, ns_id, edit_extmark_id, { details = true })
-    local srow, scol, details = unpack(extmark)
-    local erow, ecol = details.end_row or srow, details.end_col or scol
-
-    vim.api.nvim_buf_set_text(0, srow, scol, erow, ecol, { del .. formula .. del })
-    local col = scol
-    local end_col = scol + string.len(del .. formula .. del)
-    local row = srow
-
-    vim.api.nvim_buf_del_extmark(0, ns_id, edit_extmark_id)
-
-    local middlecol = math.ceil((col+end_col)/2)
-
-    replace(row+1, middlecol)
-
-    vim.api.nvim_buf_set_text(0, row, col, row, end_col, {})
-
-  end
 end
 
 function toggle_viewmode()
@@ -1165,8 +1107,6 @@ return {
 
 	action = action,
 	edit_formula = edit_formula,
-
-	edit_formula_done = edit_formula_done,
 
 	toggle_viewmode = toggle_viewmode,
 
