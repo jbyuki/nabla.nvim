@@ -25,6 +25,7 @@ local extmarks = {}
 local attached = {}
 
 local has_init = {}
+
 local saved_formulas = {}
 
 
@@ -523,6 +524,8 @@ end
 function toggle_viewmode()
   local buf = vim.api.nvim_get_current_buf()
   if not has_init[buf] then
+    local modified = vim.bo.modified
+
     local single_formula = vim.regex(conceal_match)
 
     local inline_formula = vim.regex(conceal_inline_match)
@@ -591,6 +594,7 @@ function toggle_viewmode()
 
     vim.api.nvim_command [[autocmd BufWriteCmd <buffer> lua require"nabla".write()]]
 
+    vim.bo.modified = modified
 
     has_init[buf] = true
     return true
