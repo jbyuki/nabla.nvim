@@ -32,6 +32,16 @@ for _, file in ipairs(files) do
   @compare_original_and_write_document
 end
 
+for _, file in ipairs(files) do
+  @read_input_document
+  @get_input_content
+  @run_action_on_document
+  @buffer_wipeout_nabla_document
+
+  @read_from_input_document_again
+  @compare_saved_and_original_document
+end
+
 @close_neovim_instance
 @output_result_txt
 

@@ -121,6 +121,42 @@ for _, file in ipairs(files) do
   end
 end
 
+for _, file in ipairs(files) do
+  vim.fn.rpcrequest(conn, "nvim_command", "edit! " .. file)
+
+  local originalcontent = vim.fn.rpcrequest(conn, "nvim_buf_get_lines", 0, 0, -1, true)
+
+  vim.fn.rpcrequest(conn, "nvim_exec_lua", [[require("nabla").action()]], {})
+
+  vim.fn.rpcrequest(conn, "nvim_command", "bw!")
+
+
+  local savedcontent = {}
+  for line in io.lines(file) do
+    table.insert(savedcontent, line)
+  end
+
+  local name = vim.fn.fnamemodify(file, ":t")
+  local success = true
+  if #originalcontent == #savedcontent then
+    for i=1,#originalcontent do
+      if originalcontent[i] ~= savedcontent[i] then
+        success = false
+      end
+    end
+  else
+    success = false
+  end
+
+  if success then
+    print(name .. " OK")
+  else
+    print(name .. " FAIL")
+    print("originalcontent " .. vim.inspect(originalcontent))
+    print("savedcontent " .. vim.inspect(savedcontent))
+  end
+end
+
 vim.fn.jobstop(conn)
 
 if not fail then
