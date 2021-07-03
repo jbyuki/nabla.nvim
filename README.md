@@ -30,7 +30,7 @@ Configuration
 Bind the following command:
 
 ```vim
-nnoremap <F5> :lua require("nabla").place_inline()<CR>
+nnoremap <F5> :lua require("nabla").action()<CR>
 ```
 
 Usage
@@ -40,6 +40,7 @@ Usage
 * Press <kbd>F5</kbd> on a LaTeX formula to generate the ASCII Formula.
   * `$ ... $` : inline form
   * `$$ ... $$` : wrapped form
+* Press <kbd>F5</kbd> on an ASCII Formula to edit the LaTeX formula.
 
 Reference
 ---------
