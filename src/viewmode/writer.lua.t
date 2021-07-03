@@ -1,21 +1,25 @@
 ##../nabla
 @add_hook_for_save+=
-vim.api.nvim_command [[autocmd BufWrite <buffer> lua require"nabla".write()]]
+vim.api.nvim_command [[autocmd BufWriteCmd <buffer> lua require"nabla".write()]]
 
 @functions+=
 function write()
   local buf = vim.api.nvim_get_current_buf()
   @get_extmarks_for_buffer
   @read_lines_in_current_buffer
-  @get_current_filename_without_nabla
+  @get_current_filename
   @write_except_extmarks_and_replace_with_formula
+
+  vim.bo.modified = false
+  fname = vim.fn.fnamemodify(fname, ":t")
+  print(vim.inspect(fname) .. " written")
 end
 
 @export_symbols+=
 write = write,
 
-@get_current_filename_without_nabla+=
-local fname = vim.fn.expand("%:p:r")
+@get_current_filename+=
+local fname = vim.fn.expand("%:p")
 
 @write_except_extmarks_and_replace_with_formula+=
 local f = io.open(fname, "w")

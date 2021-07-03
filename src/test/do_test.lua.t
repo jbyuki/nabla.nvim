@@ -21,16 +21,16 @@ end
 
 local files = {}
 @glob_all_tests
-for _, file in ipairs(files) do
-  @read_input_document
-  @run_init_nabla_on_document
-  @write_nabla_document_in_temp_file
-  @buffer_wipeout_nabla_document
+-- for _, file in ipairs(files) do
+  -- @read_input_document
+  -- @run_init_nabla_on_document
+  -- @write_nabla_document_in_temp_file
+  -- @buffer_wipeout_nabla_document
 
-  @read_from_nabla_temp_document_file
-  @read_from_nabla_original_document_file
-  @compare_original_and_write_document
-end
+  -- @read_from_nabla_temp_document_file
+  -- @read_from_nabla_original_document_file
+  -- @compare_original_and_write_document
+-- end
 
 for _, file in ipairs(files) do
   @read_input_document

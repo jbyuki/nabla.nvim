@@ -24,11 +24,7 @@ local extmarks = {}
 
 local attached = {}
 
-local preview_pos = {}
-local preview_extmarks_ns = vim.api.nvim_create_namespace("")
-
-local preview_origin
-
+local has_init = {}
 local saved_formulas = {}
 
 
@@ -382,6 +378,8 @@ local function save(buf)
   local fname = vim.fn.expand("<afile>")
   fname = vim.fn.fnamemodify(fname, ":p")
 
+  local fname = vim.fn.expand("%:p")
+
   local f = io.open(fname, "w")
 
   local ns_id = extmarks[buf]
@@ -466,15 +464,14 @@ local function save(buf)
 end
 
 local function action()
-  local name = vim.api.nvim_buf_get_name(0)
-  if vim.fn.fnamemodify(name, ":e") ~= "nabla" then
-    toggle_viewmode()
-  else
-    local succ = edit_formula()
-    if not succ then
-      replace_this()
-    end
-  end
+  local succ
+  succ = toggle_viewmode()
+  if succ then return end
+
+  succ = edit_formula()
+  if succ then return end
+
+  replace_this()
 end
 
 function edit_formula()
@@ -524,55 +521,8 @@ function edit_formula()
 end
 
 function toggle_viewmode()
-  local name = vim.api.nvim_buf_get_name(0)
-  local preview = vim.fn.fnamemodify(name, ":e") == "nabla"
-
-  if not preview then
-    local buf = vim.api.nvim_create_buf(true, false)
-    local lines = vim.api.nvim_buf_get_lines(0, 0, -1, true)
-    vim.api.nvim_buf_set_lines(buf, 0, -1, true, lines)
-
-    local ft = vim.api.nvim_buf_get_option(0, "ft")
-
-
-    preview_origin = vim.api.nvim_get_current_buf()
-
-    local row, col = unpack(vim.api.nvim_win_get_cursor(0))
-
-
-    local preview_filename = name .. ".nabla"
-    local prev_buf = vim.api.nvim_get_current_buf()
-
-    vim.api.nvim_buf_delete(prev_buf, { force = true })
-
-    local f = io.open(preview_filename, "r")
-    if f then
-      f:close()
-      vim.api.nvim_command("e " .. preview_filename)
-
-      local lines = vim.api.nvim_buf_get_lines(buf, 0, -1, true)
-      vim.api.nvim_buf_set_lines(0, 0, -1, true, lines)
-
-      vim.api.nvim_buf_delete(buf, { force = true })
-      buf = vim.api.nvim_get_current_buf()
-    else
-      vim.api.nvim_set_current_buf(buf)
-      vim.api.nvim_buf_set_name(buf, preview_filename)
-    end
-
-
-
-    vim.api.nvim_win_set_cursor(0, {row, col})
-    vim.api.nvim_buf_set_option(buf, "ft", ft)
-
-
-    preview_pos = {}
-    local lcount = vim.api.nvim_buf_line_count(0)
-    for lnum=1,lcount+1 do
-      local id = vim.api.nvim_buf_set_extmark(0, preview_extmarks_ns, lnum-1, 0, {})
-      preview_pos[id] = lnum
-    end
-
+  local buf = vim.api.nvim_get_current_buf()
+  if not has_init[buf] then
     local single_formula = vim.regex(conceal_match)
 
     local inline_formula = vim.regex(conceal_inline_match)
@@ -639,10 +589,13 @@ function toggle_viewmode()
     vim.api.nvim_buf_clear_namespace(buf, initial_ns, 0, -1)
 
 
+    vim.api.nvim_command [[autocmd BufWriteCmd <buffer> lua require"nabla".write()]]
 
-    vim.api.nvim_command [[autocmd BufWrite <buffer> lua require"nabla".write()]]
 
+    has_init[buf] = true
+    return true
   end
+  return false
 end
 
 function replace(row, col)
@@ -793,7 +746,10 @@ function write()
   end
   local lines = vim.api.nvim_buf_get_lines(buf, 0, -1, true)
 
-  local fname = vim.fn.expand("%:p:r")
+  local fname = vim.fn.expand("<afile>")
+  fname = vim.fn.fnamemodify(fname, ":p")
+
+  local fname = vim.fn.expand("%:p")
 
   local f = io.open(fname, "w")
 
@@ -875,6 +831,10 @@ function write()
 
   f:close()
 
+
+  vim.bo.modified = false
+  fname = vim.fn.fnamemodify(fname, ":t")
+  print(vim.inspect(fname) .. " written")
 end
 
 
@@ -1110,7 +1070,6 @@ return {
 	edit_formula = edit_formula,
 
 	toggle_viewmode = toggle_viewmode,
-
 
 	show_formulas = show_formulas,
 
