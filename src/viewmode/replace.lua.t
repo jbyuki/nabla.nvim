@@ -46,6 +46,8 @@ function replace(row, col)
 	@parse_math_expression
 	if success and exp then
 		@generate_ascii_art
+    local new_id
+
     if del == "$$" then
       @add_identation_inline
       @place_lines_after_current_line
@@ -59,6 +61,8 @@ function replace(row, col)
       @place_extmarks_inline
       @colorize_ascii_art_inline
     end
+
+    @save_formula_with_id
 	else
 		if type(errmsg) == "string"  then
 			print("nabla error: " .. errmsg)
@@ -70,3 +74,35 @@ end
 
 @delete_text_at_extmark+=
 vim.api.nvim_buf_set_text(0, row, col, row, end_col, {})
+
+@script_variables+=
+local saved_formulas = {}
+
+@save_formula_with_id+=
+saved_formulas[new_id] = { line, del }
+
+@functions+=
+local function show_formulas()
+  for id, formula in pairs(saved_formulas) do
+    local del, str = unpack(formula)
+    print(id, vim.inspect(str))
+  end
+end
+
+@export_symbols+=
+show_formulas = show_formulas,
+
+@declare_functions+=
+local replace_this
+
+@functions+=
+function replace_this()
+  local row, col = unpack(vim.api.nvim_win_get_cursor(0))
+  local buf = vim.api.nvim_get_current_buf()
+  local back, forward, del = find_latex_at(buf, row, col)
+  replace(row, col)
+  vim.api.nvim_buf_set_text(buf, row-1, back, row-1, forward, {})
+end
+
+@export_symbols+=
+replace_this = replace_this,

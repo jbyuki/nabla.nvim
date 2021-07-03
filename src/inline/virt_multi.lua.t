@@ -87,7 +87,7 @@ local ns_id = extmarks[buf]
 
 @place_extmarks_multiline+=
 local lastline = vim.api.nvim_buf_get_lines(0, row-1 + #drawing, row-1 + #drawing+1, true)[1]
-local new_id = vim.api.nvim_buf_set_extmark(bufname, ns_id, row-1, -1, { 
+new_id = vim.api.nvim_buf_set_extmark(bufname, ns_id, row-1, -1, { 
   end_line = row-1 + #drawing,
   end_col = string.len(lastline),
 })
@@ -127,7 +127,7 @@ end
 vim.api.nvim_buf_set_text(buf, row-1, forward, row-1, forward, drawing)
 
 @place_extmarks_inline+=
-vim.api.nvim_buf_set_extmark(buf, ns_id, row-1, start_byte, {
+new_id = vim.api.nvim_buf_set_extmark(buf, ns_id, row-1, start_byte, {
   end_line = row-1+(#drawing-1),
   end_col = end_byte,
 })

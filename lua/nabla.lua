@@ -24,12 +24,18 @@ local extmarks = {}
 
 local attached = {}
 
+local edit_extmark_id
+
+local edit_buf
+
+local edit_win
+
 local preview_pos = {}
 local preview_extmarks_ns = vim.api.nvim_create_namespace("")
 
-local preview_name = "[nabla preview]"
-
 local preview_origin
+
+local saved_formulas = {}
 
 
 local remove_extmark
@@ -41,6 +47,8 @@ local find_latex_at
 local place_inline
 
 local replace
+
+local replace_this
 
 function remove_extmark(events, ns_id)
   vim.api.nvim_command("autocmd "..table.concat(events, ',').." <buffer> ++once lua pcall(vim.api.nvim_buf_clear_namespace, 0, "..ns_id..", 0, -1)")
@@ -319,7 +327,7 @@ function place_inline(row, col)
       local ns_id = extmarks[buf]
 
       local lastline = vim.api.nvim_buf_get_lines(0, row-1 + #drawing, row-1 + #drawing+1, true)[1]
-      local new_id = vim.api.nvim_buf_set_extmark(bufname, ns_id, row-1, -1, { 
+      new_id = vim.api.nvim_buf_set_extmark(bufname, ns_id, row-1, -1, { 
         end_line = row-1 + #drawing,
         end_col = string.len(lastline),
       })
@@ -346,7 +354,7 @@ function place_inline(row, col)
       end
       local ns_id = extmarks[buf]
 
-      vim.api.nvim_buf_set_extmark(buf, ns_id, row-1, start_byte, {
+      new_id = vim.api.nvim_buf_set_extmark(buf, ns_id, row-1, start_byte, {
         end_line = row-1+(#drawing-1),
         end_col = end_byte,
       })
@@ -371,14 +379,6 @@ local function save(buf)
     -- in the future
     found = vim.api.nvim_buf_get_extmarks(buf, ns_id, 0, -1, {})
   end
-  local notsave = {}
-  if found then
-    for _, extmark in ipairs(found) do
-      local _, row, _ = unpack(extmark)
-      notsave[row+1] = true
-    end
-  end
-
   local lines = vim.api.nvim_buf_get_lines(buf, 0, -1, true)
 
   local fname = vim.fn.expand("<afile>")
@@ -467,16 +467,107 @@ local function save(buf)
 
 end
 
+local function edit_formula()
+  local buf = vim.api.nvim_get_current_buf()
+  local ns_id = extmarks[buf]
+  local cursor_row, cursor_col = unpack(vim.api.nvim_win_get_cursor(0))
+  local extmarks = vim.api.nvim_buf_get_extmarks(0, ns_id, 0, -1, { details = true })
+  local extmark_id
+  for _, extmark in ipairs(extmarks) do
+    local on_extmark = false
+    local id, row, col, details = unpack(extmark)
+    if cursor_row-1 >= row and cursor_row-1 <= details.end_row then
+      if not details.end_row or row == details.end_row then
+        if cursor_col >= col and cursor_col <= details.end_col then
+          on_extmark = true
+        end
+      else
+        on_extmark = true
+      end
+    end
+
+    if on_extmark then
+      extmark_id = id
+      break
+    end
+  end
+
+  local formula
+  if extmark_id then
+    edit_extmark_id = extmark_id
+    formula, _ = unpack(saved_formulas[extmark_id])
+  end
+
+  assert(formula, "No nabla generated formula under cursor")
+
+
+  edit_buf = vim.api.nvim_create_buf(false, true)
+
+  vim.api.nvim_buf_set_lines(edit_buf, 0, -1, true, { formula })
+
+  local width = vim.api.nvim_strwidth(formula)+8
+
+  edit_win = vim.api.nvim_open_win(edit_buf, true, {
+    relative = "cursor",
+    width = width,
+    height = 1,
+    row = 1,
+    col = 1,
+    style = "minimal",
+    border = "single",
+  })
+
+
+  vim.api.nvim_buf_set_keymap(edit_buf, "n", "<CR>", [[<cmd>lua require"nabla".edit_formula_done()<CR>]], { noremap = true })
+
+  vim.api.nvim_command("autocmd WinLeave * ++once lua vim.api.nvim_win_close(" .. edit_win .. ", false)")
+
+
+  print("Press <CR> to validate changes.")
+end
+
+local function edit_formula_done()
+  local formula = vim.api.nvim_buf_get_lines(edit_buf, 0, 1, true)[1]
+
+  vim.api.nvim_win_close(edit_win, true)
+  vim.api.nvim_buf_delete(edit_buf, { force = true })
+
+  
+  if edit_extmark_id then
+    local _, del = unpack(saved_formulas[edit_extmark_id])
+    if not formula or formula == "" or not del then
+      return
+    end
+    local buf = vim.api.nvim_get_current_buf()
+    local ns_id = extmarks[buf]
+    local extmark = vim.api.nvim_buf_get_extmark_by_id(0, ns_id, edit_extmark_id, { details = true })
+    local srow, scol, details = unpack(extmark)
+    local erow, ecol = details.end_row or srow, details.end_col or scol
+
+    vim.api.nvim_buf_set_text(0, srow, scol, erow, ecol, { del .. formula .. del })
+    local col = scol
+    local end_col = scol + string.len(del .. formula .. del)
+    local row = srow
+
+    vim.api.nvim_buf_del_extmark(0, ns_id, edit_extmark_id)
+
+    local middlecol = math.ceil((col+end_col)/2)
+
+    replace(row+1, middlecol)
+
+    vim.api.nvim_buf_set_text(0, row, col, row, end_col, {})
+
+  end
+end
+
 local function toggle_viewmode()
   local name = vim.api.nvim_buf_get_name(0)
-  local preview = vim.fn.fnamemodify(name, ":t") == preview_name
+  local preview = vim.fn.fnamemodify(name, ":e") == "nabla"
 
   if not preview then
-    local buf = vim.api.nvim_create_buf(false, true)
+    local buf = vim.api.nvim_create_buf(true, false)
     local lines = vim.api.nvim_buf_get_lines(0, 0, -1, true)
     vim.api.nvim_buf_set_lines(buf, 0, -1, true, lines)
-
-    vim.api.nvim_buf_set_option(buf, "buftype", "nofile")
 
     local ft = vim.api.nvim_buf_get_option(0, "ft")
 
@@ -486,8 +577,26 @@ local function toggle_viewmode()
     local row, col = unpack(vim.api.nvim_win_get_cursor(0))
 
 
-    vim.api.nvim_set_current_buf(buf)
-    vim.api.nvim_buf_set_name(buf, preview_name)
+    local preview_filename = name .. ".nabla"
+    local prev_buf = vim.api.nvim_get_current_buf()
+
+    vim.api.nvim_buf_delete(prev_buf, { force = true })
+
+    local f = io.open(preview_filename, "r")
+    if f then
+      f:close()
+      vim.api.nvim_command("e " .. preview_filename)
+
+      local lines = vim.api.nvim_buf_get_lines(buf, 0, -1, true)
+      vim.api.nvim_buf_set_lines(0, 0, -1, true, lines)
+
+      vim.api.nvim_buf_delete(buf, { force = true })
+      buf = vim.api.nvim_get_current_buf()
+    else
+      vim.api.nvim_set_current_buf(buf)
+    end
+
+
 
     vim.api.nvim_win_set_cursor(0, {row, col})
     vim.api.nvim_buf_set_option(buf, "ft", ft)
@@ -558,6 +667,7 @@ local function toggle_viewmode()
       replace(row+1, middlecol)
 
       vim.api.nvim_buf_set_text(0, row, col, row, end_col, {})
+
       
       i = i + 1
     end
@@ -566,35 +676,7 @@ local function toggle_viewmode()
 
 
 
-    vim.api.nvim_buf_set_option(buf, "readonly", true)
-
-  else
-    local row, save_col = unpack(vim.api.nvim_win_get_cursor(0))
-    local line_extmark
-    if preview_extmarks_ns then
-      local extmarks = vim.api.nvim_buf_get_extmarks(0, preview_extmarks_ns, 0, -1, {})
-      for _, extmark in ipairs(extmarks) do
-        if extmark[2] > row-1 then
-          break
-        end
-        line_extmark = extmark[1]
-      end
-
-      vim.api.nvim_buf_clear_namespace(0, preview_extmarks_ns, 0, -1)
-    end
-
-    if preview_origin then
-      local preview_buf = vim.api.nvim_get_current_buf()
-      vim.api.nvim_set_current_buf(preview_origin)
-      preview_origin = nil
-      vim.api.nvim_buf_delete(preview_buf, {force = true})
-    end
-
-    if line_extmark and preview_pos[line_extmark] then
-      local row = preview_pos[line_extmark]
-      vim.api.nvim_win_set_cursor(0, { row, save_col })
-    end
-    preview_pos = {}
+    vim.api.nvim_command [[autocmd BufWrite <buffer> lua require"nabla".write()]]
 
   end
 end
@@ -638,6 +720,8 @@ function replace(row, col)
 		end
 
 
+    local new_id
+
     if del == "$$" then
       local indent = "  "
       for i=1,#drawing do
@@ -672,7 +756,7 @@ function replace(row, col)
       local ns_id = extmarks[buf]
 
       local lastline = vim.api.nvim_buf_get_lines(0, row-1 + #drawing, row-1 + #drawing+1, true)[1]
-      local new_id = vim.api.nvim_buf_set_extmark(bufname, ns_id, row-1, -1, { 
+      new_id = vim.api.nvim_buf_set_extmark(bufname, ns_id, row-1, -1, { 
         end_line = row-1 + #drawing,
         end_col = string.len(lastline),
       })
@@ -699,7 +783,7 @@ function replace(row, col)
       end
       local ns_id = extmarks[buf]
 
-      vim.api.nvim_buf_set_extmark(buf, ns_id, row-1, start_byte, {
+      new_id = vim.api.nvim_buf_set_extmark(buf, ns_id, row-1, start_byte, {
         end_line = row-1+(#drawing-1),
         end_col = end_byte,
       })
@@ -707,6 +791,9 @@ function replace(row, col)
       local ns_id = vim.api.nvim_create_namespace("")
       colorize(g, 0, 0, ns_id, drawing, start_byte, row-1)
     end
+
+    saved_formulas[new_id] = { line, del }
+
 	else
 		if type(errmsg) == "string"  then
 			print("nabla error: " .. errmsg)
@@ -714,6 +801,116 @@ function replace(row, col)
 			print("nabla error!")
 		end
 	end
+end
+
+local function show_formulas()
+  for id, formula in pairs(saved_formulas) do
+    local del, str = unpack(formula)
+    print(id, vim.inspect(str))
+  end
+end
+
+function replace_this()
+  local row, col = unpack(vim.api.nvim_win_get_cursor(0))
+  local buf = vim.api.nvim_get_current_buf()
+  local back, forward, del = find_latex_at(buf, row, col)
+  replace(row, col)
+  vim.api.nvim_buf_set_text(buf, row-1, back, row-1, forward, {})
+end
+
+function write()
+  local buf = vim.api.nvim_get_current_buf()
+  local ns_id = extmarks[buf]
+  local found
+  if ns_id then
+    -- I could optimise to retrieve only for the deleted range
+    -- in the future
+    found = vim.api.nvim_buf_get_extmarks(buf, ns_id, 0, -1, {})
+  end
+  local lines = vim.api.nvim_buf_get_lines(buf, 0, -1, true)
+
+  local fname = vim.fn.expand("%:p:r")
+
+  local f = io.open(fname, "w")
+
+  local ns_id = extmarks[buf]
+  local extmarks = {}
+  if ns_id then
+    -- I could optimise to retrieve only for the deleted range
+    -- in the future
+    extmarks = vim.api.nvim_buf_get_extmarks(buf, ns_id, 0, -1, { details = true })
+  end
+
+  local scratch = vim.api.nvim_create_buf(false, true)
+
+  local tempbuf = vim.api.nvim_create_buf(false, true)
+
+  vim.api.nvim_buf_set_lines(tempbuf, 0, -1, true, lines)
+
+  local scratch_id = vim.api.nvim_create_namespace("")
+  local line_count = vim.api.nvim_buf_line_count(tempbuf)
+  for _, extmark in ipairs(extmarks) do
+    local id, srow, scol, details = unpack(extmark)
+    local erow, ecol = details.end_row or srow, details.end_col or scol
+
+    if erow >= line_count then
+      erow = line_count-1
+      local lastline = vim.api.nvim_buf_get_lines(tempbuf, erow, erow+1, true)[1]
+      ecol = string.len(lastline)
+    end
+
+
+    local new_id = vim.api.nvim_buf_set_extmark(tempbuf, scratch_id, srow, scol, {
+      end_line = erow,
+      end_col = ecol,
+    })
+
+    saved_formulas[new_id] = saved_formulas[id]
+
+  end
+
+  local ex = 1
+  for i=1,#extmarks do
+    extmarks = vim.api.nvim_buf_get_extmarks(tempbuf, scratch_id, 0, -1, { details = true})
+    local extmark = extmarks[1]
+
+    local id, srow, scol, details = unpack(extmark)
+    local erow, ecol = details.end_row or srow, details.end_col or scol
+    local line_count = vim.api.nvim_buf_line_count(tempbuf)
+
+    if srow < line_count then
+      local line = vim.api.nvim_buf_get_lines(tempbuf, srow, srow+1, true)[1]
+      if scol <= string.len(line) then
+        if erow >= line_count then
+          erow = line_count-1
+          local lastline = vim.api.nvim_buf_get_lines(tempbuf, erow, erow+1, true)[1]
+          ecol = string.len(lastline)
+        end
+
+        if erow > srow or (erow == srow and ecol >= scol) then
+          vim.api.nvim_buf_set_text(tempbuf, srow, scol, erow, ecol, {})
+        end
+      end
+    end
+
+    vim.api.nvim_buf_del_extmark(tempbuf, scratch_id, id)
+
+    local str, del = unpack(saved_formulas[id])
+    vim.api.nvim_buf_set_text(tempbuf, srow, scol, srow, scol, { del .. str .. del })
+  end
+
+  local output_lines = vim.api.nvim_buf_get_lines(tempbuf, 0, -1, true)
+
+  vim.api.nvim_buf_delete(tempbuf, {force = true})
+
+
+
+  for _, line in ipairs(output_lines) do
+    f:write(line .. "\n")
+  end
+
+  f:close()
+
 end
 
 
@@ -945,8 +1142,17 @@ return {
 
 	save = save,
 
+	edit_formula = edit_formula,
+
+	edit_formula_done = edit_formula_done,
+
 	toggle_viewmode = toggle_viewmode,
 
+
+	show_formulas = show_formulas,
+
+	replace_this = replace_this,
+	write = write,
 
 }
 

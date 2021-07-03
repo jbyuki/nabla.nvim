@@ -16,11 +16,7 @@ local function toggle_viewmode()
     @set_extmarks_on_each_line_beginning
     @run_replace_inline_on_every_line
 
-    @set_buffer_to_readonly
-  else
-    @get_closest_preview_pos
-    @jump_back_to_file
-    @jump_to_corresponding_line
+    @add_hook_for_save
   end
 end
 
@@ -29,7 +25,7 @@ toggle_viewmode = toggle_viewmode,
 
 
 @create_preview_buffer+=
-local buf = vim.api.nvim_create_buf(false, true)
+local buf = vim.api.nvim_create_buf(true, false)
 local lines = vim.api.nvim_buf_get_lines(0, 0, -1, true)
 vim.api.nvim_buf_set_lines(buf, 0, -1, true, lines)
 
@@ -51,18 +47,27 @@ for lnum=1,lcount+1 do
   preview_pos[id] = lnum
 end
 
-@create_preview_buffer+=
-vim.api.nvim_buf_set_option(buf, "buftype", "nofile")
-
-@set_buffer_to_readonly+=
-vim.api.nvim_buf_set_option(buf, "readonly", true)
-
-@script_variables+=
-local preview_name = "[nabla preview]"
-
 @switch_to_preview_buffer+=
-vim.api.nvim_set_current_buf(buf)
-vim.api.nvim_buf_set_name(buf, preview_name)
+local preview_filename = name .. ".nabla"
+local prev_buf = vim.api.nvim_get_current_buf()
+
+vim.api.nvim_buf_delete(prev_buf, { force = true })
+
+local f = io.open(preview_filename, "r")
+if f then
+  f:close()
+  vim.api.nvim_command("e " .. preview_filename)
+
+  local lines = vim.api.nvim_buf_get_lines(buf, 0, -1, true)
+  vim.api.nvim_buf_set_lines(0, 0, -1, true, lines)
+
+  vim.api.nvim_buf_delete(buf, { force = true })
+  buf = vim.api.nvim_get_current_buf()
+else
+  vim.api.nvim_set_current_buf(buf)
+end
+
+
 
 @script_variables+=
 local preview_origin
@@ -72,37 +77,7 @@ preview_origin = vim.api.nvim_get_current_buf()
 
 @check_whether_already_in_preview+=
 local name = vim.api.nvim_buf_get_name(0)
-local preview = vim.fn.fnamemodify(name, ":t") == preview_name
-
-@get_closest_preview_pos+=
-local row, save_col = unpack(vim.api.nvim_win_get_cursor(0))
-local line_extmark
-if preview_extmarks_ns then
-  local extmarks = vim.api.nvim_buf_get_extmarks(0, preview_extmarks_ns, 0, -1, {})
-  for _, extmark in ipairs(extmarks) do
-    if extmark[2] > row-1 then
-      break
-    end
-    line_extmark = extmark[1]
-  end
-
-  vim.api.nvim_buf_clear_namespace(0, preview_extmarks_ns, 0, -1)
-end
-
-@jump_to_corresponding_line+=
-if line_extmark and preview_pos[line_extmark] then
-  local row = preview_pos[line_extmark]
-  vim.api.nvim_win_set_cursor(0, { row, save_col })
-end
-preview_pos = {}
-
-@jump_back_to_file+=
-if preview_origin then
-  local preview_buf = vim.api.nvim_get_current_buf()
-  vim.api.nvim_set_current_buf(preview_origin)
-  preview_origin = nil
-  vim.api.nvim_buf_delete(preview_buf, {force = true})
-end
+local preview = vim.fn.fnamemodify(name, ":e") == "nabla"
 
 @save_original_cursor_position+=
 local row, col = unpack(vim.api.nvim_win_get_cursor(0))
