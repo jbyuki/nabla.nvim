@@ -1,6 +1,9 @@
 ##../nabla
+@declare_functions+=
+local toggle_viewmode
+
 @functions+=
-local function toggle_viewmode()
+function toggle_viewmode()
   @check_whether_already_in_preview
   if not preview then
     @create_preview_buffer

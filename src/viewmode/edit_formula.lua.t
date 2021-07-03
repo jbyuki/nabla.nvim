@@ -1,6 +1,9 @@
 ##../nabla
+@declare_functions+=
+local edit_formula
+
 @functions+=
-local function edit_formula()
+function edit_formula()
   @get_extmark_under_cursor
   @get_formula_from_extmark
 
@@ -12,6 +15,7 @@ local function edit_formula()
   @attach_autocommand_to_cancel_edit
 
   print("Press <CR> to validate changes.")
+  return true
 end
 
 @export_symbols+=
@@ -54,7 +58,10 @@ if extmark_id then
   formula, _ = unpack(saved_formulas[extmark_id])
 end
 
-assert(formula, "No nabla generated formula under cursor")
+if not formula then
+  return false
+end
+
 
 @script_variables+=
 local edit_buf

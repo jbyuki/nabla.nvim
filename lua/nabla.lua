@@ -46,6 +46,10 @@ local find_latex_at
 
 local place_inline
 
+local edit_formula
+
+local toggle_viewmode
+
 local replace
 
 local replace_this
@@ -467,7 +471,19 @@ local function save(buf)
 
 end
 
-local function edit_formula()
+local function action()
+  local name = vim.api.nvim_buf_get_name(0)
+  if vim.fn.fnamemodify(name, ":e") ~= "nabla" then
+    toggle_viewmode()
+  else
+    local succ = edit_formula()
+    if not succ then
+      replace_this()
+    end
+  end
+end
+
+function edit_formula()
   local buf = vim.api.nvim_get_current_buf()
   local ns_id = extmarks[buf]
   local cursor_row, cursor_col = unpack(vim.api.nvim_win_get_cursor(0))
@@ -498,7 +514,10 @@ local function edit_formula()
     formula, _ = unpack(saved_formulas[extmark_id])
   end
 
-  assert(formula, "No nabla generated formula under cursor")
+  if not formula then
+    return false
+  end
+
 
 
   edit_buf = vim.api.nvim_create_buf(false, true)
@@ -524,6 +543,7 @@ local function edit_formula()
 
 
   print("Press <CR> to validate changes.")
+  return true
 end
 
 local function edit_formula_done()
@@ -560,7 +580,7 @@ local function edit_formula_done()
   end
 end
 
-local function toggle_viewmode()
+function toggle_viewmode()
   local name = vim.api.nvim_buf_get_name(0)
   local preview = vim.fn.fnamemodify(name, ":e") == "nabla"
 
@@ -1142,6 +1162,7 @@ return {
 
 	save = save,
 
+	action = action,
 	edit_formula = edit_formula,
 
 	edit_formula_done = edit_formula_done,
