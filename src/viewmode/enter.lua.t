@@ -68,6 +68,7 @@ if f then
   buf = vim.api.nvim_get_current_buf()
 else
   vim.api.nvim_set_current_buf(buf)
+  vim.api.nvim_buf_set_name(buf, preview_filename)
 end
 
 
