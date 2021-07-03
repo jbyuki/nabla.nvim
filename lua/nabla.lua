@@ -518,6 +518,7 @@ function edit_formula()
   local erow, ecol = details.end_row or srow, details.end_col or scol
 
   vim.api.nvim_buf_set_text(0, srow, scol, erow, ecol, { del .. formula .. del })
+  vim.api.nvim_buf_del_extmark(0, ns_id, extmark_id)
 
   return true
 end
