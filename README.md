@@ -54,3 +54,4 @@ Credits
 
 * Thanks to jetrosut for his helpful feedback and bug troubleshoot
 * Thanks to nbCloud91 for pointing me to VIM conceals
+* Thanks to clstb for giving suggestions on how to enhance the interaction.
