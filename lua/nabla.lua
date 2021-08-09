@@ -221,7 +221,7 @@ function find_latex_at(buf, row, col)
     end
 
     if n+s <= col and col <= n+e then
-      return s+n, e+n, "$$"
+      return s+n, e+n, get_param("nabla_wrapped_delimiter", "$$")
     end
 
     n = n+e
@@ -236,7 +236,7 @@ function find_latex_at(buf, row, col)
     end
 
     if n+s <= col and col <= n+e then
-      return n+s, n+e, "$"
+      return n+s, n+e, get_param("nabla_inline_delimiter", "$")
     end
 
     n = n+e
@@ -288,7 +288,7 @@ function place_inline(row, col)
 		end
 
 
-    if del == "$$" then
+    if del == get_param("nabla_wrapped_delimiter", "$$") then
       local indent = "  "
       for i=1,#drawing do
         drawing[i] = indent .. drawing[i]
@@ -330,7 +330,7 @@ function place_inline(row, col)
       local ns_id = vim.api.nvim_create_namespace("")
       colorize(g, 2, 0, ns_id, drawing, 0, row)
 
-    elseif del == "$" then
+    elseif del == get_param("nabla_inline_delimiter", "$") then
       local start_byte, end_byte
       start_byte = forward
       local end_col
@@ -643,7 +643,7 @@ function replace(row, col)
 
     local new_id
 
-    if del == "$$" then
+    if del == get_param("nabla_wrapped_delimiter", "$$") then
       local indent = "  "
       for i=1,#drawing do
         drawing[i] = indent .. drawing[i]
@@ -685,7 +685,7 @@ function replace(row, col)
       local ns_id = vim.api.nvim_create_namespace("")
       colorize(g, 2, 0, ns_id, drawing, 0, row)
 
-    elseif del == "$" then
+    elseif del == get_param("nabla_inline_delimiter", "$") then
       local start_byte, end_byte
       start_byte = forward
       local end_col

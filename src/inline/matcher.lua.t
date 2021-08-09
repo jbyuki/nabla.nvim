@@ -19,7 +19,7 @@ while true do
   end
 
   if n+s <= col and col <= n+e then
-    return s+n, e+n, "$$"
+    return s+n, e+n, get_param("nabla_wrapped_delimiter", "$$")
   end
 
   n = n+e
@@ -34,7 +34,7 @@ while true do
   end
 
   if n+s <= col and col <= n+e then
-    return n+s, n+e, "$"
+    return n+s, n+e, get_param("nabla_inline_delimiter", "$")
   end
 
   n = n+e

@@ -48,14 +48,14 @@ function replace(row, col)
 		@generate_ascii_art
     local new_id
 
-    if del == "$$" then
+    if del == get_param("nabla_wrapped_delimiter", "$$") then
       @add_identation_inline
       @place_lines_after_current_line
       -- @change_background_with_signs
       @create_extmark_namespace_for_buffer_if_not_done
       @place_extmarks_multiline
       @colorize_ascii_art
-    elseif del == "$" then
+    elseif del == get_param("nabla_inline_delimiter", "$") then
       @insert_inline_after_formula
       @create_extmark_namespace_for_buffer_if_not_done
       @place_extmarks_inline
