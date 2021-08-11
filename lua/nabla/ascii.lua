@@ -123,6 +123,7 @@ local special_syms = {
 	["vdots"] = "⋮",
 	["ddots"] = "⋱",
 	["ldots"] = "…",
+	["dots"] = "…", -- alias to ldots (for the moment)
 
 	["otimes"] = "⊗",
 	["oplus"] = "⊕",

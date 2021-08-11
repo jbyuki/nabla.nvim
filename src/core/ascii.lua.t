@@ -1415,6 +1415,7 @@ return res
 ["vdots"] = "⋮",
 ["ddots"] = "⋱",
 ["ldots"] = "…",
+["dots"] = "…", -- alias to ldots (for the moment)
 
 @put_children_join_horiz+=
 table.insert(c.children, { self, 0, s1 })
