@@ -122,6 +122,7 @@ local special_syms = {
 	["cdots"] = "⋯",
 	["vdots"] = "⋮",
 	["ddots"] = "⋱",
+	["ldots"] = "…",
 
 	["otimes"] = "⊗",
 	["oplus"] = "⊕",

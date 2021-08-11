@@ -1414,6 +1414,7 @@ return res
 ["cdots"] = "⋯",
 ["vdots"] = "⋮",
 ["ddots"] = "⋱",
+["ldots"] = "…",
 
 @put_children_join_horiz+=
 table.insert(c.children, { self, 0, s1 })
