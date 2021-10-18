@@ -49,10 +49,13 @@ function remove_extmark(events, ns_id)
   vim.api.nvim_command("autocmd "..table.concat(events, ',').." <buffer> ++once lua pcall(vim.api.nvim_buf_clear_namespace, 0, "..ns_id..", 0, -1)")
 end
 
-function colorize(g, dx, dy, ns_id, drawing, px, py)
+function colorize(g, first_dx, dx, dy, ns_id, drawing, px, py)
   if g.t == "num" then
-    local sx = vim.str_byteindex(drawing[dy+1], dx)
-    local se = vim.str_byteindex(drawing[dy+1], dx+g.w)
+    local off
+    if dy == 0 then off = first_dx else off = dx end
+
+    local sx = vim.str_byteindex(drawing[dy+1], off)
+    local se = vim.str_byteindex(drawing[dy+1], off+g.w)
 
     local of
     if dy == 0 then of = px else of = 0 end
@@ -60,8 +63,11 @@ function colorize(g, dx, dy, ns_id, drawing, px, py)
   end
 
   if g.t == "sym" then
-    local sx = vim.str_byteindex(drawing[dy+1], dx)
-    local se = vim.str_byteindex(drawing[dy+1], dx+g.w)
+    local off
+    if dy == 0 then off = first_dx else off = dx end
+
+    local sx = vim.str_byteindex(drawing[dy+1], off)
+    local se = vim.str_byteindex(drawing[dy+1], off+g.w)
 
     if string.match(g.content[1], "^%a") then
       local of
@@ -75,8 +81,11 @@ function colorize(g, dx, dy, ns_id, drawing, px, py)
 
     else
       for y=1,g.h do
-        local sx = vim.str_byteindex(drawing[dy+y], dx)
-        local se = vim.str_byteindex(drawing[dy+y], dx+g.w)
+        local off
+        if y+dy == 1 then off = first_dx else off = dx end
+
+        local sx = vim.str_byteindex(drawing[dy+y], off)
+        local se = vim.str_byteindex(drawing[dy+y], off+g.w)
         local of
         if y+dy == 1 then of = px else of = 0 end
         vim.api.nvim_buf_add_highlight(0, ns_id, "TSOperator", dy+py+y-1, of+sx, of+se)
@@ -86,8 +95,12 @@ function colorize(g, dx, dy, ns_id, drawing, px, py)
 
   if g.t == "op" then
     for y=1,g.h do
-      local sx = vim.str_byteindex(drawing[dy+y], dx)
-      local se = vim.str_byteindex(drawing[dy+y], dx+g.w)
+      local off
+      if y+dy == 1 then off = first_dx else off = dx end
+
+      local sx = vim.str_byteindex(drawing[dy+y], off)
+      local se = vim.str_byteindex(drawing[dy+y], off+g.w)
+
       local of
       if dy+y == 1 then of = px else of = 0 end
       vim.api.nvim_buf_add_highlight(0, ns_id, "TSOperator", dy+py+y-1, of+sx, of+se)
@@ -95,17 +108,24 @@ function colorize(g, dx, dy, ns_id, drawing, px, py)
   end
   if g.t == "par" then
     for y=1,g.h do
-      local sx = vim.str_byteindex(drawing[dy+y], dx)
-      local se = vim.str_byteindex(drawing[dy+y], dx+g.w)
-        local of
-        if y+dy == 1 then of = px else of = 0 end
+      local off
+      if y+dy == 1 then off = first_dx else off = dx end
+
+      local sx = vim.str_byteindex(drawing[dy+y], off)
+      local se = vim.str_byteindex(drawing[dy+y], off+g.w)
+
+      local of
+      if y+dy == 1 then of = px else of = 0 end
       vim.api.nvim_buf_add_highlight(0, ns_id, "TSOperator", dy+py+y-1, of+sx, of+se)
     end
   end
 
   if g.t == "var" then
-    local sx = vim.str_byteindex(drawing[dy+1], dx)
-    local se = vim.str_byteindex(drawing[dy+1], dx+g.w)
+    local off
+    if dy == 0 then off = first_dx else off = dx end
+
+    local sx = vim.str_byteindex(drawing[dy+1], off)
+    local se = vim.str_byteindex(drawing[dy+1], off+g.w)
 
     local of
     if dy == 0 then of = px else of = 0 end
@@ -113,7 +133,7 @@ function colorize(g, dx, dy, ns_id, drawing, px, py)
   end
 
   for _, child in ipairs(g.children) do
-    colorize(child[1], child[2]+dx, child[3]+dy, ns_id, drawing, px, py)
+    colorize(child[1], child[2]+first_dx, child[2]+dx, child[3]+dy, ns_id, drawing, px, py)
   end
 
 end
@@ -261,6 +281,8 @@ function place_inline(row, col)
 
   end
 
+  cur_line = line
+
   if not row then
     row, col = unpack(vim.api.nvim_win_get_cursor(0))
   end
@@ -328,7 +350,7 @@ function place_inline(row, col)
       })
 
       local ns_id = vim.api.nvim_create_namespace("")
-      colorize(g, 2, 0, ns_id, drawing, 0, row)
+      colorize(g, 2, 2, 0, ns_id, drawing, 2, row)
 
     elseif del == get_param("nabla_inline_delimiter", "$") then
       local start_byte, end_byte
@@ -355,7 +377,9 @@ function place_inline(row, col)
       })
 
       local ns_id = vim.api.nvim_create_namespace("")
-      colorize(g, 0, 0, ns_id, drawing, start_byte, row-1)
+      drawing[1] = inline_indent .. drawing[1]
+      colorize(g, 0, string.len(inline_indent), 0, ns_id, drawing, start_byte, row-1)
+
     end
 	else
 		if type(errmsg) == "string"  then
@@ -614,6 +638,8 @@ function replace(row, col)
 
   end
 
+  cur_line = line
+
   if not row then
     row, col = unpack(vim.api.nvim_win_get_cursor(0))
   end
@@ -683,9 +709,18 @@ function replace(row, col)
       })
 
       local ns_id = vim.api.nvim_create_namespace("")
-      colorize(g, 2, 0, ns_id, drawing, 0, row)
+      colorize(g, 2, 2, 0, ns_id, drawing, 2, row)
 
     elseif del == get_param("nabla_inline_delimiter", "$") then
+      local inline_indent = ""
+      if #drawing > 1 then
+        inline_indent = cur_line:sub(1,back)
+
+        for i=2,#drawing do
+          drawing[i] = inline_indent .. drawing[i]
+        end
+      end
+
       local start_byte, end_byte
       start_byte = forward
       local end_col
@@ -710,7 +745,9 @@ function replace(row, col)
       })
 
       local ns_id = vim.api.nvim_create_namespace("")
-      colorize(g, 0, 0, ns_id, drawing, start_byte, row-1)
+      drawing[1] = inline_indent .. drawing[1]
+      colorize(g, 0, string.len(inline_indent), 0, ns_id, drawing, start_byte, row-1)
+
     end
 
     saved_formulas[new_id] = { line, del }

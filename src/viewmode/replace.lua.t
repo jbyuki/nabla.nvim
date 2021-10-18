@@ -56,6 +56,7 @@ function replace(row, col)
       @place_extmarks_multiline
       @colorize_ascii_art
     elseif del == get_param("nabla_inline_delimiter", "$") then
+      @copy_indentation_for_inline
       @insert_inline_after_formula
       @create_extmark_namespace_for_buffer_if_not_done
       @place_extmarks_inline
