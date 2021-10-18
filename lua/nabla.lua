@@ -350,7 +350,7 @@ function place_inline(row, col)
       })
 
       local ns_id = vim.api.nvim_create_namespace("")
-      colorize(g, 2, 2, 0, ns_id, drawing, 2, row)
+      colorize(g, 0, 2, 0, ns_id, drawing, 2, row)
 
     elseif del == get_param("nabla_inline_delimiter", "$") then
       local start_byte, end_byte
@@ -709,7 +709,7 @@ function replace(row, col)
       })
 
       local ns_id = vim.api.nvim_create_namespace("")
-      colorize(g, 2, 2, 0, ns_id, drawing, 2, row)
+      colorize(g, 0, 2, 0, ns_id, drawing, 2, row)
 
     elseif del == get_param("nabla_inline_delimiter", "$") then
       local inline_indent = ""

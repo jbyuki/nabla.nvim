@@ -73,7 +73,7 @@ end
 
 @colorize_ascii_art+=
 local ns_id = vim.api.nvim_create_namespace("")
-colorize(g, 2, 2, 0, ns_id, drawing, 2, row)
+colorize(g, 0, 2, 0, ns_id, drawing, 2, row)
 
 @script_variables+=
 local extmarks = {}
