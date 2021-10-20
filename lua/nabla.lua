@@ -116,6 +116,7 @@ function colorize(g, first_dx, dx, dy, ns_id, drawing, px, py)
 
       local of
       if y+dy == 1 then of = px else of = 0 end
+      print(dy+py+y-1, of+sx, of+se)
       vim.api.nvim_buf_add_highlight(0, ns_id, "TSOperator", dy+py+y-1, of+sx, of+se)
     end
   end
