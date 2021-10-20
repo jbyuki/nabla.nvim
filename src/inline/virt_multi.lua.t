@@ -134,7 +134,6 @@ new_id = vim.api.nvim_buf_set_extmark(buf, ns_id, row-1, start_byte, {
 
 @colorize_ascii_art_inline+=
 local ns_id = vim.api.nvim_create_namespace("")
-@append_indent_hack_for_inline_colorize
 colorize(g, 0, string.len(inline_indent), 0, ns_id, drawing, start_byte, row-1)
 
 @extract_latex_formula-=
@@ -149,6 +148,3 @@ if #drawing > 1 then
     drawing[i] = inline_indent .. drawing[i]
   end
 end
-
-@append_indent_hack_for_inline_colorize+=
-drawing[1] = inline_indent .. drawing[1]

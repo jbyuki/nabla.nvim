@@ -116,6 +116,7 @@ function colorize(g, first_dx, dx, dy, ns_id, drawing, px, py)
 
       local of
       if y+dy == 1 then of = px else of = 0 end
+      print(dy+py+y-1, of+sx, of+se)
       vim.api.nvim_buf_add_highlight(0, ns_id, "TSOperator", dy+py+y-1, of+sx, of+se)
     end
   end
@@ -377,7 +378,6 @@ function place_inline(row, col)
       })
 
       local ns_id = vim.api.nvim_create_namespace("")
-      drawing[1] = inline_indent .. drawing[1]
       colorize(g, 0, string.len(inline_indent), 0, ns_id, drawing, start_byte, row-1)
 
     end
@@ -720,7 +720,6 @@ function replace(row, col)
           drawing[i] = inline_indent .. drawing[i]
         end
       end
-
       local start_byte, end_byte
       start_byte = forward
       local end_col
@@ -745,7 +744,6 @@ function replace(row, col)
       })
 
       local ns_id = vim.api.nvim_create_namespace("")
-      drawing[1] = inline_indent .. drawing[1]
       colorize(g, 0, string.len(inline_indent), 0, ns_id, drawing, start_byte, row-1)
 
     end
