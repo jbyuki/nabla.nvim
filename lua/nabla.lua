@@ -49,7 +49,7 @@ function remove_extmark(events, ns_id)
   vim.api.nvim_command("autocmd "..table.concat(events, ',').." <buffer> ++once lua pcall(vim.api.nvim_buf_clear_namespace, 0, "..ns_id..", 0, -1)")
 end
 
-function colorize(g, first_dx, dx, dy, ns_id, drawing, px, py)
+function colorize(g, first_dx, dx, dy, ns_id, drawing, px, py, buf)
   if g.t == "num" then
     local off
     if dy == 0 then off = first_dx else off = dx end
@@ -59,7 +59,7 @@ function colorize(g, first_dx, dx, dy, ns_id, drawing, px, py)
 
     local of
     if dy == 0 then of = px else of = 0 end
-    vim.api.nvim_buf_add_highlight(0, ns_id, "TSNumber", py+dy, of+sx,of+se)
+    vim.api.nvim_buf_add_highlight(buf, ns_id, "TSNumber", py+dy, of+sx,of+se)
   end
 
   if g.t == "sym" then
@@ -72,12 +72,12 @@ function colorize(g, first_dx, dx, dy, ns_id, drawing, px, py)
     if string.match(g.content[1], "^%a") then
       local of
       if dy == 0 then of = px else of = 0 end
-      vim.api.nvim_buf_add_highlight(0, ns_id, "TSString", dy+py, of+sx, of+se)
+      vim.api.nvim_buf_add_highlight(buf, ns_id, "TSString", dy+py, of+sx, of+se)
 
     elseif string.match(g.content[1], "^%d") then
       local of
       if dy == 0 then of = px else of = 0 end
-      vim.api.nvim_buf_add_highlight(0, ns_id, "TSNumber", dy+py, of+sx, of+se)
+      vim.api.nvim_buf_add_highlight(buf, ns_id, "TSNumber", dy+py, of+sx, of+se)
 
     else
       for y=1,g.h do
@@ -88,7 +88,7 @@ function colorize(g, first_dx, dx, dy, ns_id, drawing, px, py)
         local se = vim.str_byteindex(drawing[dy+y], off+g.w)
         local of
         if y+dy == 1 then of = px else of = 0 end
-        vim.api.nvim_buf_add_highlight(0, ns_id, "TSOperator", dy+py+y-1, of+sx, of+se)
+        vim.api.nvim_buf_add_highlight(buf, ns_id, "TSOperator", dy+py+y-1, of+sx, of+se)
       end
     end
   end
@@ -103,7 +103,7 @@ function colorize(g, first_dx, dx, dy, ns_id, drawing, px, py)
 
       local of
       if dy+y == 1 then of = px else of = 0 end
-      vim.api.nvim_buf_add_highlight(0, ns_id, "TSOperator", dy+py+y-1, of+sx, of+se)
+      vim.api.nvim_buf_add_highlight(buf, ns_id, "TSOperator", dy+py+y-1, of+sx, of+se)
     end
   end
   if g.t == "par" then
@@ -116,7 +116,7 @@ function colorize(g, first_dx, dx, dy, ns_id, drawing, px, py)
 
       local of
       if y+dy == 1 then of = px else of = 0 end
-      vim.api.nvim_buf_add_highlight(0, ns_id, "TSOperator", dy+py+y-1, of+sx, of+se)
+      vim.api.nvim_buf_add_highlight(buf, ns_id, "TSOperator", dy+py+y-1, of+sx, of+se)
     end
   end
 
@@ -129,11 +129,11 @@ function colorize(g, first_dx, dx, dy, ns_id, drawing, px, py)
 
     local of
     if dy == 0 then of = px else of = 0 end
-    vim.api.nvim_buf_add_highlight(0, ns_id, "TSString", dy+py, of+sx, of+se)
+    vim.api.nvim_buf_add_highlight(buf, ns_id, "TSString", dy+py, of+sx, of+se)
   end
 
   for _, child in ipairs(g.children) do
-    colorize(child[1], child[2]+first_dx, child[2]+dx, child[3]+dy, ns_id, drawing, px, py)
+    colorize(child[1], child[2]+first_dx, child[2]+dx, child[3]+dy, ns_id, drawing, px, py, buf)
   end
 
 end
@@ -350,7 +350,7 @@ function place_inline(row, col)
       })
 
       local ns_id = vim.api.nvim_create_namespace("")
-      colorize(g, 0, 2, 0, ns_id, drawing, 2, row)
+      colorize(g, 0, 2, 0, ns_id, drawing, 2, row, 0)
 
     elseif del == get_param("nabla_inline_delimiter", "$") then
       local start_byte, end_byte
@@ -377,7 +377,7 @@ function place_inline(row, col)
       })
 
       local ns_id = vim.api.nvim_create_namespace("")
-      colorize(g, 0, string.len(inline_indent), 0, ns_id, drawing, start_byte, row-1)
+      colorize(g, 0, string.len(inline_indent), 0, ns_id, drawing, start_byte, row-1, 0)
 
     end
 	else
@@ -708,7 +708,7 @@ function replace(row, col)
       })
 
       local ns_id = vim.api.nvim_create_namespace("")
-      colorize(g, 0, 2, 0, ns_id, drawing, 2, row)
+      colorize(g, 0, 2, 0, ns_id, drawing, 2, row, 0)
 
     elseif del == get_param("nabla_inline_delimiter", "$") then
       local inline_indent = ""
@@ -743,7 +743,7 @@ function replace(row, col)
       })
 
       local ns_id = vim.api.nvim_create_namespace("")
-      colorize(g, 0, string.len(inline_indent), 0, ns_id, drawing, start_byte, row-1)
+      colorize(g, 0, string.len(inline_indent), 0, ns_id, drawing, start_byte, row-1, 0)
 
     end
 

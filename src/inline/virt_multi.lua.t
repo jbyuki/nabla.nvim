@@ -73,7 +73,7 @@ end
 
 @colorize_ascii_art+=
 local ns_id = vim.api.nvim_create_namespace("")
-colorize(g, 0, 2, 0, ns_id, drawing, 2, row)
+colorize(g, 0, 2, 0, ns_id, drawing, 2, row, 0)
 
 @script_variables+=
 local extmarks = {}
@@ -134,7 +134,7 @@ new_id = vim.api.nvim_buf_set_extmark(buf, ns_id, row-1, start_byte, {
 
 @colorize_ascii_art_inline+=
 local ns_id = vim.api.nvim_create_namespace("")
-colorize(g, 0, string.len(inline_indent), 0, ns_id, drawing, start_byte, row-1)
+colorize(g, 0, string.len(inline_indent), 0, ns_id, drawing, start_byte, row-1, 0)
 
 @extract_latex_formula-=
 cur_line = line
