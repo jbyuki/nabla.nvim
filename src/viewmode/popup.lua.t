@@ -6,7 +6,8 @@ local floating_default_options = {
   focusable = true,
   border = 'single'
 }
-vim.lsp.util.open_floating_preview(drawing, 'markdown', vim.tbl_deep_extend('force', floating_default_options, overrides or {}))
+local bufnr_float, winr_float = vim.lsp.util.open_floating_preview(drawing, 'markdown', vim.tbl_deep_extend('force', floating_default_options, overrides or {}))
+colorize(g, 0, 0, 0, bufnr_float, drawing, 0, 0, bufnr_float)
 
 
 @functions+=
