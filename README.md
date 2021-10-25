@@ -31,6 +31,7 @@ Bind the following command:
 
 ```vim
 nnoremap <F5> :lua require("nabla").action()<CR>
+nnoremap <leader>p :lua require("nabla").popup()<CR>
 ```
 
 Usage
@@ -41,7 +42,7 @@ Usage
   * `$ ... $` : inline form
   * `$$ ... $$` : wrapped form
 * Press <kbd>F5</kbd> on an ASCII Formula to edit the LaTeX formula.
-
+* Press <kbd>leader + p</kbd> to open floating menu
 Reference
 ---------
 
