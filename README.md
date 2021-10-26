@@ -38,7 +38,7 @@ nnoremap <leader>p :lua require("nabla").popup()<CR>
 Customize the popup border: `single` (default), `double`, `rounded`
 
 ```lua
-require("nable").popup({border = "rounded"})
+require("nabla").popup({border = "rounded"})
 ```
 
 Usage
