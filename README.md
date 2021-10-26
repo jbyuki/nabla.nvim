@@ -55,3 +55,9 @@ Credits
 * Thanks to jetrosut for his helpful feedback and bug troubleshoot
 * Thanks to nbCloud91 for pointing me to VIM conceals
 * Thanks to clstb for giving suggestions on how to enhance the interaction.
+* Thanks to aspeddro for adding preview popups.
+
+Contribute
+----------
+
+See [here](https://github.com/jbyuki/ntangle.nvim/wiki/How-to-use-ntangle.nvim).
