@@ -666,11 +666,12 @@ local function popup(overrides)
 
     local floating_default_options = {
       wrap = false,
-      focusable = true,
+      focusable = false,
       border = 'single'
     }
     local bufnr_float, winr_float = vim.lsp.util.open_floating_preview(drawing, 'markdown', vim.tbl_deep_extend('force', floating_default_options, overrides or {}))
-    colorize(g, 0, 0, 0, bufnr_float, drawing, 0, 0, bufnr_float)
+    local ns_id = vim.api.nvim_create_namespace("")
+    colorize(g, 0, 0, 0, ns_id, drawing, 0, 0, bufnr_float)
 
 
   end

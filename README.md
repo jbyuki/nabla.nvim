@@ -4,6 +4,7 @@ nabla.nvim
 Take your scentific notes in Neovim.
 
 <img src="https://i.postimg.cc/CL9MPM7g/Capture.png" width="400">
+<img src="https://user-images.githubusercontent.com/16160544/138816323-bc06ca24-5d1a-4032-9b3c-54c55bb464c8.png" width="400">
 
 The colorscheme used here is [tokyonight](https://github.com/folke/tokyonight.nvim).
 
@@ -34,6 +35,12 @@ nnoremap <F5> :lua require("nabla").action()<CR>
 nnoremap <leader>p :lua require("nabla").popup()<CR>
 ```
 
+Customize the popup border: `single` (default), `double`, `rounded`
+
+```lua
+require("nable").popup({border = "rounded"})
+```
+
 Usage
 -----
 
@@ -43,6 +50,7 @@ Usage
   * `$$ ... $$` : wrapped form
 * Press <kbd>F5</kbd> on an ASCII Formula to edit the LaTeX formula.
 * Press <kbd>leader + p</kbd> to open floating menu
+
 Reference
 ---------
 
