@@ -625,6 +625,59 @@ function toggle_viewmode()
   return false
 end
 
+local function popup(overrides)
+  local buf = vim.api.nvim_get_current_buf()
+  local row, col = unpack(vim.api.nvim_win_get_cursor(0))
+  local line
+
+  line = vim.api.nvim_buf_get_lines(0, row-1, row, true)[1]
+
+
+  cur_line = line
+
+  if not row then
+    row, col = unpack(vim.api.nvim_win_get_cursor(0))
+  end
+
+  local back, forward, del = find_latex_at(buf, row, col)
+  line = line:sub(back+string.len(del)+1, forward-string.len(del))
+
+
+  local success, exp = pcall(parser.parse_all, line)
+
+
+  if success and exp then
+    local succ, g = pcall(ascii.to_ascii, exp)
+    if not succ then
+      return 0
+    end
+
+    local drawing = {}
+    for row in vim.gsplit(tostring(g), "\n") do
+    	table.insert(drawing, row)
+    end
+    if whitespace then
+    	for i=1,#drawing do
+    		drawing[i] = whitespace .. drawing[i]
+    	end
+    end
+
+
+
+    local floating_default_options = {
+      wrap = false,
+      focusable = false,
+      border = 'single'
+    }
+    local bufnr_float, winr_float = vim.lsp.util.open_floating_preview(drawing, 'markdown', vim.tbl_deep_extend('force', floating_default_options, overrides or {}))
+    local ns_id = vim.api.nvim_create_namespace("")
+    colorize(g, 0, 0, 0, ns_id, drawing, 0, 0, bufnr_float)
+
+
+  end
+
+end
+
 function replace(row, col)
   local buf = vim.api.nvim_get_current_buf()
 
@@ -1109,6 +1162,7 @@ return {
 
 	toggle_viewmode = toggle_viewmode,
 
+	popup= popup,
 	show_formulas = show_formulas,
 
 	replace_this = replace_this,
