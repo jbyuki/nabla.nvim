@@ -32,13 +32,7 @@ Bind the following command:
 
 ```vim
 nnoremap <F5> :lua require("nabla").action()<CR>
-nnoremap <leader>p :lua require("nabla").popup()<CR>
-```
-
-Customize the popup border: `single` (default), `double`, `rounded`
-
-```lua
-require("nabla").popup({border = "rounded"})
+nnoremap <leader>p :lua require("nabla").popup()<CR> " Customize with popup({border = ...})  : `single` (default), `double`, `rounded`
 ```
 
 Usage
