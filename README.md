@@ -59,6 +59,7 @@ Credits
 * Thanks to nbCloud91 for pointing me to VIM conceals
 * Thanks to clstb for giving suggestions on how to enhance the interaction.
 * Thanks to aspeddro for adding preview popups.
+* Thanks to Areustle for adding more than 500 new symbols.
 
 Contribute
 ----------
