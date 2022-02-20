@@ -63,6 +63,12 @@ function parse()
 				}
 				nextc()
 
+		  elseif getc() == "\\" then
+		    sym = {
+		      kind = "symexp",
+		      sym = "\\",
+		    }
+		    nextc()
 			else
 				sym = parse_symbol()
 			end

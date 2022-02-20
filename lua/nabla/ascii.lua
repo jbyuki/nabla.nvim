@@ -2777,7 +2777,7 @@ local function to_ascii(exp)
 				i = i+1
 				break
 
-			elseif explist[i].kind == "symexp" and explist[i].sym == "//" then
+			elseif explist[i].kind == "funexp" and explist[i].sym == "\\" then
 				local cellgrid = to_ascii(cell_list)
 				table.insert(rowgrid, cellgrid)
 				maxheight = math.max(maxheight, cellgrid.h)
@@ -2860,7 +2860,7 @@ local function to_ascii(exp)
 					i = i+1
 					break
 
-				elseif explist[i].kind == "symexp" and explist[i].sym == "//" then
+				elseif explist[i].kind == "funexp" and explist[i].sym == "\\" then
 					local cellgrid = to_ascii(cell_list)
 					table.insert(rowgrid, cellgrid)
 					maxheight = math.max(maxheight, cellgrid.h)
@@ -2942,7 +2942,7 @@ local function to_ascii(exp)
 					i = i+1
 					break
 
-				elseif explist[i].kind == "symexp" and explist[i].sym == "//" then
+				elseif explist[i].kind == "funexp" and explist[i].sym == "\\" then
 					local cellgrid = to_ascii(cell_list)
 					table.insert(rowgrid, cellgrid)
 					maxheight = math.max(maxheight, cellgrid.h)

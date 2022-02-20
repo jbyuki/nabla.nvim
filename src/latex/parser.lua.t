@@ -123,6 +123,12 @@ elseif string.match(getc(), "\\") then
 	nextc()
 	local sym
 	@if_space_parse_as_single_space
+  elseif getc() == "\\" then
+    sym = {
+      kind = "symexp",
+      sym = "\\",
+    }
+    nextc()
 	else
 		sym = parse_symbol()
 	end

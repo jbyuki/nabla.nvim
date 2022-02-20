@@ -1355,7 +1355,7 @@ local cell_list = {
 while i <= #explist do
 	if explist[i].kind == "symexp" and explist[i].sym == "&" then
 		@switch_to_next_cell
-	elseif explist[i].kind == "symexp" and explist[i].sym == "//" then
+	elseif explist[i].kind == "funexp" and explist[i].sym == "\\" then
 		@switch_to_next_cell_and_row
 	else
 		table.insert(cell_list.exps, explist[i])
