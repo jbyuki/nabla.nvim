@@ -39,29 +39,7 @@ for _, file in ipairs(files) do
     end
   end
 
-  local result = vim.fn.rpcrequest(conn, "nvim_exec_lua", [[
-    local parser = require("nabla.latex")
-    local ascii = require("nabla.ascii")
-    local line = ...
-
-    local success, exp = pcall(parser.parse_all, line)
-
-
-    if success and exp then
-      local succ, g = pcall(ascii.to_ascii, exp)
-      if not succ then
-        return 0
-      end
-
-      local drawing = {}
-      for row in vim.gsplit(tostring(g), "\n") do
-      	table.insert(drawing, row)
-      end
-
-      return drawing
-    end
-    return 0
-  ]], { table.concat(input, "") })
+  local result = vim.fn.rpcrequest(conn, "nvim_exec_lua", [[return require"nabla".gen_drawing(...)]], { input })
 
   local correct = true
   if type(result) == "table" then

@@ -75,19 +75,7 @@ for row in vim.gsplit(tostring(g), "\n") do
 end
 
 @generate_ascii_art_from_drawing+=
-local result = vim.fn.rpcrequest(conn, "nvim_exec_lua", [[
-  local parser = require("nabla.latex")
-  local ascii = require("nabla.ascii")
-  local line = ...
-
-  @parse_math_expression
-
-  if success and exp then
-    @generate_ascii_art
-    return drawing
-  end
-  return 0
-]], { table.concat(input, "") })
+local result = vim.fn.rpcrequest(conn, "nvim_exec_lua", [[return require"nabla".gen_drawing(...)]], { input })
 
 @verify_output_is_correct+=
 local correct = true

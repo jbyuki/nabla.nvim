@@ -118,7 +118,7 @@ local srow, scol, erow, ecol, del = find_latex_at(buf, row, col)
 local lines = vim.api.nvim_buf_get_lines(buf, srow-1, erow, true)
 lines[#lines] = lines[#lines]:sub(1, ecol)
 lines[1] = lines[1]:sub(scol+1)
-line = table.concat(lines, "")
+line = table.concat(lines, " ")
 
 @insert_inline_after_formula+=
 local start_byte, end_byte

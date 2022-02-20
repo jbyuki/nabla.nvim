@@ -344,7 +344,7 @@ function place_inline(row, col)
   local lines = vim.api.nvim_buf_get_lines(buf, srow-1, erow, true)
   lines[#lines] = lines[#lines]:sub(1, ecol)
   lines[1] = lines[1]:sub(scol+1)
-  line = table.concat(lines, "")
+  line = table.concat(lines, " ")
 
 
 
@@ -682,6 +682,36 @@ function toggle_viewmode()
   return false
 end
 
+local function gen_drawing(lines)
+  local parser = require("nabla.latex")
+  local ascii = require("nabla.ascii")
+  local line = table.concat(lines, " ")
+
+  local success, exp = pcall(parser.parse_all, line)
+
+
+  if success and exp then
+    local succ, g = pcall(ascii.to_ascii, exp)
+    if not succ then
+      return 0
+    end
+
+    local drawing = {}
+    for row in vim.gsplit(tostring(g), "\n") do
+    	table.insert(drawing, row)
+    end
+    if whitespace then
+    	for i=1,#drawing do
+    		drawing[i] = whitespace .. drawing[i]
+    	end
+    end
+
+
+    return drawing
+  end
+  return 0
+end
+
 local function popup(overrides)
   local buf = vim.api.nvim_get_current_buf()
   local row, col = unpack(vim.api.nvim_win_get_cursor(0))
@@ -698,7 +728,7 @@ local function popup(overrides)
   local lines = vim.api.nvim_buf_get_lines(buf, srow-1, erow, true)
   lines[#lines] = lines[#lines]:sub(1, ecol)
   lines[1] = lines[1]:sub(scol+1)
-  line = table.concat(lines, "")
+  line = table.concat(lines, " ")
 
 
 
@@ -760,7 +790,7 @@ function replace(row, col)
   local lines = vim.api.nvim_buf_get_lines(buf, srow-1, erow, true)
   lines[#lines] = lines[#lines]:sub(1, ecol)
   lines[1] = lines[1]:sub(scol+1)
-  line = table.concat(lines, "")
+  line = table.concat(lines, " ")
 
 
 
@@ -1228,6 +1258,7 @@ return {
 
 	toggle_viewmode = toggle_viewmode,
 
+	gen_drawing = gen_drawing,
 	popup= popup,
 	show_formulas = show_formulas,
 
