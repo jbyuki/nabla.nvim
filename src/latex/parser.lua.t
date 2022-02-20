@@ -129,6 +129,7 @@ elseif string.match(getc(), "\\") then
       sym = "\\",
     }
     nextc()
+  @if_comma_parse_as_space
 	else
 		sym = parse_symbol()
 	end
@@ -261,4 +262,12 @@ elseif getc() == "/" and lookahead(1) == "/" then
 		sym = "//",
 	}
 	nextc()
+	nextc()
+
+@if_comma_parse_as_space+=
+elseif getc() == "," then
+	sym = {
+		kind = "symexp",
+		sym = " ",
+	}
 	nextc()
