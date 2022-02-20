@@ -68,11 +68,11 @@ pattern = vim.pesc(pattern)
 
 @search_forward_at_cursor_line+=
 local line = vim.api.nvim_buf_get_lines(0, row-1, row, true)[1]
-line = line:sub(col+1)
+line = line:sub(col+2)
 
 local s = line:find(pattern)
 if s then
-  return { row, s + (col-1) } -- same indexing as nvim_win_get_cursor
+  return { row, s + col } -- same indexing as nvim_win_get_cursor
 end
 
 @search_forward_next_lines+=
