@@ -39,21 +39,44 @@ for _, file in ipairs(files) do
     end
   end
 
-  vim.fn.rpcrequest(conn, "nvim_buf_set_lines", 0, 0, -1, true, input)
+  local result = vim.fn.rpcrequest(conn, "nvim_exec_lua", [[
+    local parser = require("nabla.latex")
+    local ascii = require("nabla.ascii")
+    local line = ...
 
-  vim.fn.rpcrequest(conn, "nvim_exec_lua", [[require"nabla".replace_current()]], {})
+    local success, exp = pcall(parser.parse_all, line)
 
-  local result = vim.fn.rpcrequest(conn, "nvim_buf_get_lines", 0, 0, -1, true)
-  local correct = true
-  if #result == #output then
-    for i=1,#result do
-      if result[i] ~= output[i] then
-        correct = false
-        break
+
+    if success and exp then
+      local succ, g = pcall(ascii.to_ascii, exp)
+      if not succ then
+        return 0
       end
+
+      local drawing = {}
+      for row in vim.gsplit(tostring(g), "\n") do
+      	table.insert(drawing, row)
+      end
+
+      return drawing
+    end
+    return 0
+  ]], { table.concat(input, "") })
+
+  local correct = true
+  if type(result) == "table" then
+    if #result == #output then
+      for i=1,#result do
+        if result[i] ~= output[i] then
+          correct = false
+          break
+        end
+      end
+    else
+      correct = false
     end
   else
-    correct = false
+    result = "NO OUTPUT"
   end
 
   local name = vim.fn.fnamemodify(file, ":t")
@@ -67,62 +90,6 @@ for _, file in ipairs(files) do
     fail = true
   end
 
-end
-
-path = nabla_path .. "/test/docs"
-
-
-local files = {}
-local all_files = vim.fn.glob(path .. "/*")
-for _, file in ipairs(vim.split(all_files, "\n")) do
-  table.insert(files, file)
-end
-
--- for _, file in ipairs(files) do
-  -- @read_input_document
-  -- @run_init_nabla_on_document
-  -- @write_nabla_document_in_temp_file
-  -- @buffer_wipeout_nabla_document
-
-  -- @read_from_nabla_temp_document_file
-  -- @read_from_nabla_original_document_file
-  -- @compare_original_and_write_document
--- end
-
-for _, file in ipairs(files) do
-  vim.fn.rpcrequest(conn, "nvim_command", "edit! " .. file)
-
-  local originalcontent = vim.fn.rpcrequest(conn, "nvim_buf_get_lines", 0, 0, -1, true)
-
-  vim.fn.rpcrequest(conn, "nvim_exec_lua", [[require("nabla").action()]], {})
-
-  vim.fn.rpcrequest(conn, "nvim_command", "bw!")
-
-
-  local savedcontent = {}
-  for line in io.lines(file) do
-    table.insert(savedcontent, line)
-  end
-
-  local name = vim.fn.fnamemodify(file, ":t")
-  local success = true
-  if #originalcontent == #savedcontent then
-    for i=1,#originalcontent do
-      if originalcontent[i] ~= savedcontent[i] then
-        success = false
-      end
-    end
-  else
-    success = false
-  end
-
-  if success then
-    print(name .. " OK")
-  else
-    print(name .. " FAIL")
-    print("originalcontent " .. vim.inspect(originalcontent))
-    print("savedcontent " .. vim.inspect(savedcontent))
-  end
 end
 
 vim.fn.jobstop(conn)

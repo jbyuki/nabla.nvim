@@ -17,8 +17,6 @@ local function popup(overrides)
   local row, col = unpack(vim.api.nvim_win_get_cursor(0))
   local line
 
-  @get_line_at_lnum
-
   @extract_latex_formula
 
   @parse_math_expression

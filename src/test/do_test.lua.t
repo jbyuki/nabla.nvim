@@ -11,35 +11,9 @@ local files = {}
 @glob_all_tests
 for _, file in ipairs(files) do
   @read_input_and_output_from_file
-  @put_input_in_current_buffer
-  @run_nabla_on_current_line
+  @generate_ascii_art_from_drawing
   @verify_output_is_correct
   @print_test_result
-end
-
-@retrieve_nabla_doc_directory
-
-local files = {}
-@glob_all_tests
--- for _, file in ipairs(files) do
-  -- @read_input_document
-  -- @run_init_nabla_on_document
-  -- @write_nabla_document_in_temp_file
-  -- @buffer_wipeout_nabla_document
-
-  -- @read_from_nabla_temp_document_file
-  -- @read_from_nabla_original_document_file
-  -- @compare_original_and_write_document
--- end
-
-for _, file in ipairs(files) do
-  @read_input_document
-  @get_input_content
-  @run_action_on_document
-  @buffer_wipeout_nabla_document
-
-  @read_from_input_document_again
-  @compare_saved_and_original_document
 end
 
 @close_neovim_instance
@@ -86,24 +60,50 @@ for line in io.lines(file) do
   end
 end
 
-@put_input_in_current_buffer+=
-vim.fn.rpcrequest(conn, "nvim_buf_set_lines", 0, 0, -1, true, input)
+@parse_math_expression+=
+local success, exp = pcall(parser.parse_all, line)
 
-@run_nabla_on_current_line+=
-vim.fn.rpcrequest(conn, "nvim_exec_lua", [[require"nabla".replace_current()]], {})
+@generate_ascii_art+=
+local succ, g = pcall(ascii.to_ascii, exp)
+if not succ then
+  return 0
+end
+
+local drawing = {}
+for row in vim.gsplit(tostring(g), "\n") do
+	table.insert(drawing, row)
+end
+
+@generate_ascii_art_from_drawing+=
+local result = vim.fn.rpcrequest(conn, "nvim_exec_lua", [[
+  local parser = require("nabla.latex")
+  local ascii = require("nabla.ascii")
+  local line = ...
+
+  @parse_math_expression
+
+  if success and exp then
+    @generate_ascii_art
+    return drawing
+  end
+  return 0
+]], { table.concat(input, "") })
 
 @verify_output_is_correct+=
-local result = vim.fn.rpcrequest(conn, "nvim_buf_get_lines", 0, 0, -1, true)
 local correct = true
-if #result == #output then
-  for i=1,#result do
-    if result[i] ~= output[i] then
-      correct = false
-      break
+if type(result) == "table" then
+  if #result == #output then
+    for i=1,#result do
+      if result[i] ~= output[i] then
+        correct = false
+        break
+      end
     end
+  else
+    correct = false
   end
 else
-  correct = false
+  result = "NO OUTPUT"
 end
 
 @print_test_result+=

@@ -4,38 +4,117 @@ local find_latex_at
 
 @functions+=
 function find_latex_at(buf, row, col)
-  @create_match_for_formulas_single_line
-  @create_match_for_formulas_inline
-
   @find_matches_which_enclose_position
 end
 
-@find_matches_which_enclose_position+=
-local n = 0
-while true do
-  local s, e = single_formula:match_line(buf, row-1, n)
-  if not s then
-    break
-  end
+@declare_functions+=
+local search_backward
 
-  if n+s <= col and col <= n+e then
-    return s+n, e+n, get_param("nabla_wrapped_delimiter", "$$")
+@functions+=
+function search_backward(pattern, row, col, other_lines)
+  @reverse_pattern
+  @escape_pattern_reverse
+  @search_backward_at_cursor_line
+  if other_lines then
+    @search_backward_previous_lines
   end
-
-  n = n+e
+  return { nil, nil }
 end
 
-n = 0
+@search_backward_at_cursor_line+=
+local line = vim.api.nvim_buf_get_lines(0, row-1, row, true)[1]
+line = line:sub(1, col+1)
 
-while true do
-  local s, e = inline_formula:match_line(buf, row-1, n)
-  if not s then
-    break
+local s = line:reverse():find(rpattern)
+if s then
+  return { row, #line - s + 1 } -- same indexing as nvim_win_get_cursor
+end
+
+@reverse_pattern+=
+local rpattern = pattern:reverse()
+
+@escape_pattern_reverse+=
+rpattern = vim.pesc(rpattern)
+
+@search_backward_previous_lines+=
+local i = row-1
+while i > 0 do
+  local line = vim.api.nvim_buf_get_lines(0, i-1, i, true)[1]
+
+  local s = line:reverse():find(rpattern)
+  if s then
+    return { i, #line - s + 1 } -- same indexing as nvim_win_get_cursor
   end
 
-  if n+s <= col and col <= n+e then
-    return n+s, n+e, get_param("nabla_inline_delimiter", "$")
+  i = i - 1
+end
+
+@declare_functions+=
+local search_forward
+
+@functions+=
+function search_forward(pattern, row, col, other_lines)
+  @escape_pattern_normal
+  @search_forward_at_cursor_line
+  if other_lines then
+    @search_forward_next_lines
   end
 
-  n = n+e
+  return { nil, nil }
+end
+
+@escape_pattern_normal+=
+pattern = vim.pesc(pattern)
+
+@search_forward_at_cursor_line+=
+local line = vim.api.nvim_buf_get_lines(0, row-1, row, true)[1]
+line = line:sub(col+1)
+
+local s = line:find(pattern)
+if s then
+  return { row, s + (col-1) } -- same indexing as nvim_win_get_cursor
+end
+
+@search_forward_next_lines+=
+local i = row+1
+local line_count = vim.api.nvim_buf_line_count(0)
+while i <= line_count do
+  local line = vim.api.nvim_buf_get_lines(0, i-1, i, true)[1]
+
+  local s = line:find(pattern)
+  if s then
+    return { i, s - 1 } -- same indexing as nvim_win_get_cursor
+  end
+
+  i = i + 1
+end
+
+@find_matches_which_enclose_position+=
+local pat = get_param("nabla_wrapped_delimiter", "$$")
+local srow, scol = unpack(search_backward(pat, row, col, true)) 
+local erow, ecol = unpack(search_forward(pat, row, col, true))
+
+if srow and scol and erow and ecol then 
+  return srow, scol, erow, ecol, pat
+end
+
+@functions+=
+local function get_range()
+  @get_cursor_position
+  print(find_latex_at(0, row, col))
+end
+
+@export_symbols+=
+get_range = get_range,
+
+@get_cursor_position+=
+local row, col = unpack(vim.api.nvim_win_get_cursor(0))
+
+@find_matches_which_enclose_position+=
+local pat = get_param("nabla_inline_delimiter", "$")
+local srow, scol = unpack(search_backward(pat, row, col, false)) 
+local erow, ecol = unpack(search_forward(pat, row, col, false))
+
+if srow and scol and erow and ecol then 
+  return srow, scol, erow, ecol, pat
 end

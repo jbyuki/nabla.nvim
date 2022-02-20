@@ -31,18 +31,12 @@ Configuration
 Bind the following command:
 
 ```vim
-nnoremap <F5> :lua require("nabla").action()<CR>
 nnoremap <leader>p :lua require("nabla").popup()<CR> " Customize with popup({border = ...})  : `single` (default), `double`, `rounded`
 ```
 
 Usage
 -----
 
-* Press <kbd>F5</kbd> to initiate **nabla.nvim**.
-* Press <kbd>F5</kbd> on a LaTeX formula to generate the ASCII Formula.
-  * `$ ... $` : inline form
-  * `$$ ... $$` : wrapped form
-* Press <kbd>F5</kbd> on an ASCII Formula to edit the LaTeX formula.
 * Press <kbd>leader + p</kbd> to open floating menu
 
 Reference

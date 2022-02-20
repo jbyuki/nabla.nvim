@@ -110,8 +110,15 @@ if not row then
   row, col = unpack(vim.api.nvim_win_get_cursor(0))
 end
 
-local back, forward, del = find_latex_at(buf, row, col)
-line = line:sub(back+string.len(del)+1, forward-string.len(del))
+local srow, scol, erow, ecol, del = find_latex_at(buf, row, col)
+
+@get_text_in_range
+
+@get_text_in_range+=
+local lines = vim.api.nvim_buf_get_lines(buf, srow-1, erow, true)
+lines[#lines] = lines[#lines]:sub(1, ecol)
+lines[1] = lines[1]:sub(scol+1)
+line = table.concat(lines, "")
 
 @insert_inline_after_formula+=
 local start_byte, end_byte
