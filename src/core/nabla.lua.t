@@ -103,6 +103,7 @@ local ascii = require("nabla.ascii")
 @generate_ascii_art+=
 local succ, g = pcall(ascii.to_ascii, exp)
 if not succ then
+  print(g)
   return 0
 end
 

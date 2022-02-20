@@ -25,6 +25,8 @@ local function popup(overrides)
     @generate_ascii_art
 
     @open_floating
+  else
+    print(exp)
   end
 
 end

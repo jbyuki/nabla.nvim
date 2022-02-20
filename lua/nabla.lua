@@ -353,6 +353,7 @@ function place_inline(row, col)
 	if success and exp then
 		local succ, g = pcall(ascii.to_ascii, exp)
 		if not succ then
+		  print(g)
 		  return 0
 		end
 
@@ -693,6 +694,7 @@ local function gen_drawing(lines)
   if success and exp then
     local succ, g = pcall(ascii.to_ascii, exp)
     if not succ then
+      print(g)
       return 0
     end
 
@@ -738,6 +740,7 @@ local function popup(overrides)
   if success and exp then
     local succ, g = pcall(ascii.to_ascii, exp)
     if not succ then
+      print(g)
       return 0
     end
 
@@ -763,6 +766,8 @@ local function popup(overrides)
     colorize(g, 0, 0, 0, ns_id, drawing, 0, 0, bufnr_float)
 
 
+  else
+    print(exp)
   end
 
 end
@@ -799,6 +804,7 @@ function replace(row, col)
 	if success and exp then
 		local succ, g = pcall(ascii.to_ascii, exp)
 		if not succ then
+		  print(g)
 		  return 0
 		end
 
@@ -1047,6 +1053,7 @@ local function init()
 						if success and exp then
 							local succ, g = pcall(ascii.to_ascii, exp)
 							if not succ then
+							  print(g)
 							  return 0
 							end
 
@@ -1099,6 +1106,7 @@ local function replace_current()
 	if success and exp then
 		local succ, g = pcall(ascii.to_ascii, exp)
 		if not succ then
+		  print(g)
 		  return 0
 		end
 
@@ -1141,6 +1149,7 @@ local function replace_all()
 			if success and exp then
 				local succ, g = pcall(ascii.to_ascii, exp)
 				if not succ then
+				  print(g)
 				  return 0
 				end
 
@@ -1181,6 +1190,7 @@ local function draw_overlay()
 	if success and exp then
 		local succ, g = pcall(ascii.to_ascii, exp)
 		if not succ then
+		  print(g)
 		  return 0
 		end
 
