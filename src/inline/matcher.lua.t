@@ -4,7 +4,8 @@ local find_latex_at
 
 @functions+=
 function find_latex_at(buf, row, col)
-  @find_matches_which_enclose_position
+  @find_matches_which_enclose_position_inline
+  @find_matches_which_enclose_position_wrapped
 end
 
 @declare_functions+=
@@ -89,7 +90,7 @@ while i <= line_count do
   i = i + 1
 end
 
-@find_matches_which_enclose_position+=
+@find_matches_which_enclose_position_wrapped+=
 local pat = get_param("nabla_wrapped_delimiter", "$$")
 local srow, scol = unpack(search_backward(pat, row, col, true)) 
 local erow, ecol = unpack(search_forward(pat, row, col, true))
@@ -110,7 +111,7 @@ get_range = get_range,
 @get_cursor_position+=
 local row, col = unpack(vim.api.nvim_win_get_cursor(0))
 
-@find_matches_which_enclose_position+=
+@find_matches_which_enclose_position_inline+=
 local pat = get_param("nabla_inline_delimiter", "$")
 local srow, scol = unpack(search_backward(pat, row, col, false)) 
 local erow, ecol = unpack(search_forward(pat, row, col, false))

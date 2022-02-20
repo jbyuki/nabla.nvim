@@ -232,6 +232,13 @@ local function attach()
 end
 
 function find_latex_at(buf, row, col)
+  local pat = get_param("nabla_inline_delimiter", "$")
+  local srow, scol = unpack(search_backward(pat, row, col, false)) 
+  local erow, ecol = unpack(search_forward(pat, row, col, false))
+
+  if srow and scol and erow and ecol and not (srow == erow and scol == ecol) then 
+    return srow, scol, erow, ecol, pat
+  end
   local pat = get_param("nabla_wrapped_delimiter", "$$")
   local srow, scol = unpack(search_backward(pat, row, col, true)) 
   local erow, ecol = unpack(search_forward(pat, row, col, true))
@@ -240,13 +247,6 @@ function find_latex_at(buf, row, col)
     return srow, scol, erow, ecol, pat
   end
 
-  local pat = get_param("nabla_inline_delimiter", "$")
-  local srow, scol = unpack(search_backward(pat, row, col, false)) 
-  local erow, ecol = unpack(search_forward(pat, row, col, false))
-
-  if srow and scol and erow and ecol and not (srow == erow and scol == ecol) then 
-    return srow, scol, erow, ecol, pat
-  end
 end
 
 function search_backward(pattern, row, col, other_lines)
