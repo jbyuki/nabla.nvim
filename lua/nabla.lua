@@ -244,7 +244,7 @@ function find_latex_at(buf, row, col)
   local srow, scol = unpack(search_backward(pat, row, col, false)) 
   local erow, ecol = unpack(search_forward(pat, row, col, false))
 
-  if srow and scol and erow and ecol then 
+  if srow and scol and erow and ecol and not (srow == erow and scol == ecol) then 
     return srow, scol, erow, ecol, pat
   end
 end
@@ -255,7 +255,7 @@ function search_backward(pattern, row, col, other_lines)
   rpattern = vim.pesc(rpattern)
 
   local line = vim.api.nvim_buf_get_lines(0, row-1, row, true)[1]
-  line = line:sub(1, col+1)
+  line = line:sub(1, col+#pattern)
 
   local s = line:reverse():find(rpattern)
   if s then
