@@ -2117,3 +2117,8 @@ elseif name == "{" then
 	@if_has_subscript_put_them_to_g
 	@if_has_superscript_put_them_to_g
 	return g
+
+@transform_function_into_ascii+=
+elseif name == "text" then
+	assert(#exp.args == 1, "text must have 1 argument")
+	return grid:new(utf8len(exp.args[1]), 1, { exp.args[1] })

@@ -87,6 +87,7 @@ function parse()
 		  elseif getc() == "}" then
 		    nextc()
 		    break
+
 		  elseif getc() == "," then
 		  	sym = {
 		  		kind = "symexp",
@@ -97,6 +98,17 @@ function parse()
 			else
 				sym = parse_symbol()
 			end
+		  if sym.sym == "text" and string.match(getc(), '{') then
+		    nextc()
+		    local txt = ""
+		  	while not finish() and not string.match(getc(), '}') do
+		      txt = txt .. getc()
+		      nextc()
+		    end
+		    nextc()
+
+		    table.insert(args, txt)
+		  end
 			while not finish() and string.match(getc(), '{') do
 				nextc()
 				table.insert(args, parse())

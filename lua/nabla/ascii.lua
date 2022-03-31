@@ -2498,6 +2498,9 @@ local function to_ascii(exp)
 
 		  return g
 
+		elseif name == "text" then
+			assert(#exp.args == 1, "text must have 1 argument")
+			return grid:new(utf8len(exp.args[1]), 1, { exp.args[1] })
 	  elseif name == "{" then
 	  	assert(#exp.args == 1, "{ must have 1 argument")
 	  	local g = to_ascii(exp.args[1].exp):enclose_bracket()
@@ -2807,6 +2810,7 @@ local function to_ascii(exp)
 	  	end
 
 	  	return g
+
 		else
 			return grid:new(utf8len(name), 1, { name })
 		end

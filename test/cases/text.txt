@@ -1,0 +1,3 @@
+\text{for all } x \in X
+---
+for all x∈X

@@ -136,6 +136,7 @@ elseif string.match(getc(), "\\") then
 	else
 		sym = parse_symbol()
 	end
+  @if_sym_is_text_parse_verbatim
 	while not finish() and string.match(getc(), '{') do
 		nextc()
 		table.insert(args, parse())
@@ -290,3 +291,16 @@ elseif getc() == "{" then
 elseif getc() == "}" then
   nextc()
   break
+
+@if_sym_is_text_parse_verbatim+=
+if sym.sym == "text" and string.match(getc(), '{') then
+  nextc()
+  local txt = ""
+	while not finish() and not string.match(getc(), '}') do
+    txt = txt .. getc()
+    nextc()
+  end
+  nextc()
+
+  table.insert(args, txt)
+end
