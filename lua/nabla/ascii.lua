@@ -132,12 +132,6 @@ local special_syms = {
 	["partial"] = "∂",
 
 
-	["cdots"] = "⋯",
-	["vdots"] = "⋮",
-	["ddots"] = "⋱",
-	["ldots"] = "…",
-	["dots"] = "…", -- alias to ldots (for the moment)
-
 	["otimes"] = "⊗",
 	["oplus"] = "⊕",
 	["times"] = "⨯",
@@ -728,6 +722,11 @@ local special_syms = {
 	["wp"] = "℘",
 	["wr"] = "≀",
 
+	["cdots"] = "⋯",
+	["vdots"] = "⋮",
+	["ddots"] = "⋱",
+	["ldots"] = "…",
+	["dots"] = "…", -- alias to ldots (for the moment)
 }
 
 local grid = {}
@@ -2501,6 +2500,7 @@ local function to_ascii(exp)
 		elseif name == "text" then
 			assert(#exp.args == 1, "text must have 1 argument")
 			return grid:new(utf8len(exp.args[1]), 1, { exp.args[1] })
+
 	  elseif name == "{" then
 	  	assert(#exp.args == 1, "{ must have 1 argument")
 	  	local g = to_ascii(exp.args[1].exp):enclose_bracket()

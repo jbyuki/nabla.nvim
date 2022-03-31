@@ -1411,13 +1411,6 @@ elseif name == "bmatrix" then
 res.my = math.floor(res.h/2)
 return res
 
-@special_symbols+=
-["cdots"] = "⋯",
-["vdots"] = "⋮",
-["ddots"] = "⋱",
-["ldots"] = "…",
-["dots"] = "…", -- alias to ldots (for the moment)
-
 @put_children_join_horiz+=
 table.insert(c.children, { self, 0, s1 })
 table.insert(c.children, { g, self.w, s2 })
@@ -2122,3 +2115,10 @@ elseif name == "{" then
 elseif name == "text" then
 	assert(#exp.args == 1, "text must have 1 argument")
 	return grid:new(utf8len(exp.args[1]), 1, { exp.args[1] })
+
+@special_symbols+=
+["cdots"] = "⋯",
+["vdots"] = "⋮",
+["ddots"] = "⋱",
+["ldots"] = "…",
+["dots"] = "…", -- alias to ldots (for the moment)
