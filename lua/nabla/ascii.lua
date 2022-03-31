@@ -78,6 +78,19 @@ local style = {
 	abs_bar_left = "⎮",
 	abs_bar_right = "⎮",
 
+	left_top_bra    = '⎧',
+	left_middle_bra = '⎨',
+	left_other_bra  = '⎥',
+	left_bottom_bra = '⎩',
+
+	right_top_bra    = '⎫',
+	right_middle_bra = '⎬',
+	right_other_bra =  '⎪',
+	right_bottom_bra = '⎭',
+
+	left_single_bra = '{',
+	right_single_bra = '}',
+
 }
 
 local greek_etc = {
@@ -714,6 +727,7 @@ local special_syms = {
 	["Vvdash"] = "⊪",
 	["wp"] = "℘",
 	["wr"] = "≀",
+
 }
 
 local grid = {}
@@ -922,6 +936,51 @@ function grid:join_sub_sup(sub, sup)
 	local res = left:join_hori(right, true)
 	res.my = self.my + sup.h
 	return res
+end
+
+function grid:enclose_bracket()
+	local left_content = {}
+	if self.h == 1 then
+		left_content = { style.left_single_bra }
+	elseif self.h == 2 then
+		left_content = { ' ', style.left_single_bra }
+	else
+		for y=1,self.h do
+			if y == 1 then table.insert(left_content, style.left_top_bra)
+			elseif y == self.h then table.insert(left_content, style.left_bottom_bra)
+			elseif y == math.ceil(self.h/2) then table.insert(left_content, style.left_middle_bra)
+	    else
+	      table.insert(left_content, style.left_other_bra)
+			end
+		end
+	end
+
+	local left_bra = grid:new(1, self.h, left_content, "bra")
+	left_bra.my = self.my
+
+	local right_content = {}
+	if self.h == 1 then
+		right_content = { style.right_single_bra }
+	elseif self.h == 2 then
+		right_content = { ' ', style.right_single_bra }
+	else
+		for y=1,self.h do
+			if y == 1 then table.insert(right_content, style.right_top_bra)
+			elseif y == self.h then table.insert(right_content, style.right_bottom_bra)
+			elseif y == math.ceil(self.h/2) then table.insert(right_content, style.right_middle_bra)
+	    else
+	      table.insert(right_content, style.right_other_bra)
+			end
+		end
+	end
+
+	local right_bra = grid:new(1, self.h, right_content, "bra")
+	right_bra.my = self.my
+
+
+	local c1 = left_bra:join_hori(self)
+	local c2 = c1:join_hori(right_bra)
+	return c2
 end
 
 
@@ -2439,6 +2498,315 @@ local function to_ascii(exp)
 
 		  return g
 
+	  elseif name == "{" then
+	  	assert(#exp.args == 1, "{ must have 1 argument")
+	  	local g = to_ascii(exp.args[1].exp):enclose_bracket()
+	  	if exp.sub and exp.sup then 
+	  		local subscript = ""
+	  	  -- sub and sup are exchanged to
+	  	  -- make the most compact expression
+	  		local subexps = exp.sup.exps
+	  	  local sub_t
+	  		if #subexps == 1 and subexps[1].kind == "numexp" or (subexps[1].kind == "symexp" and string.match(subexps[1].sym, "^%d+$")) then
+	  		  sub_t = "num"
+	  		elseif subexps[1].kind == "symexp" and string.match(subexps[1].sym, "^%a+$") then
+	  		  sub_t = "var"
+	  		else
+	  		  sub_t = "sym"
+	  		end
+
+	  		for _, exp in ipairs(subexps) do
+	  			if exp.kind == "numexp" and math.floor(exp.num) == exp.num then
+	  				local num = exp.num
+	  				if num == 0 then
+	  					subscript = subscript .. sub_letters["0"]
+	  				else
+	  					if num < 0 then
+	  						subscript = "₋" .. subscript
+	  						num = math.abs(num)
+	  					end
+	  					local num_subscript = ""
+	  					while num ~= 0 do
+	  						num_subscript = sub_letters[tostring(num%10)] .. num_subscript 
+	  						num = math.floor(num / 10)
+	  					end
+	  					subscript = subscript .. num_subscript 
+	  				end
+
+	  			elseif exp.kind == "symexp" then
+	  				if sub_letters[exp.sym] and not exp.sub and not exp.sup then
+	  					subscript = subscript .. sub_letters[exp.sym]
+	  				else
+	  					subscript = nil
+	  					break
+	  				end
+
+	  			else
+	  				subscript = nil
+	  				break
+	  			end
+	  		end
+
+
+	  		local superscript = ""
+	  		local supexps = exp.sub.exps
+	  	  local sup_t
+	  		if #supexps == 1 and supexps[1].kind == "numexp" or (supexps[1].kind == "symexp" and string.match(supexps[1].sym, "^%d+$")) then
+	  		  sup_t = "num"
+	  		elseif supexps[1].kind == "symexp" and string.match(supexps[1].sym, "^%a+$") then
+	  		  sup_t = "var"
+	  		else
+	  		  sup_t = "sym"
+	  		end
+
+	  		for _, exp in ipairs(supexps) do
+	  			if exp.kind == "numexp" and math.floor(exp.num) == exp.num then
+	  				local num = exp.num
+	  				if num == 0 then
+	  					superscript = superscript .. sub_letters["0"]
+	  				else
+	  					if num < 0 then
+	  						superscript = "₋" .. superscript
+	  						num = math.abs(num)
+	  					end
+	  					local num_superscript = ""
+	  					while num ~= 0 do
+	  						num_superscript = sup_letters[tostring(num%10)] .. num_superscript 
+	  						num = math.floor(num / 10)
+	  					end
+	  					superscript = superscript .. num_superscript 
+	  				end
+
+	  			elseif exp.kind == "symexp" then
+	  				if sup_letters[exp.sym] and not exp.sub and not exp.sup then
+	  					superscript = superscript .. sup_letters[exp.sym]
+	  				else
+	  					superscript = nil
+	  					break
+	  				end
+
+	  			else
+	  				superscript = nil
+	  				break
+	  			end
+	  		end
+
+
+	  		if subscript and superscript then
+	  			local sup_g = grid:new(utf8len(subscript), 1, { subscript }, sub_t)
+	  			local sub_g = grid:new(utf8len(superscript), 1, { superscript }, sup_t)
+	  			g = g:join_sub_sup(sub_g, sup_g)
+	  		else
+	  			local subgrid = to_ascii(exp.sub)
+	  			local supgrid = to_ascii(exp.sup)
+	  			g = g:join_sub_sup(subgrid, supgrid)
+	  		end
+
+	  	end
+
+	  	if exp.sub and not exp.sup then 
+	  		local subscript = ""
+	  		local subexps = exp.sub.exps
+	  	  local sub_t
+	  		if #subexps == 1 and subexps[1].kind == "numexp" or (subexps[1].kind == "symexp" and string.match(subexps[1].sym, "^%d+$")) then
+	  		  sub_t = "num"
+	  		elseif subexps[1].kind == "symexp" and string.match(subexps[1].sym, "^%a+$") then
+	  		  sub_t = "var"
+	  		else
+	  		  sub_t = "sym"
+	  		end
+
+	  		for _, exp in ipairs(subexps) do
+	  			if exp.kind == "numexp" and math.floor(exp.num) == exp.num then
+	  				local num = exp.num
+	  				if num == 0 then
+	  					subscript = subscript .. sub_letters["0"]
+	  				else
+	  					if num < 0 then
+	  						subscript = "₋" .. subscript
+	  						num = math.abs(num)
+	  					end
+	  					local num_subscript = ""
+	  					while num ~= 0 do
+	  						num_subscript = sub_letters[tostring(num%10)] .. num_subscript 
+	  						num = math.floor(num / 10)
+	  					end
+	  					subscript = subscript .. num_subscript 
+	  				end
+
+	  			elseif exp.kind == "symexp" then
+	  				if sub_letters[exp.sym] and not exp.sub and not exp.sup then
+	  					subscript = subscript .. sub_letters[exp.sym]
+	  				else
+	  					subscript = nil
+	  					break
+	  				end
+
+	  			else
+	  				subscript = nil
+	  				break
+	  			end
+	  		end
+
+	  		if subscript and string.len(subscript) > 0 then
+	  			local sub_g = grid:new(utf8len(subscript), 1, { subscript }, sub_t)
+	  			g = g:join_hori(sub_g)
+
+	  		else
+	  			local subgrid
+	  			local frac_exps = exp.sub.exps
+	  			local frac_exp
+	  			if #frac_exps == 1  then
+	  				local exp = frac_exps[1]
+	  				if exp.kind == "funexp" and exp.sym == "frac" then
+	  					assert(#exp.args == 2, "frac must have 2 arguments")
+	  					local numerator = exp.args[1].exps
+	  					local denominator = exp.args[2].exps
+	  					if #numerator == 1 and numerator[1].kind == "numexp" and 
+	  						#denominator == 1 and denominator[1].kind == "numexp" then
+	  						local A = numerator[1].num
+	  						local B = denominator[1].num
+	  						if frac_set[A] and frac_set[A][B] then
+	  							frac_exp = grid:new(1, 1, { frac_set[A][B] })
+	  						else
+	  							local num_str = ""
+	  							local den_str = ""
+	  							if math.floor(A) == A then
+	  								local s = tostring(A)
+	  								for i=1,string.len(s) do
+	  									num_str = num_str .. sup_letters[string.sub(s, i, i)]
+	  								end
+	  							end
+
+	  							if math.floor(B) == B then
+	  								local s = tostring(B)
+	  								for i=1,string.len(s) do
+	  									den_str = den_str .. sub_letters[string.sub(s, i, i)]
+	  								end
+	  							end
+
+	  							if string.len(num_str) > 0 and string.len(den_str) > 0 then
+	  								local frac_str = num_str .. "⁄" .. den_str
+	  								frac_exp = grid:new(utf8len(frac_str), 1, { frac_str })
+	  							end
+	  						end
+	  					end
+
+	  				end
+	  			end
+
+	  			if not frac_exp then
+	  				subgrid = to_ascii(exp.sub)
+	  			else
+	  				subgrid = frac_exp
+	  			end
+	  			g = g:combine_sub(subgrid)
+
+	  		end
+	  	end
+
+	  	if exp.sup and not exp.sub then 
+	  		local superscript = ""
+	  		local supexps = exp.sup.exps
+	  	  local sup_t
+	  		if #supexps == 1 and supexps[1].kind == "numexp" or (supexps[1].kind == "symexp" and string.match(supexps[1].sym, "^%d+$")) then
+	  		  sup_t = "num"
+	  		elseif supexps[1].kind == "symexp" and string.match(supexps[1].sym, "^%a+$") then
+	  		  sup_t = "var"
+	  		else
+	  		  sup_t = "sym"
+	  		end
+
+	  		for _, exp in ipairs(supexps) do
+	  			if exp.kind == "numexp" and math.floor(exp.num) == exp.num then
+	  				local num = exp.num
+	  				if num == 0 then
+	  					superscript = superscript .. sub_letters["0"]
+	  				else
+	  					if num < 0 then
+	  						superscript = "₋" .. superscript
+	  						num = math.abs(num)
+	  					end
+	  					local num_superscript = ""
+	  					while num ~= 0 do
+	  						num_superscript = sup_letters[tostring(num%10)] .. num_superscript 
+	  						num = math.floor(num / 10)
+	  					end
+	  					superscript = superscript .. num_superscript 
+	  				end
+
+	  			elseif exp.kind == "symexp" then
+	  				if sup_letters[exp.sym] and not exp.sub and not exp.sup then
+	  					superscript = superscript .. sup_letters[exp.sym]
+	  				else
+	  					superscript = nil
+	  					break
+	  				end
+
+	  			else
+	  				superscript = nil
+	  				break
+	  			end
+	  		end
+
+	  		if superscript and string.len(superscript) > 0 then
+	  			local sup_g = grid:new(utf8len(superscript), 1, { superscript }, sup_t)
+	  			g = g:join_hori(sup_g, true)
+
+	  		else
+	  			local supgrid = to_ascii(exp.sup)
+	  			local frac_exps = exp.sup.exps
+	  			local frac_exp
+	  			if #frac_exps == 1  then
+	  				local exp = frac_exps[1]
+	  				if exp.kind == "funexp" and exp.sym == "frac" then
+	  					assert(#exp.args == 2, "frac must have 2 arguments")
+	  					local numerator = exp.args[1].exps
+	  					local denominator = exp.args[2].exps
+	  					if #numerator == 1 and numerator[1].kind == "numexp" and 
+	  						#denominator == 1 and denominator[1].kind == "numexp" then
+	  						local A = numerator[1].num
+	  						local B = denominator[1].num
+	  						if frac_set[A] and frac_set[A][B] then
+	  							frac_exp = grid:new(1, 1, { frac_set[A][B] })
+	  						else
+	  							local num_str = ""
+	  							local den_str = ""
+	  							if math.floor(A) == A then
+	  								local s = tostring(A)
+	  								for i=1,string.len(s) do
+	  									num_str = num_str .. sup_letters[string.sub(s, i, i)]
+	  								end
+	  							end
+
+	  							if math.floor(B) == B then
+	  								local s = tostring(B)
+	  								for i=1,string.len(s) do
+	  									den_str = den_str .. sub_letters[string.sub(s, i, i)]
+	  								end
+	  							end
+
+	  							if string.len(num_str) > 0 and string.len(den_str) > 0 then
+	  								local frac_str = num_str .. "⁄" .. den_str
+	  								frac_exp = grid:new(utf8len(frac_str), 1, { frac_str })
+	  							end
+	  						end
+	  					end
+
+	  				end
+	  			end
+
+	  			if not frac_exp then
+	  				supgrid = to_ascii(exp.sup)
+	  			else
+	  				supgrid = frac_exp
+	  			end
+	  			g = g:join_super(supgrid)
+
+	  		end
+	  	end
+
+	  	return g
 		else
 			return grid:new(utf8len(name), 1, { name })
 		end

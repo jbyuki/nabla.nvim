@@ -122,6 +122,7 @@ local exp = {
 elseif string.match(getc(), "\\") then
 	nextc()
 	local sym
+	local args = {}
 	@if_space_parse_as_single_space
   elseif getc() == "\\" then
     sym = {
@@ -129,11 +130,12 @@ elseif string.match(getc(), "\\") then
       sym = "\\",
     }
     nextc()
+  @if_open_bracket_parse_inside_it
+  @if_close_bracket_break
   @if_comma_parse_as_space
 	else
 		sym = parse_symbol()
 	end
-	local args = {}
 	while not finish() and string.match(getc(), '{') do
 		nextc()
 		table.insert(args, parse())
@@ -236,9 +238,6 @@ elseif sym.sym == "end" then
 	return explist
 end
 
-@o+=
-local
-
 @if_space_parse_as_single_space+=
 if getc() == " " then
 	sym = {
@@ -271,3 +270,23 @@ elseif getc() == "," then
 		sym = " ",
 	}
 	nextc()
+
+@if_open_bracket_parse_inside_it+=
+elseif getc() == "{" then
+	nextc()
+	local in_exp = parse()
+	exp = {
+		kind = "braexp",
+		exp = in_exp,
+	}
+  table.insert(args, exp)
+  
+  sym = {
+    kind = "symexp", 
+    sym = "{", 
+  }
+
+@if_close_bracket_break+=
+elseif getc() == "}" then
+  nextc()
+  break

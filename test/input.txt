@@ -1,6 +1,6 @@
 $a^2 + b^2 + c^2$
 
-$(1 + a) * (1 + a)$
+$(1 + a) \cdot (1 + a)$
 $\alpha + \beta$
 
 $\frac{1}{2} + \frac{1}{3}$
@@ -32,13 +32,13 @@ $$\begin{matrix}
 \end{matrix}$$
 
 
-$\int_0^{\infty} \frac{1}{x} dx$
+$\int_0^{\infty} \frac{1}{x}\, dx$
 
 
-$\frac{dx}{df(x)} + \frac{dy}{df(y)} = 2$
+$\frac{dx}{df(x)}\, +\, \frac{dy}{df(y)}\, =\, 2$
 
 
-$\frac{\partial x}{\partial f(x)} + \frac{\partial y}{\partial f(y)} = 2$
+$\frac{\partial x}{\partial f(x)}\, +\, \frac{\partial y}{\partial f(y)}\, =\, 2$
 
 
 $\delta (x) = 2$
@@ -60,3 +60,4 @@ $Cr_2O_7^2$
 $s^{N_2}_+ [n]$
 
 $\frac{1}{2\xi \sqrt{1+\xi^2}}$
+$1\: + 2$

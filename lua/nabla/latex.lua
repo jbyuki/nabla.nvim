@@ -56,6 +56,7 @@ function parse()
 		elseif string.match(getc(), "\\") then
 			nextc()
 			local sym
+			local args = {}
 			if getc() == " " then
 				sym = {
 					kind = "symexp",
@@ -69,16 +70,33 @@ function parse()
 		      sym = "\\",
 		    }
 		    nextc()
+		  elseif getc() == "{" then
+		  	nextc()
+		  	local in_exp = parse()
+		  	exp = {
+		  		kind = "braexp",
+		  		exp = in_exp,
+		  	}
+		    table.insert(args, exp)
+		    
+		    sym = {
+		      kind = "symexp", 
+		      sym = "{", 
+		    }
+
+		  elseif getc() == "}" then
+		    nextc()
+		    break
 		  elseif getc() == "," then
 		  	sym = {
 		  		kind = "symexp",
 		  		sym = " ",
 		  	}
 		  	nextc()
+
 			else
 				sym = parse_symbol()
 			end
-			local args = {}
 			while not finish() and string.match(getc(), '{') do
 				nextc()
 				table.insert(args, parse())
