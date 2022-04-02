@@ -125,6 +125,7 @@ elseif string.match(getc(), "\\") then
 	local sym
 	local args = {}
 	@if_space_parse_as_single_space
+  @if_other_type_of_spaces_expand
   elseif getc() == "\\" then
     sym = {
       kind = "symexp",
@@ -138,6 +139,7 @@ elseif string.match(getc(), "\\") then
 		sym = parse_symbol()
 	end
   @if_sym_is_text_parse_verbatim
+  @if_sym_is_quad_expand_here
 	while not finish() and string.match(getc(), '{') do
 		nextc()
 		table.insert(args, parse())
@@ -244,7 +246,7 @@ end
 if getc() == " " then
 	sym = {
 		kind = "symexp",
-		sym = " ",
+		sym = "      ",
 	}
 	nextc()
 
@@ -342,3 +344,30 @@ elseif string.match(getc(), "{") then
     left = left,
     right = right,
   }
+
+@if_other_type_of_spaces_expand+=
+elseif getc() == ":" then
+	sym = {
+		kind = "symexp",
+		sym = "    ",
+	}
+	nextc()
+elseif getc() == ";" then
+	sym = {
+		kind = "symexp",
+		sym = "     ",
+	}
+	nextc()
+
+@if_sym_is_quad_expand_here+=
+if sym.sym == "quad" then
+	sym = {
+		kind = "symexp",
+		sym = "       ",
+	}
+elseif sym.sym == "qquad" then
+	sym = {
+		kind = "symexp",
+		sym = "        ",
+	}
+end

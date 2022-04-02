@@ -60,9 +60,22 @@ function parse()
 			if getc() == " " then
 				sym = {
 					kind = "symexp",
-					sym = " ",
+					sym = "      ",
 				}
 				nextc()
+
+		  elseif getc() == ":" then
+		  	sym = {
+		  		kind = "symexp",
+		  		sym = "    ",
+		  	}
+		  	nextc()
+		  elseif getc() == ";" then
+		  	sym = {
+		  		kind = "symexp",
+		  		sym = "     ",
+		  	}
+		  	nextc()
 
 		  elseif getc() == "\\" then
 		    sym = {
@@ -110,6 +123,17 @@ function parse()
 		    table.insert(args, txt)
 		  end
 
+		  if sym.sym == "quad" then
+		  	sym = {
+		  		kind = "symexp",
+		  		sym = "       ",
+		  	}
+		  elseif sym.sym == "qquad" then
+		  	sym = {
+		  		kind = "symexp",
+		  		sym = "        ",
+		  	}
+		  end
 			while not finish() and string.match(getc(), '{') do
 				nextc()
 				table.insert(args, parse())
@@ -172,6 +196,7 @@ function parse()
         left = left,
         right = right,
       }
+
 		else
 			if getc() == "_" then
 				assert(#explist.exps > 0, "subscript no preceding token")
