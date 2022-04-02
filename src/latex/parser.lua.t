@@ -50,6 +50,7 @@ function parse()
 		@if_number_parse_number
 		@if_backslash_parse_special_symbols
 		@if_letter_parse_symbol
+    @if_open_curly_parse_choose
 		@if_operator_parse_operator
 
 
@@ -304,3 +305,40 @@ if sym.sym == "text" and string.match(getc(), '{') then
 
   table.insert(args, txt)
 end
+
+@if_open_curly_parse_choose+=
+elseif string.match(getc(), "{") then
+  nextc()
+  local in_exp = parse()
+  
+  local left = {
+    kind = "explist",
+    exps = {},
+  }
+
+  local right = {
+    kind = "explist",
+    exps = {},
+  }
+
+  local in_left = true
+
+  for i=1,#in_exp.exps do
+    local e = in_exp.exps[i]
+
+    if in_left and e.kind == "funexp" and e.sym == "choose" then
+      in_left = false
+    else
+      if in_left then
+        table.insert(left.exps, e)
+      else
+        table.insert(right.exps, e)
+      end
+    end
+  end
+
+  exp = {
+    kind = "chosexp",
+    left = left,
+    right = right,
+  }

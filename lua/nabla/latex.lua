@@ -109,6 +109,7 @@ function parse()
 
 		    table.insert(args, txt)
 		  end
+
 			while not finish() and string.match(getc(), '{') do
 				nextc()
 				table.insert(args, parse())
@@ -136,6 +137,41 @@ function parse()
 		elseif string.match(getc(), "%a") then
 			exp = parse_symbol()
 
+    elseif string.match(getc(), "{") then
+      nextc()
+      local in_exp = parse()
+      
+      local left = {
+        kind = "explist",
+        exps = {},
+      }
+
+      local right = {
+        kind = "explist",
+        exps = {},
+      }
+
+      local in_left = true
+
+      for i=1,#in_exp.exps do
+        local e = in_exp.exps[i]
+
+        if in_left and e.kind == "funexp" and e.sym == "choose" then
+          in_left = false
+        else
+          if in_left then
+            table.insert(left.exps, e)
+          else
+            table.insert(right.exps, e)
+          end
+        end
+      end
+
+      exp = {
+        kind = "chosexp",
+        left = left,
+        right = right,
+      }
 		else
 			if getc() == "_" then
 				assert(#explist.exps > 0, "subscript no preceding token")

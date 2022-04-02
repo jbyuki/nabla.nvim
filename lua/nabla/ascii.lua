@@ -3126,285 +3126,613 @@ local function to_ascii(exp)
 		return g
 
 	elseif exp.kind == "blockexp" then
-	local g
-	local name = exp.sym
-	if name == "matrix" then
-	local cells = {}
-	local cellsgrid = {}
-	local maxheight = 0
-	local explist = exp.content.exps
-	local i = 1
-	local rowgrid = {}
-	while i <= #explist do
-		local cell_list = {
-			kind = "explist",
-			exps = {},
-		}
+	  local g
+	  local name = exp.sym
+	  if name == "matrix" then
+	  local cells = {}
+	  local cellsgrid = {}
+	  local maxheight = 0
+	  local explist = exp.content.exps
+	  local i = 1
+	  local rowgrid = {}
+	  while i <= #explist do
+	  	local cell_list = {
+	  		kind = "explist",
+	  		exps = {},
+	  	}
 
-		while i <= #explist do
-			if explist[i].kind == "symexp" and explist[i].sym == "&" then
-				local cellgrid = to_ascii(cell_list)
-				table.insert(rowgrid, cellgrid)
-				maxheight = math.max(maxheight, cellgrid.h)
-				i = i+1
-				break
+	  	while i <= #explist do
+	  		if explist[i].kind == "symexp" and explist[i].sym == "&" then
+	  			local cellgrid = to_ascii(cell_list)
+	  			table.insert(rowgrid, cellgrid)
+	  			maxheight = math.max(maxheight, cellgrid.h)
+	  			i = i+1
+	  			break
 
-			elseif explist[i].kind == "funexp" and explist[i].sym == "\\" then
-				local cellgrid = to_ascii(cell_list)
-				table.insert(rowgrid, cellgrid)
-				maxheight = math.max(maxheight, cellgrid.h)
+	  		elseif explist[i].kind == "funexp" and explist[i].sym == "\\" then
+	  			local cellgrid = to_ascii(cell_list)
+	  			table.insert(rowgrid, cellgrid)
+	  			maxheight = math.max(maxheight, cellgrid.h)
 
-				table.insert(cellsgrid, rowgrid)
-				rowgrid = {}
-				i = i+1
-				break
+	  			table.insert(cellsgrid, rowgrid)
+	  			rowgrid = {}
+	  			i = i+1
+	  			break
 
+	  		else
+	  			table.insert(cell_list.exps, explist[i])
+	  			i = i+1
+	  		end
+
+	  		if i > #explist then
+	  			local cellgrid = to_ascii(cell_list)
+	  			table.insert(rowgrid, cellgrid)
+	  			maxheight = math.max(maxheight, cellgrid.h)
+
+	  			table.insert(cellsgrid, rowgrid)
+	  		end
+
+	  	end
+
+	  end
+
+
+	  local res
+	  for i=1,#cellsgrid[1] do
+	  	local col 
+	  	for j=1,#cellsgrid do
+	  		local cell = cellsgrid[j][i]
+	  		local sup = maxheight - cell.h
+	  		local sdown = 0
+	  		local up, down
+	  		if sup > 0 then up = grid:new(cell.w, sup) end
+	  		if sdown > 0 then down = grid:new(cell.w, sdown) end
+
+	  		if up then cell = up:join_vert(cell) end
+	  		if down then cell = cell:join_vert(down) end
+
+	  		local colspacer = grid:new(1, cell.h)
+	  		colspacer.my = cell.my
+
+	  		if i < #cellsgrid[1] then
+	  			cell = cell:join_hori(colspacer)
+	  		end
+
+	  		if not col then col = cell
+	  		else col = col:join_vert(cell, true) end
+
+	  	end
+	  	if not res then res = col
+	  	else res = res:join_hori(col, true) end
+
+	  end
+
+	  -- @combine_matrix_brackets
+	  res.my = math.floor(res.h/2)
+	  return res
+
+	  elseif name == "pmatrix" then
+	  	local cells = {}
+	  	local cellsgrid = {}
+	  	local maxheight = 0
+	  	local explist = exp.content.exps
+	  	local i = 1
+	  	local rowgrid = {}
+	  	while i <= #explist do
+	  		local cell_list = {
+	  			kind = "explist",
+	  			exps = {},
+	  		}
+
+	  		while i <= #explist do
+	  			if explist[i].kind == "symexp" and explist[i].sym == "&" then
+	  				local cellgrid = to_ascii(cell_list)
+	  				table.insert(rowgrid, cellgrid)
+	  				maxheight = math.max(maxheight, cellgrid.h)
+	  				i = i+1
+	  				break
+
+	  			elseif explist[i].kind == "funexp" and explist[i].sym == "\\" then
+	  				local cellgrid = to_ascii(cell_list)
+	  				table.insert(rowgrid, cellgrid)
+	  				maxheight = math.max(maxheight, cellgrid.h)
+
+	  				table.insert(cellsgrid, rowgrid)
+	  				rowgrid = {}
+	  				i = i+1
+	  				break
+
+	  			else
+	  				table.insert(cell_list.exps, explist[i])
+	  				i = i+1
+	  			end
+
+	  			if i > #explist then
+	  				local cellgrid = to_ascii(cell_list)
+	  				table.insert(rowgrid, cellgrid)
+	  				maxheight = math.max(maxheight, cellgrid.h)
+
+	  				table.insert(cellsgrid, rowgrid)
+	  			end
+
+	  		end
+
+	  	end
+
+
+	  local res
+	  for i=1,#cellsgrid[1] do
+	  	local col 
+	  	for j=1,#cellsgrid do
+	  		local cell = cellsgrid[j][i]
+	  		local sup = maxheight - cell.h
+	  		local sdown = 0
+	  		local up, down
+	  		if sup > 0 then up = grid:new(cell.w, sup) end
+	  		if sdown > 0 then down = grid:new(cell.w, sdown) end
+
+	  		if up then cell = up:join_vert(cell) end
+	  		if down then cell = cell:join_vert(down) end
+
+	  		local colspacer = grid:new(1, cell.h)
+	  		colspacer.my = cell.my
+
+	  		if i < #cellsgrid[1] then
+	  			cell = cell:join_hori(colspacer)
+	  		end
+
+	  		if not col then col = cell
+	  		else col = col:join_vert(cell, true) end
+
+	  	end
+	  	if not res then res = col
+	  	else res = res:join_hori(col, true) end
+
+	  end
+
+	  res.my = math.floor(res.h/2)
+	  return res:enclose_paren()
+
+	  elseif name == "bmatrix" then
+	  	local cells = {}
+	  	local cellsgrid = {}
+	  	local maxheight = 0
+	  	local explist = exp.content.exps
+	  	local i = 1
+	  	local rowgrid = {}
+	  	while i <= #explist do
+	  		local cell_list = {
+	  			kind = "explist",
+	  			exps = {},
+	  		}
+
+	  		while i <= #explist do
+	  			if explist[i].kind == "symexp" and explist[i].sym == "&" then
+	  				local cellgrid = to_ascii(cell_list)
+	  				table.insert(rowgrid, cellgrid)
+	  				maxheight = math.max(maxheight, cellgrid.h)
+	  				i = i+1
+	  				break
+
+	  			elseif explist[i].kind == "funexp" and explist[i].sym == "\\" then
+	  				local cellgrid = to_ascii(cell_list)
+	  				table.insert(rowgrid, cellgrid)
+	  				maxheight = math.max(maxheight, cellgrid.h)
+
+	  				table.insert(cellsgrid, rowgrid)
+	  				rowgrid = {}
+	  				i = i+1
+	  				break
+
+	  			else
+	  				table.insert(cell_list.exps, explist[i])
+	  				i = i+1
+	  			end
+
+	  			if i > #explist then
+	  				local cellgrid = to_ascii(cell_list)
+	  				table.insert(rowgrid, cellgrid)
+	  				maxheight = math.max(maxheight, cellgrid.h)
+
+	  				table.insert(cellsgrid, rowgrid)
+	  			end
+
+	  		end
+
+	  	end
+
+
+	  local res
+	  for i=1,#cellsgrid[1] do
+	  	local col 
+	  	for j=1,#cellsgrid do
+	  		local cell = cellsgrid[j][i]
+	  		local sup = maxheight - cell.h
+	  		local sdown = 0
+	  		local up, down
+	  		if sup > 0 then up = grid:new(cell.w, sup) end
+	  		if sdown > 0 then down = grid:new(cell.w, sdown) end
+
+	  		if up then cell = up:join_vert(cell) end
+	  		if down then cell = cell:join_vert(down) end
+
+	  		local colspacer = grid:new(1, cell.h)
+	  		colspacer.my = cell.my
+
+	  		if i < #cellsgrid[1] then
+	  			cell = cell:join_hori(colspacer)
+	  		end
+
+	  		if not col then col = cell
+	  		else col = col:join_vert(cell, true) end
+
+	  	end
+	  	if not res then res = col
+	  	else res = res:join_hori(col, true) end
+
+	  end
+
+	  local left_content, right_content = {}, {}
+	  if res.h > 1 then
+	  	for y=1,res.h do
+	  		if y == 1 then
+	  			table.insert(left_content, style.matrix_upper_left)
+	  			table.insert(right_content, style.matrix_upper_right)
+	  		elseif y == res.h then
+	  			table.insert(left_content, style.matrix_lower_left)
+	  			table.insert(right_content, style.matrix_lower_right)
+	  		else
+	  			table.insert(left_content, style.matrix_vert_left)
+	  			table.insert(right_content, style.matrix_vert_right)
+	  		end
+	  	end
+	  else
+	  	left_content = { style.matrix_single_left }
+	  	right_content = { style.matrix_single_right }
+	  end
+
+	  local leftbracket = grid:new(1, res.h, left_content)
+	  local rightbracket = grid:new(1, res.h, right_content)
+
+	  res = leftbracket:join_hori(res, true)
+	  res = res:join_hori(rightbracket, true)
+
+	  res.my = math.floor(res.h/2)
+	  return res
+
+	  else
+	    error("Unknown block expression " .. exp.sym)
+	  end
+
+	  return g
+
+	elseif exp.kind == "chosexp" then
+	  -- same thing as frac without the bar
+	  local leftgrid = to_ascii(exp.left)
+	  local rightgrid = to_ascii(exp.right)
+	  
+		local bar = ""
+		local w = math.max(leftgrid.w, rightgrid.w)
+		for x=1,w do
+			bar = bar .. " "
+		end
+
+
+		local opgrid = grid:new(w, 1, { bar })
+
+		local c1 = leftgrid:join_vert(opgrid)
+		local c2 = c1:join_vert(rightgrid)
+		c2.my = leftgrid.h
+
+
+	  local g = c2:enclose_paren()
+
+		if exp.sub and exp.sup then 
+			local subscript = ""
+		  -- sub and sup are exchanged to
+		  -- make the most compact expression
+			local subexps = exp.sup.exps
+		  local sub_t
+			if #subexps == 1 and subexps[1].kind == "numexp" or (subexps[1].kind == "symexp" and string.match(subexps[1].sym, "^%d+$")) then
+			  sub_t = "num"
+			elseif subexps[1].kind == "symexp" and string.match(subexps[1].sym, "^%a+$") then
+			  sub_t = "var"
 			else
-				table.insert(cell_list.exps, explist[i])
-				i = i+1
+			  sub_t = "sym"
 			end
 
-			if i > #explist then
-				local cellgrid = to_ascii(cell_list)
-				table.insert(rowgrid, cellgrid)
-				maxheight = math.max(maxheight, cellgrid.h)
+			for _, exp in ipairs(subexps) do
+				if exp.kind == "numexp" and math.floor(exp.num) == exp.num then
+					local num = exp.num
+					if num == 0 then
+						subscript = subscript .. sub_letters["0"]
+					else
+						if num < 0 then
+							subscript = "₋" .. subscript
+							num = math.abs(num)
+						end
+						local num_subscript = ""
+						while num ~= 0 do
+							num_subscript = sub_letters[tostring(num%10)] .. num_subscript 
+							num = math.floor(num / 10)
+						end
+						subscript = subscript .. num_subscript 
+					end
 
-				table.insert(cellsgrid, rowgrid)
-			end
-
-		end
-
-	end
-
-
-	local res
-	for i=1,#cellsgrid[1] do
-		local col 
-		for j=1,#cellsgrid do
-			local cell = cellsgrid[j][i]
-			local sup = maxheight - cell.h
-			local sdown = 0
-			local up, down
-			if sup > 0 then up = grid:new(cell.w, sup) end
-			if sdown > 0 then down = grid:new(cell.w, sdown) end
-
-			if up then cell = up:join_vert(cell) end
-			if down then cell = cell:join_vert(down) end
-
-			local colspacer = grid:new(1, cell.h)
-			colspacer.my = cell.my
-
-			if i < #cellsgrid[1] then
-				cell = cell:join_hori(colspacer)
-			end
-
-			if not col then col = cell
-			else col = col:join_vert(cell, true) end
-
-		end
-		if not res then res = col
-		else res = res:join_hori(col, true) end
-
-	end
-
-	-- @combine_matrix_brackets
-	res.my = math.floor(res.h/2)
-	return res
-
-	elseif name == "pmatrix" then
-		local cells = {}
-		local cellsgrid = {}
-		local maxheight = 0
-		local explist = exp.content.exps
-		local i = 1
-		local rowgrid = {}
-		while i <= #explist do
-			local cell_list = {
-				kind = "explist",
-				exps = {},
-			}
-
-			while i <= #explist do
-				if explist[i].kind == "symexp" and explist[i].sym == "&" then
-					local cellgrid = to_ascii(cell_list)
-					table.insert(rowgrid, cellgrid)
-					maxheight = math.max(maxheight, cellgrid.h)
-					i = i+1
-					break
-
-				elseif explist[i].kind == "funexp" and explist[i].sym == "\\" then
-					local cellgrid = to_ascii(cell_list)
-					table.insert(rowgrid, cellgrid)
-					maxheight = math.max(maxheight, cellgrid.h)
-
-					table.insert(cellsgrid, rowgrid)
-					rowgrid = {}
-					i = i+1
-					break
+				elseif exp.kind == "symexp" then
+					if sub_letters[exp.sym] and not exp.sub and not exp.sup then
+						subscript = subscript .. sub_letters[exp.sym]
+					else
+						subscript = nil
+						break
+					end
 
 				else
-					table.insert(cell_list.exps, explist[i])
-					i = i+1
+					subscript = nil
+					break
 				end
-
-				if i > #explist then
-					local cellgrid = to_ascii(cell_list)
-					table.insert(rowgrid, cellgrid)
-					maxheight = math.max(maxheight, cellgrid.h)
-
-					table.insert(cellsgrid, rowgrid)
-				end
-
 			end
 
-		end
 
-
-	local res
-	for i=1,#cellsgrid[1] do
-		local col 
-		for j=1,#cellsgrid do
-			local cell = cellsgrid[j][i]
-			local sup = maxheight - cell.h
-			local sdown = 0
-			local up, down
-			if sup > 0 then up = grid:new(cell.w, sup) end
-			if sdown > 0 then down = grid:new(cell.w, sdown) end
-
-			if up then cell = up:join_vert(cell) end
-			if down then cell = cell:join_vert(down) end
-
-			local colspacer = grid:new(1, cell.h)
-			colspacer.my = cell.my
-
-			if i < #cellsgrid[1] then
-				cell = cell:join_hori(colspacer)
+			local superscript = ""
+			local supexps = exp.sub.exps
+		  local sup_t
+			if #supexps == 1 and supexps[1].kind == "numexp" or (supexps[1].kind == "symexp" and string.match(supexps[1].sym, "^%d+$")) then
+			  sup_t = "num"
+			elseif supexps[1].kind == "symexp" and string.match(supexps[1].sym, "^%a+$") then
+			  sup_t = "var"
+			else
+			  sup_t = "sym"
 			end
 
-			if not col then col = cell
-			else col = col:join_vert(cell, true) end
+			for _, exp in ipairs(supexps) do
+				if exp.kind == "numexp" and math.floor(exp.num) == exp.num then
+					local num = exp.num
+					if num == 0 then
+						superscript = superscript .. sub_letters["0"]
+					else
+						if num < 0 then
+							superscript = "₋" .. superscript
+							num = math.abs(num)
+						end
+						local num_superscript = ""
+						while num ~= 0 do
+							num_superscript = sup_letters[tostring(num%10)] .. num_superscript 
+							num = math.floor(num / 10)
+						end
+						superscript = superscript .. num_superscript 
+					end
 
-		end
-		if not res then res = col
-		else res = res:join_hori(col, true) end
-
-	end
-
-	res.my = math.floor(res.h/2)
-	return res:enclose_paren()
-
-	elseif name == "bmatrix" then
-		local cells = {}
-		local cellsgrid = {}
-		local maxheight = 0
-		local explist = exp.content.exps
-		local i = 1
-		local rowgrid = {}
-		while i <= #explist do
-			local cell_list = {
-				kind = "explist",
-				exps = {},
-			}
-
-			while i <= #explist do
-				if explist[i].kind == "symexp" and explist[i].sym == "&" then
-					local cellgrid = to_ascii(cell_list)
-					table.insert(rowgrid, cellgrid)
-					maxheight = math.max(maxheight, cellgrid.h)
-					i = i+1
-					break
-
-				elseif explist[i].kind == "funexp" and explist[i].sym == "\\" then
-					local cellgrid = to_ascii(cell_list)
-					table.insert(rowgrid, cellgrid)
-					maxheight = math.max(maxheight, cellgrid.h)
-
-					table.insert(cellsgrid, rowgrid)
-					rowgrid = {}
-					i = i+1
-					break
+				elseif exp.kind == "symexp" then
+					if sup_letters[exp.sym] and not exp.sub and not exp.sup then
+						superscript = superscript .. sup_letters[exp.sym]
+					else
+						superscript = nil
+						break
+					end
 
 				else
-					table.insert(cell_list.exps, explist[i])
-					i = i+1
+					superscript = nil
+					break
 				end
-
-				if i > #explist then
-					local cellgrid = to_ascii(cell_list)
-					table.insert(rowgrid, cellgrid)
-					maxheight = math.max(maxheight, cellgrid.h)
-
-					table.insert(cellsgrid, rowgrid)
-				end
-
 			end
 
-		end
 
-
-	local res
-	for i=1,#cellsgrid[1] do
-		local col 
-		for j=1,#cellsgrid do
-			local cell = cellsgrid[j][i]
-			local sup = maxheight - cell.h
-			local sdown = 0
-			local up, down
-			if sup > 0 then up = grid:new(cell.w, sup) end
-			if sdown > 0 then down = grid:new(cell.w, sdown) end
-
-			if up then cell = up:join_vert(cell) end
-			if down then cell = cell:join_vert(down) end
-
-			local colspacer = grid:new(1, cell.h)
-			colspacer.my = cell.my
-
-			if i < #cellsgrid[1] then
-				cell = cell:join_hori(colspacer)
-			end
-
-			if not col then col = cell
-			else col = col:join_vert(cell, true) end
-
-		end
-		if not res then res = col
-		else res = res:join_hori(col, true) end
-
-	end
-
-	local left_content, right_content = {}, {}
-	if res.h > 1 then
-		for y=1,res.h do
-			if y == 1 then
-				table.insert(left_content, style.matrix_upper_left)
-				table.insert(right_content, style.matrix_upper_right)
-			elseif y == res.h then
-				table.insert(left_content, style.matrix_lower_left)
-				table.insert(right_content, style.matrix_lower_right)
+			if subscript and superscript then
+				local sup_g = grid:new(utf8len(subscript), 1, { subscript }, sub_t)
+				local sub_g = grid:new(utf8len(superscript), 1, { superscript }, sup_t)
+				g = g:join_sub_sup(sub_g, sup_g)
 			else
-				table.insert(left_content, style.matrix_vert_left)
-				table.insert(right_content, style.matrix_vert_right)
+				local subgrid = to_ascii(exp.sub)
+				local supgrid = to_ascii(exp.sup)
+				g = g:join_sub_sup(subgrid, supgrid)
+			end
+
+		end
+
+		if exp.sub and not exp.sup then 
+			local subscript = ""
+			local subexps = exp.sub.exps
+		  local sub_t
+			if #subexps == 1 and subexps[1].kind == "numexp" or (subexps[1].kind == "symexp" and string.match(subexps[1].sym, "^%d+$")) then
+			  sub_t = "num"
+			elseif subexps[1].kind == "symexp" and string.match(subexps[1].sym, "^%a+$") then
+			  sub_t = "var"
+			else
+			  sub_t = "sym"
+			end
+
+			for _, exp in ipairs(subexps) do
+				if exp.kind == "numexp" and math.floor(exp.num) == exp.num then
+					local num = exp.num
+					if num == 0 then
+						subscript = subscript .. sub_letters["0"]
+					else
+						if num < 0 then
+							subscript = "₋" .. subscript
+							num = math.abs(num)
+						end
+						local num_subscript = ""
+						while num ~= 0 do
+							num_subscript = sub_letters[tostring(num%10)] .. num_subscript 
+							num = math.floor(num / 10)
+						end
+						subscript = subscript .. num_subscript 
+					end
+
+				elseif exp.kind == "symexp" then
+					if sub_letters[exp.sym] and not exp.sub and not exp.sup then
+						subscript = subscript .. sub_letters[exp.sym]
+					else
+						subscript = nil
+						break
+					end
+
+				else
+					subscript = nil
+					break
+				end
+			end
+
+			if subscript and string.len(subscript) > 0 then
+				local sub_g = grid:new(utf8len(subscript), 1, { subscript }, sub_t)
+				g = g:join_hori(sub_g)
+
+			else
+				local subgrid
+				local frac_exps = exp.sub.exps
+				local frac_exp
+				if #frac_exps == 1  then
+					local exp = frac_exps[1]
+					if exp.kind == "funexp" and exp.sym == "frac" then
+						assert(#exp.args == 2, "frac must have 2 arguments")
+						local numerator = exp.args[1].exps
+						local denominator = exp.args[2].exps
+						if #numerator == 1 and numerator[1].kind == "numexp" and 
+							#denominator == 1 and denominator[1].kind == "numexp" then
+							local A = numerator[1].num
+							local B = denominator[1].num
+							if frac_set[A] and frac_set[A][B] then
+								frac_exp = grid:new(1, 1, { frac_set[A][B] })
+							else
+								local num_str = ""
+								local den_str = ""
+								if math.floor(A) == A then
+									local s = tostring(A)
+									for i=1,string.len(s) do
+										num_str = num_str .. sup_letters[string.sub(s, i, i)]
+									end
+								end
+
+								if math.floor(B) == B then
+									local s = tostring(B)
+									for i=1,string.len(s) do
+										den_str = den_str .. sub_letters[string.sub(s, i, i)]
+									end
+								end
+
+								if string.len(num_str) > 0 and string.len(den_str) > 0 then
+									local frac_str = num_str .. "⁄" .. den_str
+									frac_exp = grid:new(utf8len(frac_str), 1, { frac_str })
+								end
+							end
+						end
+
+					end
+				end
+
+				if not frac_exp then
+					subgrid = to_ascii(exp.sub)
+				else
+					subgrid = frac_exp
+				end
+				g = g:combine_sub(subgrid)
+
 			end
 		end
-	else
-		left_content = { style.matrix_single_left }
-		right_content = { style.matrix_single_right }
-	end
 
-	local leftbracket = grid:new(1, res.h, left_content)
-	local rightbracket = grid:new(1, res.h, right_content)
+		if exp.sup and not exp.sub then 
+			local superscript = ""
+			local supexps = exp.sup.exps
+		  local sup_t
+			if #supexps == 1 and supexps[1].kind == "numexp" or (supexps[1].kind == "symexp" and string.match(supexps[1].sym, "^%d+$")) then
+			  sup_t = "num"
+			elseif supexps[1].kind == "symexp" and string.match(supexps[1].sym, "^%a+$") then
+			  sup_t = "var"
+			else
+			  sup_t = "sym"
+			end
 
-	res = leftbracket:join_hori(res, true)
-	res = res:join_hori(rightbracket, true)
+			for _, exp in ipairs(supexps) do
+				if exp.kind == "numexp" and math.floor(exp.num) == exp.num then
+					local num = exp.num
+					if num == 0 then
+						superscript = superscript .. sub_letters["0"]
+					else
+						if num < 0 then
+							superscript = "₋" .. superscript
+							num = math.abs(num)
+						end
+						local num_superscript = ""
+						while num ~= 0 do
+							num_superscript = sup_letters[tostring(num%10)] .. num_superscript 
+							num = math.floor(num / 10)
+						end
+						superscript = superscript .. num_superscript 
+					end
 
-	res.my = math.floor(res.h/2)
-	return res
+				elseif exp.kind == "symexp" then
+					if sup_letters[exp.sym] and not exp.sub and not exp.sup then
+						superscript = superscript .. sup_letters[exp.sym]
+					else
+						superscript = nil
+						break
+					end
 
-	else
-	error("Unknown block expression " .. exp.sym)
-	end
+				else
+					superscript = nil
+					break
+				end
+			end
 
-	return g
+			if superscript and string.len(superscript) > 0 then
+				local sup_g = grid:new(utf8len(superscript), 1, { superscript }, sup_t)
+				g = g:join_hori(sup_g, true)
+
+			else
+				local supgrid = to_ascii(exp.sup)
+				local frac_exps = exp.sup.exps
+				local frac_exp
+				if #frac_exps == 1  then
+					local exp = frac_exps[1]
+					if exp.kind == "funexp" and exp.sym == "frac" then
+						assert(#exp.args == 2, "frac must have 2 arguments")
+						local numerator = exp.args[1].exps
+						local denominator = exp.args[2].exps
+						if #numerator == 1 and numerator[1].kind == "numexp" and 
+							#denominator == 1 and denominator[1].kind == "numexp" then
+							local A = numerator[1].num
+							local B = denominator[1].num
+							if frac_set[A] and frac_set[A][B] then
+								frac_exp = grid:new(1, 1, { frac_set[A][B] })
+							else
+								local num_str = ""
+								local den_str = ""
+								if math.floor(A) == A then
+									local s = tostring(A)
+									for i=1,string.len(s) do
+										num_str = num_str .. sup_letters[string.sub(s, i, i)]
+									end
+								end
+
+								if math.floor(B) == B then
+									local s = tostring(B)
+									for i=1,string.len(s) do
+										den_str = den_str .. sub_letters[string.sub(s, i, i)]
+									end
+								end
+
+								if string.len(num_str) > 0 and string.len(den_str) > 0 then
+									local frac_str = num_str .. "⁄" .. den_str
+									frac_exp = grid:new(utf8len(frac_str), 1, { frac_str })
+								end
+							end
+						end
+
+					end
+				end
+
+				if not frac_exp then
+					supgrid = to_ascii(exp.sup)
+				else
+					supgrid = frac_exp
+				end
+				g = g:join_super(supgrid)
+
+			end
+		end
+
+		return g
 
 	else
 		return nil

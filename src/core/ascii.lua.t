@@ -1316,15 +1316,15 @@ end
 
 @transform_exp_to_grid+=
 elseif exp.kind == "blockexp" then
-local g
-local name = exp.sym
-@transform_block_expression
-@otherwise_error_with_unknown_block_expression
-return g
+  local g
+  local name = exp.sym
+  @transform_block_expression
+  @otherwise_error_with_unknown_block_expression
+  return g
 
 @otherwise_error_with_unknown_block_expression+=
 else
-error("Unknown block expression " .. exp.sym)
+  error("Unknown block expression " .. exp.sym)
 end
 
 @transform_block_expression+=
@@ -2115,6 +2115,34 @@ elseif name == "{" then
 elseif name == "text" then
 	assert(#exp.args == 1, "text must have 1 argument")
 	return grid:new(utf8len(exp.args[1]), 1, { exp.args[1] })
+
+@transform_exp_to_grid+=
+elseif exp.kind == "chosexp" then
+  -- same thing as frac without the bar
+  local leftgrid = to_ascii(exp.left)
+  local rightgrid = to_ascii(exp.right)
+  
+	@generate_appropriate_size_empty_bar
+
+	local opgrid = grid:new(w, 1, { bar })
+
+	local c1 = leftgrid:join_vert(opgrid)
+	local c2 = c1:join_vert(rightgrid)
+	@set_middle_for_fraction
+
+  local g = c2:enclose_paren()
+
+	@if_has_both_subscript_and_superscript_put_aside
+	@if_has_subscript_put_them_to_g
+	@if_has_superscript_put_them_to_g
+	return g
+
+@generate_appropriate_size_empty_bar+=
+local bar = ""
+local w = math.max(leftgrid.w, rightgrid.w)
+for x=1,w do
+	bar = bar .. " "
+end
 
 @special_symbols+=
 ["cdots"] = "⋯",
