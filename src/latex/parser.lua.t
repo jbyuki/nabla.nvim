@@ -140,13 +140,17 @@ elseif string.match(getc(), "\\") then
 	end
   @if_sym_is_text_parse_verbatim
   @if_sym_is_quad_expand_here
-	while not finish() and string.match(getc(), '{') do
-		nextc()
-		table.insert(args, parse())
-	end
-	@create_function_expression
-	@if_it_begins_until_enclosing_end
-	@if_it_ends_return_explist
+  @if_sym_is_left_open_paren
+  else
+    while not finish() and string.match(getc(), '{') do
+      nextc()
+      table.insert(args, parse())
+    end
+    @create_function_expression
+
+    @if_it_begins_until_enclosing_end
+    @if_it_ends_return_explist
+  end
 
 @break_if_closing_curly_bracket+=
 if string.match(getc(), "}") then
@@ -305,8 +309,11 @@ if sym.sym == "text" and string.match(getc(), '{') then
   end
   nextc()
 
-  table.insert(args, txt)
-end
+  exp = {
+    kind = "funexp",
+    sym  = txt,
+  }
+
 
 @if_open_curly_parse_choose+=
 elseif string.match(getc(), "{") then
@@ -360,14 +367,25 @@ elseif getc() == ";" then
 	nextc()
 
 @if_sym_is_quad_expand_here+=
-if sym.sym == "quad" then
-	sym = {
-		kind = "symexp",
+elseif sym.sym == "quad" then
+	exp = {
+		kind = "funexp",
 		sym = "       ",
 	}
 elseif sym.sym == "qquad" then
-	sym = {
-		kind = "symexp",
+	exp = {
+		kind = "funexp",
 		sym = "        ",
 	}
-end
+
+@if_sym_is_left_open_paren+=
+elseif sym.sym == "left" and string.match(getc(), '%(') then
+  nextc()
+	local in_exp = parse()
+  exp = {
+    kind = "parexp",
+    exp = in_exp,
+  }
+elseif sym.sym == "right" and string.match(getc(), '%)') then
+  nextc()
+  break

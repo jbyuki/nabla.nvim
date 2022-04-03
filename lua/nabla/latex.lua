@@ -120,43 +120,59 @@ function parse()
 		    end
 		    nextc()
 
-		    table.insert(args, txt)
-		  end
+		    exp = {
+		      kind = "funexp",
+		      sym  = txt,
+		    }
 
-		  if sym.sym == "quad" then
-		  	sym = {
-		  		kind = "symexp",
+
+		  elseif sym.sym == "quad" then
+		  	exp = {
+		  		kind = "funexp",
 		  		sym = "       ",
 		  	}
 		  elseif sym.sym == "qquad" then
-		  	sym = {
-		  		kind = "symexp",
+		  	exp = {
+		  		kind = "funexp",
 		  		sym = "        ",
 		  	}
+
+		  elseif sym.sym == "left" and string.match(getc(), '%(') then
+		    nextc()
+		  	local in_exp = parse()
+		    exp = {
+		      kind = "parexp",
+		      exp = in_exp,
+		    }
+		  elseif sym.sym == "right" and string.match(getc(), '%)') then
+		    nextc()
+		    break
+		  else
+		    while not finish() and string.match(getc(), '{') do
+		      nextc()
+		      table.insert(args, parse())
+		    end
+		    exp = {
+		    	kind = "funexp",
+		    	sym = sym.sym,
+		    	args = args,
+		    }
+
+
+		    if sym.sym == "begin" then
+		    	assert(#args == 1, "begin must have 1 argument")
+		    	local explist = parse()
+		    	exp = {
+		    		kind = "blockexp",
+		    		sym = args[1].exps[1].sym,
+		    		content = explist,
+		    	}
+
+		    elseif sym.sym == "end" then
+		    	return explist
+		    end
+
 		  end
-			while not finish() and string.match(getc(), '{') do
-				nextc()
-				table.insert(args, parse())
-			end
-			exp = {
-				kind = "funexp",
-				sym = sym.sym,
-				args = args,
-			}
-
-			if sym.sym == "begin" then
-				assert(#args == 1, "begin must have 1 argument")
-				local explist = parse()
-				exp = {
-					kind = "blockexp",
-					sym = args[1].exps[1].sym,
-					content = explist,
-				}
-
-			elseif sym.sym == "end" then
-				return explist
-			end
-
 
 		elseif string.match(getc(), "%a") then
 			exp = parse_symbol()
