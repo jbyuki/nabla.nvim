@@ -42,6 +42,7 @@ function replace(row, col)
   end
 
   @extract_latex_formula
+  @extract_latex_formula_old
 
 	@parse_math_expression
 	if success and exp then

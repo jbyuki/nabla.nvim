@@ -41,6 +41,8 @@ local search_forward
 
 local place_inline
 
+local find_latex_at_old
+
 local edit_formula
 
 local toggle_viewmode
@@ -347,6 +349,7 @@ function place_inline(row, col)
   line = table.concat(lines, " ")
 
 
+  local back, forward, del = find_latex_at_old(buf, row, col)
 
 	local success, exp = pcall(parser.parse_all, line)
 
@@ -445,6 +448,44 @@ function place_inline(row, col)
 			print("nabla error!")
 		end
 	end
+end
+
+function find_latex_at_old(buf, row, col)
+  local single_formula = vim.regex(conceal_match)
+
+  local inline_formula = vim.regex(conceal_inline_match)
+
+
+  local n = 0
+  while true do
+    local s, e = single_formula:match_line(buf, row-1, n)
+    if not s then
+      break
+    end
+
+    if n+s <= col and col <= n+e then
+      return s+n, e+n, "$$"
+    end
+
+    n = n+e
+  end
+
+  n = 0
+
+  while true do
+    local s, e = inline_formula:match_line(buf, row-1, n)
+    if not s then
+      break
+    end
+
+    if n+s <= col and col <= n+e then
+      return n+s, n+e, "$"
+    end
+
+    n = n+e
+  end
+
+
 end
 
 local function save(buf)
@@ -798,6 +839,7 @@ function replace(row, col)
   line = table.concat(lines, " ")
 
 
+  local back, forward, del = find_latex_at_old(buf, row, col)
 
 	local success, exp = pcall(parser.parse_all, line)
 
@@ -872,6 +914,7 @@ function replace(row, col)
           drawing[i] = inline_indent .. drawing[i]
         end
       end
+
       local start_byte, end_byte
       start_byte = forward
       local end_col
