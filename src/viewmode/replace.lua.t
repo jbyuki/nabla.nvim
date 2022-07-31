@@ -101,7 +101,7 @@ local replace_this
 function replace_this()
   local row, col = unpack(vim.api.nvim_win_get_cursor(0))
   local buf = vim.api.nvim_get_current_buf()
-  local back, forward, del = find_latex_at(buf, row, col)
+  local back, forward, del = find_latex_at_old(buf, row, col)
   replace(row, col)
   vim.api.nvim_buf_set_text(buf, row-1, back, row-1, forward, {})
 end
