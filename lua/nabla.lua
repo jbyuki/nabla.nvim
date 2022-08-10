@@ -28,6 +28,8 @@ local has_init = {}
 
 local saved_formulas = {}
 
+local mult_virt_ns
+
 
 local remove_extmark
 
@@ -50,6 +52,10 @@ local toggle_viewmode
 local replace
 
 local replace_this
+
+local enable_virt
+
+local disable_virt
 
 function remove_extmark(events, ns_id)
   vim.api.nvim_command("autocmd "..table.concat(events, ',').." <buffer> ++once lua pcall(vim.api.nvim_buf_clear_namespace, 0, "..ns_id..", 0, -1)")
@@ -969,6 +975,139 @@ function replace_this()
   vim.api.nvim_buf_set_text(buf, row-1, back, row-1, forward, {})
 end
 
+function enable_virt()
+  local buf = vim.api.nvim_get_current_buf()
+  -- local ns_id = vim.api.nvim_create_namespace("")
+  -- vim.api.nvim_buf_set_extmark(0, ns_id, 1, 0, {
+    -- virt_lines = {
+      -- {{ "hello world!" , "Normal" }},
+      -- {{ ":) :) :)" , "Normal" }},
+    -- },
+    -- virt_lines_above = true,
+  -- })
+
+  local lines = vim.api.nvim_buf_get_lines(buf, 0, -1, true)
+
+  local annotations = {}
+
+  for _, str in ipairs(lines) do
+    local formulas = {}
+
+    local rem = str
+    local acc = 0
+    while true do
+      local p1 = rem:find("%$")
+      if not p1 then break end
+
+      rem = rem:sub(p1+1)
+
+      local p2 = rem:find("%$")
+      if not p2 then break end
+
+      rem = rem:sub(p2+1)
+      table.insert(formulas, {p1+acc+1, p2+p1+acc-1})
+
+      acc = acc + p1 + p2
+    end
+
+    local line_annotations = {}
+
+    for _, form in ipairs(formulas) do
+      local p1, p2 = unpack(form)
+      local line = str:sub(p1, p2)
+
+      local success, exp = pcall(parser.parse_all, line)
+
+
+      if success and exp then
+        local succ, g = pcall(ascii.to_ascii, exp)
+        if not succ then
+          print(g)
+          return 0
+        end
+
+        local drawing = {}
+        for row in vim.gsplit(tostring(g), "\n") do
+        	table.insert(drawing, row)
+        end
+        if whitespace then
+        	for i=1,#drawing do
+        		drawing[i] = whitespace .. drawing[i]
+        	end
+        end
+
+
+        table.insert(line_annotations, { p1, p2, drawing })
+      else
+        print(exp)
+      end
+    end
+
+    table.insert(annotations, line_annotations)
+
+  end
+
+  if mult_virt_ns then
+    vim.api.nvim_buf_clear_namespace(buf, mult_virt_ns, 0, -1)
+  end
+
+  mult_virt_ns = vim.api.nvim_create_namespace("")
+
+  for i, line_annotations in ipairs(annotations) do
+    if #line_annotations > 0 then
+      local num_lines = 0
+      for _, annotation in ipairs(line_annotations) do
+        local _, _, drawing = unpack(annotation)
+        num_lines = math.max(num_lines, #drawing)
+      end
+
+      local virt_lines = {}
+      for i=1,num_lines do
+        table.insert(virt_lines, "")
+      end
+
+      for _, annotation in ipairs(line_annotations) do
+        local p1, p2, drawing = unpack(annotation)
+
+        local desired_col = math.floor(((p1-1)+p2 - #drawing[1])/2)
+
+        local col = #virt_lines[1]
+        if desired_col-col > 0 then
+          local fill = (" "):rep(desired_col-col)
+          for j=1,num_lines do
+            virt_lines[j] = virt_lines[j] .. fill
+          end
+        end
+
+        local off = num_lines - #drawing
+        for j=1,#drawing do
+          virt_lines[j+off] = virt_lines[j+off] .. drawing[j]
+        end
+
+      end
+
+      for j=1,num_lines do
+        virt_lines[j] = {{ virt_lines[j], "NonText" }}
+      end
+
+      vim.api.nvim_buf_set_extmark(buf, mult_virt_ns, i-1, 0, {
+        virt_lines = virt_lines,
+        virt_lines_above = true,
+      })
+
+    end
+  end
+
+end
+
+function disable_virt()
+  local buf = vim.api.nvim_get_current_buf()
+  if mult_virt_ns then
+    vim.api.nvim_buf_clear_namespace(buf, mult_virt_ns, 0, -1)
+    mult_virt_ns = nil
+  end
+end
+
 function write()
   local buf = vim.api.nvim_get_current_buf()
   local ns_id = extmarks[buf]
@@ -1316,6 +1455,9 @@ return {
 	show_formulas = show_formulas,
 
 	replace_this = replace_this,
+	enable_virt = enable_virt,
+
+	disable_virt = disable_virt,
 	write = write,
 
 }
