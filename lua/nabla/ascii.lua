@@ -2501,14 +2501,44 @@ local function to_ascii(exp)
 			assert(#exp.args == 1, "text must have 1 argument")
 			return grid:new(utf8len(exp.args[1]), 1, { exp.args[1] })
 
+		elseif name == "bar" then
+			assert(#exp.args == 1, "bar must have 1 arguments")
+
+		  local ingrid = to_ascii(exp.args[1])
+		  local bars = {}
+
+		  local h = ingrid.h
+
+		  for y=1,h do
+		    table.insert(bars, style.root_vert_bar)
+		  end
+
+		  local left_bar = grid:new(1, h, bars)
+		  local right_bar = grid:new(1, h, bars)
+
+		  local  c1 = left_bar:join_hori(ingrid, true)
+		  local  c2 = c1:join_hori(right_bar, true)
+		  return c2
+
+
 		elseif name == "hat" then
 			assert(#exp.args == 1, "hat must have 1 arguments")
 
 		  local belowgrid = to_ascii(exp.args[1])
 		  local hat = grid:new(1, 1, { "^" })
-		  local belowgrid = to_ascii(exp.args[1])
-
 		  return hat:join_vert(belowgrid)
+		elseif name == "overline" then
+			assert(#exp.args == 1, "overline must have 1 arguments")
+
+		  local belowgrid = to_ascii(exp.args[1])
+		  local bar = ""
+		  local w = belowgrid.w
+		  for x=1,w do
+		  	bar = bar .. style.div_bar
+		  end
+		  local overline = grid:new(w, 1, { bar })
+		  return overline:join_vert(belowgrid)
+
 	  elseif name == "{" then
 	  	assert(#exp.args == 1, "{ must have 1 argument")
 	  	local g = to_ascii(exp.args[1].exp):enclose_bracket()
