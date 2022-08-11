@@ -91,6 +91,8 @@ local style = {
 	left_single_bra = '{',
 	right_single_bra = '}',
 
+	vec_arrow = "→",
+
 }
 
 local greek_etc = {
@@ -2538,6 +2540,20 @@ local function to_ascii(exp)
 		  end
 		  local overline = grid:new(w, 1, { bar })
 		  return overline:join_vert(belowgrid)
+
+		elseif name == "vec" then
+			assert(#exp.args == 1, "vec must have 1 arguments")
+
+		  local belowgrid = to_ascii(exp.args[1])
+		  local txt = ""
+		  local w = belowgrid.w
+		  for x=1,w-1 do
+		  	txt = txt .. style.div_bar
+		  end
+		  txt = txt .. style.vec_arrow
+
+		  local arrow = grid:new(w, 1, {txt})
+		  return arrow:join_vert(belowgrid)
 
 	  elseif name == "{" then
 	  	assert(#exp.args == 1, "{ must have 1 argument")
