@@ -578,6 +578,37 @@ local function save(buf)
 
 end
 
+local function gen_drawing(lines)
+  local parser = require("nabla.latex")
+  local ascii = require("nabla.ascii")
+  local line = table.concat(lines, " ")
+
+  local success, exp = pcall(parser.parse_all, line)
+
+
+  if success and exp then
+    local succ, g = pcall(ascii.to_ascii, exp)
+    if not succ then
+      print(g)
+      return 0
+    end
+
+    local drawing = {}
+    for row in vim.gsplit(tostring(g), "\n") do
+    	table.insert(drawing, row)
+    end
+    if whitespace then
+    	for i=1,#drawing do
+    		drawing[i] = whitespace .. drawing[i]
+    	end
+    end
+
+
+    return drawing
+  end
+  return 0
+end
+
 local function popup(overrides)
   local buf = vim.api.nvim_get_current_buf()
   local row, col = unpack(vim.api.nvim_win_get_cursor(0))
@@ -995,6 +1026,7 @@ return {
 
 	save = save,
 
+	gen_drawing = gen_drawing,
 	popup= popup,
 	enable_virt = enable_virt,
 
