@@ -5,15 +5,6 @@ local enable_virt
 @functions+=
 function enable_virt()
   local buf = vim.api.nvim_get_current_buf()
-  -- local ns_id = vim.api.nvim_create_namespace("")
-  -- vim.api.nvim_buf_set_extmark(0, ns_id, 1, 0, {
-    -- virt_lines = {
-      -- {{ "hello world!" , "Normal" }},
-      -- {{ ":) :) :)" , "Normal" }},
-    -- },
-    -- virt_lines_above = true,
-  -- })
-
   @read_whole_buffer
   @foreach_line_generate_drawings
   @place_drawings_above_lines

@@ -10,10 +10,7 @@ $\frac{1}{2} + \frac{1}{3}$
 $(\frac{1}{2} + \frac{1}{3}) + 1$
 
 
-$$\begin{pmatrix} 
-  1 & 2 \\
-  3 & 4 
-\end{pmatrix}$$
+$\begin{pmatrix} 1 & 2 \\ 3 & 4 \end{pmatrix}$
 
 $(H_A+x^x)+\sqrt{x}$
 
@@ -27,10 +24,7 @@ $\sum_i^{\infty} x_i^2$
 
 $\alpha_{\omega}(x)$
 
-$$\begin{matrix} 
-  x^2 & a_H \\
-  \frac{1}{2} & d^2 
-\end{matrix}$$
+$\begin{matrix} x^2 & a_H \\ \frac{1}{2} & d^2 \end{matrix}$
 
 
 $\int_0^{\infty} \frac{1}{x}\, dx$
