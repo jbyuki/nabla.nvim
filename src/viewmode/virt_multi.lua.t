@@ -52,7 +52,9 @@ for _, form in ipairs(formulas) do
 
   if success and exp then
     @generate_ascii_art
-    table.insert(line_annotations, { p1, p2, drawing })
+    @convert_drawing_to_virt_lines
+    @colorize_drawing
+    table.insert(line_annotations, { p1, p2, drawing_virt })
   else
     print(exp)
   end
@@ -74,7 +76,6 @@ for i, line_annotations in ipairs(annotations) do
   if #line_annotations > 0 then
     @compute_min_number_of_lines
     @fill_lines_progressively_with_drawings
-    @convert_virt_lines
     @create_virtual_line_annotation_above
   end
 end
@@ -82,18 +83,18 @@ end
 @compute_min_number_of_lines+=
 local num_lines = 0
 for _, annotation in ipairs(line_annotations) do
-  local _, _, drawing = unpack(annotation)
-  num_lines = math.max(num_lines, #drawing)
+  local _, _, drawing_virt = unpack(annotation)
+  num_lines = math.max(num_lines, #drawing_virt)
 end
 
 local virt_lines = {}
 for i=1,num_lines do
-  table.insert(virt_lines, "")
+  table.insert(virt_lines, {})
 end
 
 @fill_lines_progressively_with_drawings+=
 for _, annotation in ipairs(line_annotations) do
-  local p1, p2, drawing = unpack(annotation)
+  local p1, p2, drawing_virt = unpack(annotation)
 
   @compute_col_to_place_drawing
   @fill_lines_to_go_to_col
@@ -101,26 +102,21 @@ for _, annotation in ipairs(line_annotations) do
 end
 
 @compute_col_to_place_drawing+=
-local desired_col = math.floor(((p1-1)+p2 - #drawing[1])/2)
+local desired_col = math.floor(((p1-1)+p2 - #drawing_virt[1])/2)
 
 @fill_lines_to_go_to_col+=
 local col = #virt_lines[1]
 if desired_col-col > 0 then
-  local fill = (" "):rep(desired_col-col)
+  local fill = {{(" "):rep(desired_col-col), "Normal"}}
   for j=1,num_lines do
-    virt_lines[j] = virt_lines[j] .. fill
+    vim.list_extend(virt_lines[j], fill)
   end
 end
 
 @fill_drawing+=
-local off = num_lines - #drawing
-for j=1,#drawing do
-  virt_lines[j+off] = virt_lines[j+off] .. drawing[j]
-end
-
-@convert_virt_lines+=
-for j=1,num_lines do
-  virt_lines[j] = {{ virt_lines[j], "NonText" }}
+local off = num_lines - #drawing_virt
+for j=1,#drawing_virt do
+  vim.list_extend(virt_lines[j+off], drawing_virt[j])
 end
 
 @create_virtual_line_annotation_above+=
@@ -143,3 +139,24 @@ end
 
 @export_symbols+=
 disable_virt = disable_virt,
+
+@convert_drawing_to_virt_lines+=
+local drawing_virt = {}
+
+for j=1,#drawing do
+  local len = vim.str_utfindex(drawing[j])
+  local new_virt_line = {}
+  for i=1,len do
+    local a = vim.str_byteindex(drawing[j], i-1)
+    local b = vim.str_byteindex(drawing[j], i)
+
+    local c = drawing[j]:sub(a+1, b)
+    table.insert(new_virt_line, { c, "Normal" })
+  end
+
+  table.insert(drawing_virt, new_virt_line)
+end
+
+@colorize_drawing+=
+colorize_virt(g, drawing_virt, 0, 0, 0)
+

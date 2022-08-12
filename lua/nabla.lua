@@ -31,6 +31,8 @@ local remove_extmark
 
 local colorize
 
+local colorize_virt
+
 local find_latex_at
 
 local search_backward
@@ -134,6 +136,80 @@ function colorize(g, first_dx, dx, dy, ns_id, drawing, px, py, buf)
 
   for _, child in ipairs(g.children) do
     colorize(child[1], child[2]+first_dx, child[2]+dx, child[3]+dy, ns_id, drawing, px, py, buf)
+  end
+
+end
+
+function colorize_virt(g, virt_lines, first_dx, dx, dy)
+  if g.t == "num" then
+    local off
+    if dy == 0 then off = first_dx else off = dx end
+
+    for i=1,g.w do
+      virt_lines[dy+1][off+i][2] = "TSNumber"
+    end
+  end
+
+  if g.t == "sym" then
+    local off
+    if dy == 0 then off = first_dx else off = dx end
+
+    if string.match(g.content[1], "^%a") then
+      for i=1,g.w do
+        virt_lines[dy+1][off+i][2] = "TSString"
+      end
+
+    elseif string.match(g.content[1], "^%d") then
+      for i=1,g.w do
+        virt_lines[dy+1][off+i][2] = "TSNumber"
+      end
+
+
+    else
+      for y=1,g.h do
+        local off
+        if y+dy == 1 then off = first_dx else off = dx end
+
+        for i=1,g.w do
+          virt_lines[dy+y][off+i][2] = "TSOperator"
+        end
+
+      end
+    end
+  end
+
+  if g.t == "op" then
+    for y=1,g.h do
+      local off
+      if y+dy == 1 then off = first_dx else off = dx end
+
+      for i=1,g.w do
+        virt_lines[dy+y][off+i][2] = "TSOperator"
+      end
+    end
+  end
+  if g.t == "par" then
+    for y=1,g.h do
+      local off
+      if y+dy == 1 then off = first_dx else off = dx end
+
+      for i=1,g.w do
+        virt_lines[dy+y][off+i][2] = "TSOperator"
+      end
+    end
+  end
+
+  if g.t == "var" then
+    local off
+    if dy == 0 then off = first_dx else off = dx end
+
+    for i=1,g.w do
+      virt_lines[dy+1][off+i][2] = "TSString"
+    end
+  end
+
+  for _, child in ipairs(g.children) do
+    colorize_virt(child[1], virt_lines, child[2]+first_dx, child[2]+dx, child[3]+dy)
   end
 
 end
@@ -720,7 +796,25 @@ function enable_virt()
         end
 
 
-        table.insert(line_annotations, { p1, p2, drawing })
+        local drawing_virt = {}
+
+        for j=1,#drawing do
+          local len = vim.str_utfindex(drawing[j])
+          local new_virt_line = {}
+          for i=1,len do
+            local a = vim.str_byteindex(drawing[j], i-1)
+            local b = vim.str_byteindex(drawing[j], i)
+
+            local c = drawing[j]:sub(a+1, b)
+            table.insert(new_virt_line, { c, "Normal" })
+          end
+
+          table.insert(drawing_virt, new_virt_line)
+        end
+
+        colorize_virt(g, drawing_virt, 0, 0, 0)
+
+        table.insert(line_annotations, { p1, p2, drawing_virt })
       else
         print(exp)
       end
@@ -740,37 +834,33 @@ function enable_virt()
     if #line_annotations > 0 then
       local num_lines = 0
       for _, annotation in ipairs(line_annotations) do
-        local _, _, drawing = unpack(annotation)
-        num_lines = math.max(num_lines, #drawing)
+        local _, _, drawing_virt = unpack(annotation)
+        num_lines = math.max(num_lines, #drawing_virt)
       end
 
       local virt_lines = {}
       for i=1,num_lines do
-        table.insert(virt_lines, "")
+        table.insert(virt_lines, {})
       end
 
       for _, annotation in ipairs(line_annotations) do
-        local p1, p2, drawing = unpack(annotation)
+        local p1, p2, drawing_virt = unpack(annotation)
 
-        local desired_col = math.floor(((p1-1)+p2 - #drawing[1])/2)
+        local desired_col = math.floor(((p1-1)+p2 - #drawing_virt[1])/2)
 
         local col = #virt_lines[1]
         if desired_col-col > 0 then
-          local fill = (" "):rep(desired_col-col)
+          local fill = {{(" "):rep(desired_col-col), "Normal"}}
           for j=1,num_lines do
-            virt_lines[j] = virt_lines[j] .. fill
+            vim.list_extend(virt_lines[j], fill)
           end
         end
 
-        local off = num_lines - #drawing
-        for j=1,#drawing do
-          virt_lines[j+off] = virt_lines[j+off] .. drawing[j]
+        local off = num_lines - #drawing_virt
+        for j=1,#drawing_virt do
+          vim.list_extend(virt_lines[j+off], drawing_virt[j])
         end
 
-      end
-
-      for j=1,num_lines do
-        virt_lines[j] = {{ virt_lines[j], "NonText" }}
       end
 
       vim.api.nvim_buf_set_extmark(buf, mult_virt_ns, i-1, 0, {
@@ -1031,5 +1121,6 @@ return {
 	enable_virt = enable_virt,
 
 	disable_virt = disable_virt,
+
 }
 
