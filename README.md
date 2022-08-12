@@ -34,6 +34,8 @@ Bind the following command:
 nnoremap <leader>p :lua require("nabla").popup()<CR> " Customize with popup({border = ...})  : `single` (default), `double`, `rounded`
 ```
 
+See [here](https://github.com/jbyuki/nabla.nvim/issues/35) for virt_lines support.
+
 Usage
 -----
 
@@ -54,6 +56,7 @@ Credits
 * Thanks to clstb for giving suggestions on how to enhance the interaction.
 * Thanks to aspeddro for adding preview popups.
 * Thanks to Areustle for adding more than 500 new symbols.
+* Thanks to kkharji for pointing out virt_lines
 
 Contribute
 ----------
