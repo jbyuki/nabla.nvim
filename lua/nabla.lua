@@ -16,6 +16,8 @@ local vtext = vim.api.nvim_create_namespace("nabla")
 
 local mult_virt_ns
 
+local conceal_defined = false
+
 
 local remove_extmark
 
@@ -499,6 +501,12 @@ function enable_virt()
     end
   end
 
+  vim.api.nvim_command([[syn match NablaFormula /\$[^$]\{-1,}\$/ contains=NablaDelimiter]])
+  vim.api.nvim_command([[syn match NablaDelimiter /\$/ contained conceal]])
+  vim.api.nvim_command([[setlocal conceallevel=2]])
+  vim.api.nvim_command([[setlocal concealcursor=nc]])
+  conceal_defined = true
+
 end
 
 function disable_virt()
@@ -507,6 +515,15 @@ function disable_virt()
     vim.api.nvim_buf_clear_namespace(buf, mult_virt_ns, 0, -1)
     mult_virt_ns = nil
   end
+
+  if conceal_defined then
+    vim.api.nvim_command([[syn clear NablaFormula]])
+    vim.api.nvim_command([[syn clear NablaDelimiter]])
+    conceal_defined = false
+  end
+
+
+
 end
 
 

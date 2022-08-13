@@ -8,6 +8,7 @@ function enable_virt()
   @read_whole_buffer
   @foreach_line_generate_drawings
   @place_drawings_above_lines
+  @enable_conceal_for_formulas
 end
 
 @export_symbols+=
@@ -135,6 +136,8 @@ function disable_virt()
     vim.api.nvim_buf_clear_namespace(buf, mult_virt_ns, 0, -1)
     mult_virt_ns = nil
   end
+
+  @disable_conceal_for_formulas
 end
 
 @export_symbols+=
@@ -159,4 +162,23 @@ end
 
 @colorize_drawing+=
 colorize_virt(g, drawing_virt, 0, 0, 0)
+
+@script_variables+=
+local conceal_defined = false
+
+@enable_conceal_for_formulas+=
+vim.api.nvim_command([[syn match NablaFormula /\$[^$]\{-1,}\$/ contains=NablaDelimiter]])
+vim.api.nvim_command([[syn match NablaDelimiter /\$/ contained conceal]])
+vim.api.nvim_command([[setlocal conceallevel=2]])
+vim.api.nvim_command([[setlocal concealcursor=nc]])
+conceal_defined = true
+
+@disable_conceal_for_formulas+=
+if conceal_defined then
+  vim.api.nvim_command([[syn clear NablaFormula]])
+  vim.api.nvim_command([[syn clear NablaDelimiter]])
+  conceal_defined = false
+end
+
+
 
