@@ -94,7 +94,7 @@ for i=1,num_lines do
 end
 
 @fill_lines_progressively_with_drawings+=
-for _, annotation in ipairs(line_annotations) do
+for ai, annotation in ipairs(line_annotations) do
   local p1, p2, drawing_virt = unpack(annotation)
 
   @compute_col_to_place_drawing
@@ -103,7 +103,7 @@ for _, annotation in ipairs(line_annotations) do
 end
 
 @compute_col_to_place_drawing+=
-local desired_col = math.floor(((p1-1)+p2 - #drawing_virt[1])/2)
+local desired_col = (p1-1) - math.floor(#drawing_virt[1]/2) -- substract because of conceals
 
 @fill_lines_to_go_to_col+=
 local col = #virt_lines[1]
@@ -123,7 +123,7 @@ end
 @create_virtual_line_annotation_above+=
 vim.api.nvim_buf_set_extmark(buf, mult_virt_ns, i-1, 0, {
   virt_lines = virt_lines,
-  virt_lines_above = true,
+  virt_lines_above = i > 1,
 })
 
 @declare_functions+=
@@ -167,16 +167,16 @@ colorize_virt(g, drawing_virt, 0, 0, 0)
 local conceal_defined = false
 
 @enable_conceal_for_formulas+=
-vim.api.nvim_command([[syn match NablaFormula /\$[^$]\{-1,}\$/ contains=NablaDelimiter]])
-vim.api.nvim_command([[syn match NablaDelimiter /\$/ contained conceal]])
+vim.api.nvim_command([[syn match NablaFormula /\$[^$]\{-1,}\$/ conceal cchar=⮥]])
+-- vim.api.nvim_command([[syn match NablaDelimiter /\$/ contained conceal]])
 vim.api.nvim_command([[setlocal conceallevel=2]])
-vim.api.nvim_command([[setlocal concealcursor=nc]])
+-- vim.api.nvim_command([[setlocal concealcursor=nc]])
 conceal_defined = true
 
 @disable_conceal_for_formulas+=
 if conceal_defined then
   vim.api.nvim_command([[syn clear NablaFormula]])
-  vim.api.nvim_command([[syn clear NablaDelimiter]])
+  -- vim.api.nvim_command([[syn clear NablaDelimiter]])
   conceal_defined = false
 end
 
