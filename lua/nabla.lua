@@ -476,7 +476,7 @@ function enable_virt()
       for ai, annotation in ipairs(line_annotations) do
         local p1, p2, drawing_virt = unpack(annotation)
 
-        local desired_col = (p1-2) - math.floor(#drawing_virt[1]/2) -- subtract -2 to p1 (one indexing of lua + delimiter character)
+        local desired_col = (p1-2) - math.floor(#drawing_virt[1]/2) -- substract because of conceals
 
         local col = #virt_lines[1]
         if desired_col-col > 0 then
@@ -501,7 +501,7 @@ function enable_virt()
     end
   end
 
-  vim.api.nvim_command([[syn match NablaFormula /\$[^$]\{-1,}\$/ conceal cchar=⮥]])
+  vim.api.nvim_command([[syn match NablaFormula /\$[^$]\{-1,}\$/ conceal cchar=^]])
   -- vim.api.nvim_command([[syn match NablaDelimiter /\$/ contained conceal]])
   vim.api.nvim_command([[setlocal conceallevel=2]])
   -- vim.api.nvim_command([[setlocal concealcursor=nc]])

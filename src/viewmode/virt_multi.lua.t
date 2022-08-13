@@ -103,7 +103,7 @@ for ai, annotation in ipairs(line_annotations) do
 end
 
 @compute_col_to_place_drawing+=
-local desired_col = (p1-1) - math.floor(#drawing_virt[1]/2) -- substract because of conceals
+local desired_col = (p1-2) - math.floor(#drawing_virt[1]/2) -- substract because of conceals
 
 @fill_lines_to_go_to_col+=
 local col = #virt_lines[1]
@@ -167,7 +167,7 @@ colorize_virt(g, drawing_virt, 0, 0, 0)
 local conceal_defined = false
 
 @enable_conceal_for_formulas+=
-vim.api.nvim_command([[syn match NablaFormula /\$[^$]\{-1,}\$/ conceal cchar=⮥]])
+vim.api.nvim_command([[syn match NablaFormula /\$[^$]\{-1,}\$/ conceal cchar=^]])
 -- vim.api.nvim_command([[syn match NablaDelimiter /\$/ contained conceal]])
 vim.api.nvim_command([[setlocal conceallevel=2]])
 -- vim.api.nvim_command([[setlocal concealcursor=nc]])
