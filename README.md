@@ -5,6 +5,7 @@ Take your scentific notes in Neovim.
 
 <img src="https://i.postimg.cc/CL9MPM7g/Capture.png" width="400">
 <img src="https://user-images.githubusercontent.com/16160544/138817005-d326f3ef-d0b0-4372-9cf3-560fd2ec5dd3.png" width="400">
+<img src="https://raw.githubusercontent.com/jbyuki/gifs/main/nabla.png" width="400">
 
 The colorscheme used here is [tokyonight](https://github.com/folke/tokyonight.nvim).
 
