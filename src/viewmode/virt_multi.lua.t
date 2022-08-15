@@ -176,7 +176,7 @@ local conceal_defined = false
 
 @enable_conceal_for_formulas+=
 vim.api.nvim_command([[syn match NablaFormula /\$[^$]\{-1,}\$/ contains=NablaFormulaInside]])
-vim.api.nvim_command([[syn match NablaFormulaInside /./ contained conceal cchar=^]])
+vim.api.nvim_command([[syn match NablaFormulaInside /./ contained conceal cchar=.]])
 vim.api.nvim_command([[setlocal conceallevel=2]])
 -- vim.api.nvim_command([[setlocal concealcursor=nc]])
 conceal_defined = true
