@@ -473,23 +473,31 @@ function enable_virt()
         table.insert(virt_lines, {})
       end
 
+      local col = 0
       for ai, annotation in ipairs(line_annotations) do
         local p1, p2, drawing_virt = unpack(annotation)
 
-        local desired_col = (p1-2) - math.floor(#drawing_virt[1]/2) -- substract because of conceals
+        local desired_col = (p1-2) -- substract because of conceals
 
-        local col = #virt_lines[1]
         if desired_col-col > 0 then
           local fill = {{(" "):rep(desired_col-col), "Normal"}}
           for j=1,num_lines do
             vim.list_extend(virt_lines[j], fill)
           end
+          col = col + (desired_col - col)
         end
 
         local off = num_lines - #drawing_virt
         for j=1,#drawing_virt do
           vim.list_extend(virt_lines[j+off], drawing_virt[j])
         end
+
+        for j=1,off do
+          local fill = {{(" "):rep(#drawing_virt[1]), "Normal"}}
+          vim.list_extend(virt_lines[j], fill)
+        end
+
+        col = col + #drawing_virt[1]
 
       end
 
@@ -501,8 +509,8 @@ function enable_virt()
     end
   end
 
-  vim.api.nvim_command([[syn match NablaFormula /\$[^$]\{-1,}\$/ conceal cchar=^]])
-  -- vim.api.nvim_command([[syn match NablaDelimiter /\$/ contained conceal]])
+  vim.api.nvim_command([[syn match NablaFormula /\$[^$]\{-1,}\$/ contains=NablaFormulaInside]])
+  vim.api.nvim_command([[syn match NablaFormulaInside /./ contained conceal cchar=^]])
   vim.api.nvim_command([[setlocal conceallevel=2]])
   -- vim.api.nvim_command([[setlocal concealcursor=nc]])
   conceal_defined = true
@@ -518,7 +526,7 @@ function disable_virt()
 
   if conceal_defined then
     vim.api.nvim_command([[syn clear NablaFormula]])
-    -- vim.api.nvim_command([[syn clear NablaDelimiter]])
+    vim.api.nvim_command([[syn clear NablaFormulaInside]])
     conceal_defined = false
   end
 

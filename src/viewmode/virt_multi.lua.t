@@ -94,6 +94,7 @@ for i=1,num_lines do
 end
 
 @fill_lines_progressively_with_drawings+=
+local col = 0
 for ai, annotation in ipairs(line_annotations) do
   local p1, p2, drawing_virt = unpack(annotation)
 
@@ -103,15 +104,15 @@ for ai, annotation in ipairs(line_annotations) do
 end
 
 @compute_col_to_place_drawing+=
-local desired_col = (p1-2) - math.floor(#drawing_virt[1]/2) -- substract because of conceals
+local desired_col = (p1-2) -- substract because of conceals
 
 @fill_lines_to_go_to_col+=
-local col = #virt_lines[1]
 if desired_col-col > 0 then
   local fill = {{(" "):rep(desired_col-col), "Normal"}}
   for j=1,num_lines do
     vim.list_extend(virt_lines[j], fill)
   end
+  col = col + (desired_col - col)
 end
 
 @fill_drawing+=
@@ -119,6 +120,13 @@ local off = num_lines - #drawing_virt
 for j=1,#drawing_virt do
   vim.list_extend(virt_lines[j+off], drawing_virt[j])
 end
+
+for j=1,off do
+  local fill = {{(" "):rep(#drawing_virt[1]), "Normal"}}
+  vim.list_extend(virt_lines[j], fill)
+end
+
+col = col + #drawing_virt[1]
 
 @create_virtual_line_annotation_above+=
 vim.api.nvim_buf_set_extmark(buf, mult_virt_ns, i-1, 0, {
@@ -167,8 +175,8 @@ colorize_virt(g, drawing_virt, 0, 0, 0)
 local conceal_defined = false
 
 @enable_conceal_for_formulas+=
-vim.api.nvim_command([[syn match NablaFormula /\$[^$]\{-1,}\$/ conceal cchar=^]])
--- vim.api.nvim_command([[syn match NablaDelimiter /\$/ contained conceal]])
+vim.api.nvim_command([[syn match NablaFormula /\$[^$]\{-1,}\$/ contains=NablaFormulaInside]])
+vim.api.nvim_command([[syn match NablaFormulaInside /./ contained conceal cchar=^]])
 vim.api.nvim_command([[setlocal conceallevel=2]])
 -- vim.api.nvim_command([[setlocal concealcursor=nc]])
 conceal_defined = true
@@ -176,7 +184,7 @@ conceal_defined = true
 @disable_conceal_for_formulas+=
 if conceal_defined then
   vim.api.nvim_command([[syn clear NablaFormula]])
-  -- vim.api.nvim_command([[syn clear NablaDelimiter]])
+  vim.api.nvim_command([[syn clear NablaFormulaInside]])
   conceal_defined = false
 end
 
