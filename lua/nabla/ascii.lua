@@ -2529,6 +2529,8 @@ local function to_ascii(exp)
 		  local belowgrid = to_ascii(exp.args[1])
 		  local hat = grid:new(1, 1, { "^" })
 		  return hat:join_vert(belowgrid)
+		elseif name == "mathbb" then
+			assert(#exp.args == 1, "mathbb must have 1 arguments")
 		elseif name == "overline" then
 			assert(#exp.args == 1, "overline must have 1 arguments")
 

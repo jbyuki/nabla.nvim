@@ -477,7 +477,7 @@ function enable_virt()
       for ai, annotation in ipairs(line_annotations) do
         local p1, p2, drawing_virt = unpack(annotation)
 
-        local desired_col = (p1-2) -- substract because of conceals
+        local desired_col = math.floor((p1 + p2 - #drawing_virt[1])/2) -- substract because of conceals
 
         if desired_col-col > 0 then
           local fill = {{(" "):rep(desired_col-col), "Normal"}}

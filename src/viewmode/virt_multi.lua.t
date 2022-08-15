@@ -104,7 +104,7 @@ for ai, annotation in ipairs(line_annotations) do
 end
 
 @compute_col_to_place_drawing+=
-local desired_col = (p1-2) -- substract because of conceals
+local desired_col = math.floor((p1 + p2 - #drawing_virt[1])/2) -- substract because of conceals
 
 @fill_lines_to_go_to_col+=
 if desired_col-col > 0 then
