@@ -5,7 +5,9 @@ elseif name == "overline" then
 
   local belowgrid = to_ascii(exp.args[1])
   @generate_overline_bar
-  return overline:join_vert(belowgrid)
+  local c1 = overline:join_vert(belowgrid)
+  c1.my = 1 
+  return c1
 
 @generate_overline_bar+=
 local bar = ""
