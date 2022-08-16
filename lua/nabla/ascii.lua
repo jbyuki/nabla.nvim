@@ -2548,7 +2548,7 @@ local function to_ascii(exp)
 		  local belowgrid = to_ascii(exp.args[1])
 		  local hat = grid:new(1, 1, { "^" })
 		  local c1 = hat:join_vert(belowgrid)
-		  c1.my = 1 
+		  c1.my = belowgrid.my + 1
 		  return c1
 		elseif name == "mathbb" then
 			assert(#exp.args == 1, "mathbb must have 1 arguments")
@@ -2570,7 +2570,7 @@ local function to_ascii(exp)
 		  end
 		  local overline = grid:new(w, 1, { bar })
 		  local c1 = overline:join_vert(belowgrid)
-		  c1.my = 1 
+		  c1.my = belowgrid.my + 1
 		  return c1
 
 		elseif name == "vec" then
@@ -2586,7 +2586,7 @@ local function to_ascii(exp)
 
 		  local arrow = grid:new(w, 1, {txt})
 		  local c1 = arrow:join_vert(belowgrid)
-		  c1.my = 1 
+		  c1.my = belowgrid.my + 1
 		  return c1
 
 	  elseif name == "{" then

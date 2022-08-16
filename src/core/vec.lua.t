@@ -6,7 +6,7 @@ elseif name == "vec" then
   local belowgrid = to_ascii(exp.args[1])
   @generate_vector_arrow
   local c1 = arrow:join_vert(belowgrid)
-  c1.my = 1 
+  c1.my = belowgrid.my + 1
   return c1
 
 @style_variables+=

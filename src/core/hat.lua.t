@@ -6,5 +6,5 @@ elseif name == "hat" then
   local belowgrid = to_ascii(exp.args[1])
   local hat = grid:new(1, 1, { "^" })
   local c1 = hat:join_vert(belowgrid)
-  c1.my = 1 
+  c1.my = belowgrid.my + 1
   return c1
