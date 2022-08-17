@@ -5,6 +5,7 @@ local enable_virt
 @functions+=
 function enable_virt()
   local buf = vim.api.nvim_get_current_buf()
+  @set_as_enabled
   @read_whole_buffer
   @foreach_line_generate_drawings
   @place_drawings_above_lines
@@ -64,14 +65,14 @@ end
 table.insert(annotations, line_annotations)
 
 @script_variables+=
-local mult_virt_ns
+local mult_virt_ns = {}
 
 @place_drawings_above_lines+=
-if mult_virt_ns then
-  vim.api.nvim_buf_clear_namespace(buf, mult_virt_ns, 0, -1)
+if mult_virt_ns[buf] then
+  vim.api.nvim_buf_clear_namespace(buf, mult_virt_ns[buf], 0, -1)
 end
 
-mult_virt_ns = vim.api.nvim_create_namespace("")
+mult_virt_ns[buf] = vim.api.nvim_create_namespace("")
 
 for i, line_annotations in ipairs(annotations) do
   if #line_annotations > 0 then
@@ -129,7 +130,7 @@ end
 col = col + #drawing_virt[1]
 
 @create_virtual_line_annotation_above+=
-vim.api.nvim_buf_set_extmark(buf, mult_virt_ns, i-1, 0, {
+vim.api.nvim_buf_set_extmark(buf, mult_virt_ns[buf], i-1, 0, {
   virt_lines = virt_lines,
   virt_lines_above = i > 1,
 })
@@ -140,9 +141,10 @@ local disable_virt
 @functions+=
 function disable_virt()
   local buf = vim.api.nvim_get_current_buf()
-  if mult_virt_ns then
-    vim.api.nvim_buf_clear_namespace(buf, mult_virt_ns, 0, -1)
-    mult_virt_ns = nil
+  @set_as_disabled
+  if mult_virt_ns[buf] then
+    vim.api.nvim_buf_clear_namespace(buf, mult_virt_ns[buf], 0, -1)
+    mult_virt_ns[buf] = nil
   end
 
   @disable_conceal_for_formulas
@@ -188,5 +190,39 @@ if conceal_defined then
   conceal_defined = false
 end
 
+@declare_functions+=
+local toggle_virt
 
+@functions+=
+function toggle_virt()
+  local buf = vim.api.nvim_get_current_buf()
+  if virt_enabled[buf] then
+    disable_virt()
+  else
+    enable_virt()
+  end
+end
 
+@export_symbols+=
+toggle_virt = toggle_virt,
+
+@set_as_enabled+=
+virt_enabled[buf] = true
+
+@set_as_disabled+=
+virt_enabled[buf] = false
+
+@script_variables+=
+local virt_enabled = {}
+
+@declare_functions+=
+local is_virt_enabled
+
+@functions+=
+function is_virt_enabled(buf)
+  buf = buf or vim.api.nvim_get_current_buf()
+  return virt_enabled[buf] == true
+end
+
+@export_symbols+=
+is_virt_enabled = is_virt_enabled,

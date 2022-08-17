@@ -14,9 +14,11 @@ local function get_param(name, default)
 end
 local vtext = vim.api.nvim_create_namespace("nabla")
 
-local mult_virt_ns
+local mult_virt_ns = {}
 
 local conceal_defined = false
+
+local virt_enabled = {}
 
 
 local remove_extmark
@@ -34,6 +36,10 @@ local search_forward
 local enable_virt
 
 local disable_virt
+
+local toggle_virt
+
+local is_virt_enabled
 
 function remove_extmark(events, ns_id)
   vim.api.nvim_command("autocmd "..table.concat(events, ',').." <buffer> ++once lua pcall(vim.api.nvim_buf_clear_namespace, 0, "..ns_id..", 0, -1)")
@@ -375,6 +381,8 @@ end
 
 function enable_virt()
   local buf = vim.api.nvim_get_current_buf()
+  virt_enabled[buf] = true
+
   local lines = vim.api.nvim_buf_get_lines(buf, 0, -1, true)
 
   local annotations = {}
@@ -454,11 +462,11 @@ function enable_virt()
 
   end
 
-  if mult_virt_ns then
-    vim.api.nvim_buf_clear_namespace(buf, mult_virt_ns, 0, -1)
+  if mult_virt_ns[buf] then
+    vim.api.nvim_buf_clear_namespace(buf, mult_virt_ns[buf], 0, -1)
   end
 
-  mult_virt_ns = vim.api.nvim_create_namespace("")
+  mult_virt_ns[buf] = vim.api.nvim_create_namespace("")
 
   for i, line_annotations in ipairs(annotations) do
     if #line_annotations > 0 then
@@ -501,7 +509,7 @@ function enable_virt()
 
       end
 
-      vim.api.nvim_buf_set_extmark(buf, mult_virt_ns, i-1, 0, {
+      vim.api.nvim_buf_set_extmark(buf, mult_virt_ns[buf], i-1, 0, {
         virt_lines = virt_lines,
         virt_lines_above = i > 1,
       })
@@ -519,9 +527,11 @@ end
 
 function disable_virt()
   local buf = vim.api.nvim_get_current_buf()
-  if mult_virt_ns then
-    vim.api.nvim_buf_clear_namespace(buf, mult_virt_ns, 0, -1)
-    mult_virt_ns = nil
+  virt_enabled[buf] = false
+
+  if mult_virt_ns[buf] then
+    vim.api.nvim_buf_clear_namespace(buf, mult_virt_ns[buf], 0, -1)
+    mult_virt_ns[buf] = nil
   end
 
   if conceal_defined then
@@ -530,8 +540,20 @@ function disable_virt()
     conceal_defined = false
   end
 
+end
 
+function toggle_virt()
+  local buf = vim.api.nvim_get_current_buf()
+  if virt_enabled[buf] then
+    disable_virt()
+  else
+    enable_virt()
+  end
+end
 
+function is_virt_enabled(buf)
+  buf = buf or vim.api.nvim_get_current_buf()
+  return virt_enabled[buf] == true
 end
 
 
@@ -767,5 +789,8 @@ return {
 
 	disable_virt = disable_virt,
 
+	toggle_virt = toggle_virt,
+
+	is_virt_enabled = is_virt_enabled,
 }
 
