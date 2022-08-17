@@ -912,7 +912,7 @@ elseif special_syms[name] or special_nums[name] or greek_etc[name] then
 ["neq"] = "≠",
 ["doteq"] = "≐",
 ["leq"] = "≤",
-["cong"] = "≥",
+["cong"] = "≅",
 
 @if_has_subscript_put_them_to_g+=
 if exp.sub and not exp.sup then 

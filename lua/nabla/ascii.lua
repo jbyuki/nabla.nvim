@@ -120,7 +120,7 @@ local special_syms = {
 	["neq"] = "≠",
 	["doteq"] = "≐",
 	["leq"] = "≤",
-	["cong"] = "≥",
+	["cong"] = "≅",
 
 		["pm"] = "±",
 		["mp"] = "∓",
