@@ -334,11 +334,16 @@ local function popup(overrides)
 
   local srow, scol, erow, ecol, del = find_latex_at(buf, row, col)
 
-  local lines = vim.api.nvim_buf_get_lines(buf, srow-1, erow, true)
-  lines[#lines] = lines[#lines]:sub(1, ecol)
-  lines[1] = lines[1]:sub(scol+1)
-  line = table.concat(lines, " ")
+  if srow then
+    local lines = vim.api.nvim_buf_get_lines(buf, srow-1, erow, true)
+    lines[#lines] = lines[#lines]:sub(1, ecol)
+    lines[1] = lines[1]:sub(scol+1)
+    line = table.concat(lines, " ")
 
+  else
+    vim.api.nvim_echo({{"Please put the cursor inside an inline latex expression and try calling this function again.", "ErrorMsg"}}, false, {})
+    return
+  end
 
 
   local success, exp = pcall(parser.parse_all, line)

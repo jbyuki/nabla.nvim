@@ -6,7 +6,12 @@ end
 
 local srow, scol, erow, ecol, del = find_latex_at(buf, row, col)
 
-@get_text_in_range
+if srow then
+  @get_text_in_range
+else
+  vim.api.nvim_echo({{"Please put the cursor inside an inline latex expression and try calling this function again.", "ErrorMsg"}}, false, {})
+  return
+end
 
 @get_text_in_range+=
 local lines = vim.api.nvim_buf_get_lines(buf, srow-1, erow, true)
