@@ -2150,3 +2150,8 @@ end
 ["ddots"] = "⋱",
 ["ldots"] = "…",
 ["dots"] = "…", -- alias to ldots (for the moment)
+
+@transform_function_into_ascii+=
+elseif name == "texttt" then
+	assert(#exp.args == 1, "texttt must have 1 argument")
+	return grid:new(utf8len(exp.args[1]), 1, { exp.args[1] })

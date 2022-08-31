@@ -729,6 +729,7 @@ local special_syms = {
 	["ddots"] = "⋱",
 	["ldots"] = "…",
 	["dots"] = "…", -- alias to ldots (for the moment)
+
 }
 
 local grid = {}
@@ -2522,6 +2523,9 @@ local function to_ascii(exp)
 			assert(#exp.args == 1, "text must have 1 argument")
 			return grid:new(utf8len(exp.args[1]), 1, { exp.args[1] })
 
+		elseif name == "texttt" then
+			assert(#exp.args == 1, "texttt must have 1 argument")
+			return grid:new(utf8len(exp.args[1]), 1, { exp.args[1] })
 		elseif name == "bar" then
 			assert(#exp.args == 1, "bar must have 1 arguments")
 

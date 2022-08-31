@@ -111,7 +111,7 @@ function parse()
 			else
 				sym = parse_symbol()
 			end
-		  if sym.sym == "text" and string.match(getc(), '{') then
+		  if (sym.sym == "text" or sym.sym == "texttt") and string.match(getc(), '{') then
 		    nextc()
 		    local txt = ""
 		  	while not finish() and not string.match(getc(), '}') do

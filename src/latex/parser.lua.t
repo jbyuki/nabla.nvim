@@ -300,7 +300,7 @@ elseif getc() == "}" then
   break
 
 @if_sym_is_text_parse_verbatim+=
-if sym.sym == "text" and string.match(getc(), '{') then
+if (sym.sym == "text" or sym.sym == "texttt") and string.match(getc(), '{') then
   nextc()
   local txt = ""
 	while not finish() and not string.match(getc(), '}') do
