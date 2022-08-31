@@ -14,6 +14,8 @@ local function get_param(name, default)
 end
 local vtext = vim.api.nvim_create_namespace("nabla")
 
+local local_delims = {}
+
 local mult_virt_ns = {}
 
 local conceal_defined = false
@@ -384,8 +386,22 @@ local function popup(overrides)
 
 end
 
-function enable_virt()
+function enable_virt(opts)
   local buf = vim.api.nvim_get_current_buf()
+  local_delims[buf] = {
+    start_delim = "%$",
+    end_delim = "%$"
+  }
+
+  if type(opts) == "table" then
+    if opts["start_delim"] then
+      local_delims[buf]["start_delim"] = vim.pesc(opts["start_delim"])
+    end
+
+    if opts["end_delim"] then
+      local_delims[buf]["end_delim"] = vim.pesc(opts["end_delim"])
+    end
+  end
   virt_enabled[buf] = true
 
   local lines = vim.api.nvim_buf_get_lines(buf, 0, -1, true)
@@ -398,12 +414,12 @@ function enable_virt()
     local rem = str
     local acc = 0
     while true do
-      local p1 = rem:find("%$")
+      local p1 = rem:find(local_delims[buf]["start_delim"])
       if not p1 then break end
 
       rem = rem:sub(p1+1)
 
-      local p2 = rem:find("%$")
+      local p2 = rem:find(local_delims[buf]["end_delim"])
       if not p2 then break end
 
       rem = rem:sub(p2+1)

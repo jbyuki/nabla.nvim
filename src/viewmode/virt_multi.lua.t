@@ -3,8 +3,9 @@
 local enable_virt
 
 @functions+=
-function enable_virt()
+function enable_virt(opts)
   local buf = vim.api.nvim_get_current_buf()
+  @set_local_delimitors_if_any
   @set_as_enabled
   @read_whole_buffer
   @foreach_line_generate_drawings
@@ -29,12 +30,12 @@ local formulas = {}
 local rem = str
 local acc = 0
 while true do
-  local p1 = rem:find("%$")
+  local p1 = rem:find(local_delims[buf]["start_delim"])
   if not p1 then break end
 
   rem = rem:sub(p1+1)
 
-  local p2 = rem:find("%$")
+  local p2 = rem:find(local_delims[buf]["end_delim"])
   if not p2 then break end
 
   rem = rem:sub(p2+1)
