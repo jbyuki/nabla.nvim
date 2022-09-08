@@ -107,6 +107,11 @@ if not succ then
   return 0
 end
 
+if not g or g == "" then
+  vim.api.nvim_echo({{"Empty expression detected. Please use the $...$ syntax.", "ErrorMsg"}}, false, {})
+  return 0
+end
+
 local drawing = {}
 for row in vim.gsplit(tostring(g), "\n") do
 	table.insert(drawing, row)

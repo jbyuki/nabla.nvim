@@ -309,6 +309,11 @@ local function gen_drawing(lines)
       return 0
     end
 
+    if not g or g == "" then
+      vim.api.nvim_echo({{"Empty expression detected. Please use the $...$ syntax.", "ErrorMsg"}}, false, {})
+      return 0
+    end
+
     local drawing = {}
     for row in vim.gsplit(tostring(g), "\n") do
     	table.insert(drawing, row)
@@ -355,6 +360,11 @@ local function popup(overrides)
     local succ, g = pcall(ascii.to_ascii, exp)
     if not succ then
       print(g)
+      return 0
+    end
+
+    if not g or g == "" then
+      vim.api.nvim_echo({{"Empty expression detected. Please use the $...$ syntax.", "ErrorMsg"}}, false, {})
       return 0
     end
 
@@ -441,6 +451,11 @@ function enable_virt(opts)
         local succ, g = pcall(ascii.to_ascii, exp)
         if not succ then
           print(g)
+          return 0
+        end
+
+        if not g or g == "" then
+          vim.api.nvim_echo({{"Empty expression detected. Please use the $...$ syntax.", "ErrorMsg"}}, false, {})
           return 0
         end
 
@@ -604,6 +619,11 @@ local function init()
 							  return 0
 							end
 
+							if not g or g == "" then
+							  vim.api.nvim_echo({{"Empty expression detected. Please use the $...$ syntax.", "ErrorMsg"}}, false, {})
+							  return 0
+							end
+
 							local drawing = {}
 							for row in vim.gsplit(tostring(g), "\n") do
 								table.insert(drawing, row)
@@ -657,6 +677,11 @@ local function replace_current()
 		  return 0
 		end
 
+		if not g or g == "" then
+		  vim.api.nvim_echo({{"Empty expression detected. Please use the $...$ syntax.", "ErrorMsg"}}, false, {})
+		  return 0
+		end
+
 		local drawing = {}
 		for row in vim.gsplit(tostring(g), "\n") do
 			table.insert(drawing, row)
@@ -700,6 +725,11 @@ local function replace_all()
 				  return 0
 				end
 
+				if not g or g == "" then
+				  vim.api.nvim_echo({{"Empty expression detected. Please use the $...$ syntax.", "ErrorMsg"}}, false, {})
+				  return 0
+				end
+
 				local drawing = {}
 				for row in vim.gsplit(tostring(g), "\n") do
 					table.insert(drawing, row)
@@ -738,6 +768,11 @@ local function draw_overlay()
 		local succ, g = pcall(ascii.to_ascii, exp)
 		if not succ then
 		  print(g)
+		  return 0
+		end
+
+		if not g or g == "" then
+		  vim.api.nvim_echo({{"Empty expression detected. Please use the $...$ syntax.", "ErrorMsg"}}, false, {})
 		  return 0
 		end
 
