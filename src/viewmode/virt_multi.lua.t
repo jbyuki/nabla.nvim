@@ -10,7 +10,6 @@ function enable_virt(opts)
   @read_whole_buffer
   @foreach_line_generate_drawings
   @place_drawings_above_lines
-  @enable_conceal_for_formulas
 end
 
 @export_symbols+=
@@ -80,6 +79,7 @@ for i, line_annotations in ipairs(annotations) do
     @compute_min_number_of_lines
     @fill_lines_progressively_with_drawings
     @create_virtual_line_annotation_above
+    @create_virtual_line_for_inline_conceal
   end
 end
 
@@ -89,6 +89,8 @@ for _, annotation in ipairs(line_annotations) do
   local _, _, drawing_virt = unpack(annotation)
   num_lines = math.max(num_lines, #drawing_virt)
 end
+
+@reduce_number_of_line_for_inline_conceal
 
 local virt_lines = {}
 for i=1,num_lines do
@@ -103,6 +105,7 @@ for ai, annotation in ipairs(line_annotations) do
   @compute_col_to_place_drawing
   @fill_lines_to_go_to_col
   @fill_drawing
+  @save_inline_conceal
 end
 
 @compute_col_to_place_drawing+=
@@ -118,8 +121,8 @@ if desired_col-col > 0 then
 end
 
 @fill_drawing+=
-local off = num_lines - #drawing_virt
-for j=1,#drawing_virt do
+local off = num_lines - (#drawing_virt-1)
+for j=1,#drawing_virt-1 do
   vim.list_extend(virt_lines[j+off], drawing_virt[j])
 end
 
@@ -147,8 +150,7 @@ function disable_virt()
     vim.api.nvim_buf_clear_namespace(buf, mult_virt_ns[buf], 0, -1)
     mult_virt_ns[buf] = nil
   end
-
-  @disable_conceal_for_formulas
+  @disable_virt_inline
 end
 
 @export_symbols+=
@@ -173,23 +175,6 @@ end
 
 @colorize_drawing+=
 colorize_virt(g, drawing_virt, 0, 0, 0)
-
-@script_variables+=
-local conceal_defined = false
-
-@enable_conceal_for_formulas+=
-vim.api.nvim_command([[syn match NablaFormula /\$[^$]\{-1,}\$/ contains=NablaFormulaInside]])
-vim.api.nvim_command([[syn match NablaFormulaInside /./ contained conceal cchar=.]])
-vim.api.nvim_command([[setlocal conceallevel=2]])
--- vim.api.nvim_command([[setlocal concealcursor=nc]])
-conceal_defined = true
-
-@disable_conceal_for_formulas+=
-if conceal_defined then
-  vim.api.nvim_command([[syn clear NablaFormula]])
-  vim.api.nvim_command([[syn clear NablaFormulaInside]])
-  conceal_defined = false
-end
 
 @declare_functions+=
 local toggle_virt
@@ -227,3 +212,55 @@ end
 
 @export_symbols+=
 is_virt_enabled = is_virt_enabled,
+
+@reduce_number_of_line_for_inline_conceal+=
+num_lines = num_lines - 1
+
+@fill_lines_progressively_with_drawings-=
+local inline_virt = {}
+
+@save_inline_conceal+=
+local chunks = {}
+
+local line_virt = drawing_virt[#drawing_virt]
+local len_inline = p2 - p1 + 1 + 2
+local margin_left = math.floor((len_inline - (#line_virt))/2)
+local margin_right = len_inline - margin_left - #line_virt 
+
+for i=1,margin_left do
+  table.insert(chunks, {".", "NonText"})
+end
+
+vim.list_extend(chunks, line_virt)
+
+for i=1,margin_right do
+  table.insert(chunks, {".", "NonText"})
+end
+
+table.insert(inline_virt, { chunks, p1, p2 })
+
+@script_variables+=
+local inline_virt_ns = {}
+
+@place_drawings_above_lines-=
+if inline_virt_ns[buf] then
+  vim.api.nvim_buf_clear_namespace(buf, inline_virt_ns[buf], 0, -1)
+end
+
+inline_virt_ns[buf] = vim.api.nvim_create_namespace("")
+
+@disable_virt_inline+=
+if inline_virt_ns[buf] then
+  vim.api.nvim_buf_clear_namespace(buf, inline_virt_ns[buf], 0, -1)
+  inline_virt_ns[buf] = nil
+end
+
+@create_virtual_line_for_inline_conceal+=
+for _, iv in ipairs(inline_virt) do
+  local chunks, p1, p2 = unpack(iv)
+
+  vim.api.nvim_buf_set_extmark(buf, inline_virt_ns[buf], i-1, p1 - 2, {
+    virt_text_pos = "overlay",
+    virt_text = chunks,
+  })
+end

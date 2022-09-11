@@ -18,9 +18,9 @@ local local_delims = {}
 
 local mult_virt_ns = {}
 
-local conceal_defined = false
-
 local virt_enabled = {}
+
+local inline_virt_ns = {}
 
 
 local remove_extmark
@@ -498,6 +498,12 @@ function enable_virt(opts)
 
   end
 
+  if inline_virt_ns[buf] then
+    vim.api.nvim_buf_clear_namespace(buf, inline_virt_ns[buf], 0, -1)
+  end
+
+  inline_virt_ns[buf] = vim.api.nvim_create_namespace("")
+
   if mult_virt_ns[buf] then
     vim.api.nvim_buf_clear_namespace(buf, mult_virt_ns[buf], 0, -1)
   end
@@ -512,10 +518,15 @@ function enable_virt(opts)
         num_lines = math.max(num_lines, #drawing_virt)
       end
 
+      num_lines = num_lines - 1
+
+
       local virt_lines = {}
       for i=1,num_lines do
         table.insert(virt_lines, {})
       end
+
+      local inline_virt = {}
 
       local col = 0
       for ai, annotation in ipairs(line_annotations) do
@@ -531,8 +542,8 @@ function enable_virt(opts)
           col = col + (desired_col - col)
         end
 
-        local off = num_lines - #drawing_virt
-        for j=1,#drawing_virt do
+        local off = num_lines - (#drawing_virt-1)
+        for j=1,#drawing_virt-1 do
           vim.list_extend(virt_lines[j+off], drawing_virt[j])
         end
 
@@ -543,6 +554,25 @@ function enable_virt(opts)
 
         col = col + #drawing_virt[1]
 
+        local chunks = {}
+
+        local line_virt = drawing_virt[#drawing_virt]
+        local len_inline = p2 - p1 + 1 + 2
+        local margin_left = math.floor((len_inline - (#line_virt))/2)
+        local margin_right = len_inline - margin_left - #line_virt 
+
+        for i=1,margin_left do
+          table.insert(chunks, {".", "NonText"})
+        end
+
+        vim.list_extend(chunks, line_virt)
+
+        for i=1,margin_right do
+          table.insert(chunks, {".", "NonText"})
+        end
+
+        table.insert(inline_virt, { chunks, p1, p2 })
+
       end
 
       vim.api.nvim_buf_set_extmark(buf, mult_virt_ns[buf], i-1, 0, {
@@ -550,14 +580,16 @@ function enable_virt(opts)
         virt_lines_above = i > 1,
       })
 
+      for _, iv in ipairs(inline_virt) do
+        local chunks, p1, p2 = unpack(iv)
+
+        vim.api.nvim_buf_set_extmark(buf, inline_virt_ns[buf], i-1, p1 - 2, {
+          virt_text_pos = "overlay",
+          virt_text = chunks,
+        })
+      end
     end
   end
-
-  vim.api.nvim_command([[syn match NablaFormula /\$[^$]\{-1,}\$/ contains=NablaFormulaInside]])
-  vim.api.nvim_command([[syn match NablaFormulaInside /./ contained conceal cchar=.]])
-  vim.api.nvim_command([[setlocal conceallevel=2]])
-  -- vim.api.nvim_command([[setlocal concealcursor=nc]])
-  conceal_defined = true
 
 end
 
@@ -569,11 +601,9 @@ function disable_virt()
     vim.api.nvim_buf_clear_namespace(buf, mult_virt_ns[buf], 0, -1)
     mult_virt_ns[buf] = nil
   end
-
-  if conceal_defined then
-    vim.api.nvim_command([[syn clear NablaFormula]])
-    vim.api.nvim_command([[syn clear NablaFormulaInside]])
-    conceal_defined = false
+  if inline_virt_ns[buf] then
+    vim.api.nvim_buf_clear_namespace(buf, inline_virt_ns[buf], 0, -1)
+    inline_virt_ns[buf] = nil
   end
 
 end
@@ -848,5 +878,6 @@ return {
 	toggle_virt = toggle_virt,
 
 	is_virt_enabled = is_virt_enabled,
+
 }
 
