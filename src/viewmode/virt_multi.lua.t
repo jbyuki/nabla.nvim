@@ -230,13 +230,13 @@ local margin_left = math.floor((len_inline - (#line_virt))/2)
 local margin_right = len_inline - margin_left - #line_virt 
 
 for i=1,margin_left do
-  table.insert(chunks, {".", "NonText"})
+  table.insert(chunks, {" ", "NonText"})
 end
 
 vim.list_extend(chunks, line_virt)
 
 for i=1,margin_right do
-  table.insert(chunks, {".", "NonText"})
+  table.insert(chunks, {" ", "NonText"})
 end
 
 table.insert(inline_virt, { chunks, p1, p2 })
