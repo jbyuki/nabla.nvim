@@ -559,9 +559,8 @@ function enable_virt(opts)
         local chunks = {}
 
         local line_virt = drawing_virt[#drawing_virt]
-        local len_inline = p2 - p1 + 1 + 2
-        local margin_left = math.floor((len_inline - (#line_virt))/2)
-        local margin_right = len_inline - margin_left - #line_virt 
+        local margin_left = desired_col - p1 + 2
+        local margin_right = p2 - #line_virt - desired_col + 1
 
         for i=1,margin_left do
           table.insert(chunks, {" ", "NonText"})
