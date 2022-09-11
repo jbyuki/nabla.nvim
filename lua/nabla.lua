@@ -22,6 +22,8 @@ local virt_enabled = {}
 
 local inline_virt_ns = {}
 
+local saved_conceallevel = {}
+
 
 local remove_extmark
 
@@ -583,13 +585,23 @@ function enable_virt(opts)
       for _, iv in ipairs(inline_virt) do
         local chunks, p1, p2 = unpack(iv)
 
-        vim.api.nvim_buf_set_extmark(buf, inline_virt_ns[buf], i-1, p1 - 2, {
-          virt_text_pos = "overlay",
-          virt_text = chunks,
-        })
+        for j, chunk in ipairs(chunks) do
+          local c, hl_group = unpack(chunk)
+          vim.api.nvim_buf_set_extmark(buf, inline_virt_ns[buf], i-1, p1-2+j-1, {
+            end_row = i-1,
+            end_col = p1-2+j,
+            conceal = c,
+            hl_group = hl_group,
+          })
+        end
       end
+
     end
   end
+
+  local win = vim.api.nvim_get_current_win()
+  saved_conceallevel[win] = vim.wo[win].conceallevel
+  vim.wo[win].conceallevel = 2
 
 end
 
@@ -606,6 +618,10 @@ function disable_virt()
     inline_virt_ns[buf] = nil
   end
 
+  local win = vim.api.nvim_get_current_win()
+  if saved_conceallevel[win] then
+    vim.wo[win].conceallevel = saved_conceallevel[win]
+  end
 end
 
 function toggle_virt()

@@ -10,6 +10,7 @@ function enable_virt(opts)
   @read_whole_buffer
   @foreach_line_generate_drawings
   @place_drawings_above_lines
+  @enable_conceal_level_local
 end
 
 @export_symbols+=
@@ -151,6 +152,7 @@ function disable_virt()
     mult_virt_ns[buf] = nil
   end
   @disable_virt_inline
+  @restore_conceallevel
 end
 
 @export_symbols+=
@@ -259,8 +261,27 @@ end
 for _, iv in ipairs(inline_virt) do
   local chunks, p1, p2 = unpack(iv)
 
-  vim.api.nvim_buf_set_extmark(buf, inline_virt_ns[buf], i-1, p1 - 2, {
-    virt_text_pos = "overlay",
-    virt_text = chunks,
-  })
+  for j, chunk in ipairs(chunks) do
+    local c, hl_group = unpack(chunk)
+    vim.api.nvim_buf_set_extmark(buf, inline_virt_ns[buf], i-1, p1-2+j-1, {
+      end_row = i-1,
+      end_col = p1-2+j,
+      conceal = c,
+      hl_group = hl_group,
+    })
+  end
+end
+
+@script_variables+=
+local saved_conceallevel = {}
+
+@enable_conceal_level_local+=
+local win = vim.api.nvim_get_current_win()
+saved_conceallevel[win] = vim.wo[win].conceallevel
+vim.wo[win].conceallevel = 2
+
+@restore_conceallevel+=
+local win = vim.api.nvim_get_current_win()
+if saved_conceallevel[win] then
+  vim.wo[win].conceallevel = saved_conceallevel[win]
 end
