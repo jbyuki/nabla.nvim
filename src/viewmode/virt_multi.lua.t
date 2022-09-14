@@ -123,8 +123,10 @@ end
 
 @fill_drawing+=
 local off = num_lines - (#drawing_virt-1)
+local first_line_off = 0
+@offset_drawing_for_first_line
 for j=1,#drawing_virt-1 do
-  vim.list_extend(virt_lines[j+off], drawing_virt[j])
+  vim.list_extend(virt_lines[j+off], drawing_virt[j+first_line_off])
 end
 
 for j=1,off do
@@ -224,7 +226,7 @@ local inline_virt = {}
 @save_inline_conceal+=
 local chunks = {}
 
-local line_virt = drawing_virt[#drawing_virt]
+@select_inline_conceal_based_if_first_line
 local margin_left = desired_col - p1 + 2
 local margin_right = p2 - #line_virt - desired_col + 1
 
@@ -283,4 +285,17 @@ vim.wo[win].conceallevel = 2
 local win = vim.api.nvim_get_current_win()
 if saved_conceallevel[win] then
   vim.wo[win].conceallevel = saved_conceallevel[win]
+end
+
+@offset_drawing_for_first_line+=
+if i == 1 then
+  first_line_off = 1
+end
+
+@select_inline_conceal_based_if_first_line+=
+local line_virt
+if i == 1 then
+  line_virt = drawing_virt[1]
+else
+  line_virt = drawing_virt[#drawing_virt]
 end

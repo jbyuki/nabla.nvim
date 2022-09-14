@@ -545,8 +545,13 @@ function enable_virt(opts)
         end
 
         local off = num_lines - (#drawing_virt-1)
+        local first_line_off = 0
+        if i == 1 then
+          first_line_off = 1
+        end
+
         for j=1,#drawing_virt-1 do
-          vim.list_extend(virt_lines[j+off], drawing_virt[j])
+          vim.list_extend(virt_lines[j+off], drawing_virt[j+first_line_off])
         end
 
         for j=1,off do
@@ -558,7 +563,12 @@ function enable_virt(opts)
 
         local chunks = {}
 
-        local line_virt = drawing_virt[#drawing_virt]
+        local line_virt
+        if i == 1 then
+          line_virt = drawing_virt[1]
+        else
+          line_virt = drawing_virt[#drawing_virt]
+        end
         local margin_left = desired_col - p1 + 2
         local margin_right = p2 - #line_virt - desired_col + 1
 
@@ -621,6 +631,7 @@ function disable_virt()
   if saved_conceallevel[win] then
     vim.wo[win].conceallevel = saved_conceallevel[win]
   end
+
 end
 
 function toggle_virt()
