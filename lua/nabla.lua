@@ -534,10 +534,15 @@ function enable_virt(opts)
       for ai, annotation in ipairs(line_annotations) do
         local p1, p2, drawing_virt = unpack(annotation)
 
+        -- p1 = vim.str_byteindex(lines[i], p1)
+        -- p2 = vim.str_byteindex(lines[i], p2)
+
         local desired_col = math.floor((p1 + p2 - #drawing_virt[1])/2) -- substract because of conceals
 
         if desired_col-col > 0 then
-          local fill = {{(" "):rep(desired_col-col), "Normal"}}
+          local ucol = vim.str_utfindex(lines[i], col)
+          local udesired_col = vim.str_utfindex(lines[i], desired_col)
+          local fill = {{(" "):rep(udesired_col-ucol), "Normal"}}
           for j=1,num_lines do
             vim.list_extend(virt_lines[j], fill)
           end
