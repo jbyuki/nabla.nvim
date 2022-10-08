@@ -1017,26 +1017,31 @@ local mathbb = {
 
 
 function stack_subsup(explist, i, g)
-  while i+1 <= #explist do
-    local exp = explist[i+1]
+  i = i + 1
+  while i <= #explist do
+    local exp = explist[i]
     if exp.kind == "subexp" then
       i = i + 1
     	local my = g.my
-    	local subgrid = to_ascii({explist[i+1]}, 1)
+    	local subgrid = to_ascii({explist[i]}, 1)
     	g = g:join_vert(subgrid)
     	g.my = my
+      i = i + 1
 
     elseif exp.kind == "supexp" then
+      i = i + 1
     	local my = g.my
-    	local supgrid = to_ascii({explist[i+1]}, 1)
-    	g = g:join_vert(supgrid)
+    	local supgrid = to_ascii({explist[i]}, 1)
+    	g = supgrid:join_vert(g)
     	g.my = my + supgrid.h
+      i = i + 1
 
     else 
       break
     end
 
   end
+  i = i - 1
   return g, i
 end
 
