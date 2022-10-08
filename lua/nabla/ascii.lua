@@ -1670,7 +1670,7 @@ function to_ascii(explist, exp_i)
       	g = to_ascii(inside_bra, 1):enclose_bracket()
 
     	else
-    		g = grid:new(utf8len(name), 1, { name })
+    		g = grid:new(utf8len("\\" .. name), 1, { "\\" .. name })
     	end
 
 

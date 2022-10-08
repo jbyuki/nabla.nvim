@@ -491,7 +491,7 @@ g = c2
 
 @otherwise_just_print_out_function_as_text+=
 else
-	g = grid:new(utf8len(name), 1, { name })
+	g = grid:new(utf8len("\\" .. name), 1, { "\\" .. name })
 end
 
 @transform_function_into_ascii+=
