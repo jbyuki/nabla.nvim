@@ -1979,7 +1979,12 @@ local function to_ascii(exp)
 
 		  local sym = sym.sym
 		  assert(mathbb[sym], "mathbb symbol not found")
-		  return grid:new(1, 1, {mathbb[sym]})
+		  local g = grid:new(1, 1, {mathbb[sym]})
+
+		  g = put_subsup_aside(exp, g)
+		  g = put_if_only_sub(exp, g)
+		  g = put_if_only_sup(exp, g)
+		  return g
 		elseif name == "overline" then
 			assert(#exp.args == 1, "overline must have 1 arguments")
 
