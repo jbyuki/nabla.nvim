@@ -1,13 +1,12 @@
 ##../ascii
 @transform_function_into_ascii+=
 elseif name == "overline" then
-	assert(#exp.args == 1, "overline must have 1 arguments")
+  local belowgrid = to_ascii({explist[exp_i+1]}, 1)
+  exp_i = exp_i + 1
 
-  local belowgrid = to_ascii(exp.args[1])
   @generate_overline_bar
-  local c1 = overline:join_vert(belowgrid)
-  c1.my = belowgrid.my + 1
-  return c1
+  g = overline:join_vert(belowgrid)
+  g.my = belowgrid.my + 1
 
 @generate_overline_bar+=
 local bar = ""

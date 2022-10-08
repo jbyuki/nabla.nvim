@@ -1,10 +1,8 @@
 ##../ascii
 @transform_function_into_ascii+=
 elseif name == "hat" then
-	assert(#exp.args == 1, "hat must have 1 arguments")
-
-  local belowgrid = to_ascii(exp.args[1])
+  local belowgrid = to_ascii({explist[exp_i+1]}, 1)
+  exp_i = exp_i + 1
   local hat = grid:new(1, 1, { "^" })
-  local c1 = hat:join_vert(belowgrid)
-  c1.my = belowgrid.my + 1
-  return c1
+  g = hat:join_vert(belowgrid)
+  g.my = belowgrid.my + 1

@@ -21,16 +21,10 @@ local mathbb = {
 
 @transform_function_into_ascii+=
 elseif name == "mathbb" then
-	assert(#exp.args == 1, "mathbb must have 1 arguments")
-	assert(exp.args[1].kind == "explist", "mathbb must have 1 arguments")
-  local sym = exp.args[1].exps[1]
+  local sym = explist[exp_i+1]
+  exp_i = exp_i + 1
 	assert(sym.kind == "symexp", "mathbb must have 1 arguments")
 
   local sym = sym.sym
   assert(mathbb[sym], "mathbb symbol not found")
   g = grid:new(1, 1, {mathbb[sym]})
-
-  g = put_subsup_aside(exp, g)
-  g = put_if_only_sub(exp, g)
-  g = put_if_only_sup(exp, g)
-  return g

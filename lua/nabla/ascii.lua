@@ -1587,9 +1587,8 @@ function to_ascii(explist, exp_i)
 
 
     	elseif name == "bar" then
-    		assert(#exp.args == 1, "bar must have 1 arguments")
-
-    	  local ingrid = to_ascii(exp.args[1])
+    	  local ingrid = to_ascii({explist[exp_i+1]}, 1)
+    	  exp_i = exp_i + 1
     	  local bars = {}
 
     	  local h = ingrid.h
@@ -1607,45 +1606,35 @@ function to_ascii(explist, exp_i)
 
 
     	elseif name == "hat" then
-    		assert(#exp.args == 1, "hat must have 1 arguments")
-
-    	  local belowgrid = to_ascii(exp.args[1])
+    	  local belowgrid = to_ascii({explist[exp_i+1]}, 1)
+    	  exp_i = exp_i + 1
     	  local hat = grid:new(1, 1, { "^" })
-    	  local c1 = hat:join_vert(belowgrid)
-    	  c1.my = belowgrid.my + 1
-    	  return c1
+    	  g = hat:join_vert(belowgrid)
+    	  g.my = belowgrid.my + 1
     	elseif name == "mathbb" then
-    		assert(#exp.args == 1, "mathbb must have 1 arguments")
-    		assert(exp.args[1].kind == "explist", "mathbb must have 1 arguments")
-    	  local sym = exp.args[1].exps[1]
+    	  local sym = explist[exp_i+1]
+    	  exp_i = exp_i + 1
     		assert(sym.kind == "symexp", "mathbb must have 1 arguments")
 
     	  local sym = sym.sym
     	  assert(mathbb[sym], "mathbb symbol not found")
     	  g = grid:new(1, 1, {mathbb[sym]})
-
-    	  g = put_subsup_aside(exp, g)
-    	  g = put_if_only_sub(exp, g)
-    	  g = put_if_only_sup(exp, g)
-    	  return g
     	elseif name == "overline" then
-    		assert(#exp.args == 1, "overline must have 1 arguments")
+    	  local belowgrid = to_ascii({explist[exp_i+1]}, 1)
+    	  exp_i = exp_i + 1
 
-    	  local belowgrid = to_ascii(exp.args[1])
     	  local bar = ""
     	  local w = belowgrid.w
     	  for x=1,w do
     	  	bar = bar .. style.div_bar
     	  end
     	  local overline = grid:new(w, 1, { bar })
-    	  local c1 = overline:join_vert(belowgrid)
-    	  c1.my = belowgrid.my + 1
-    	  return c1
+    	  g = overline:join_vert(belowgrid)
+    	  g.my = belowgrid.my + 1
 
     	elseif name == "vec" then
-    		assert(#exp.args == 1, "vec must have 1 arguments")
-
-    	  local belowgrid = to_ascii(exp.args[1])
+    	  local belowgrid = to_ascii({explist[exp_i+1]}, 1)
+    	  exp_i = exp_i + 1
     	  local txt = ""
     	  local w = belowgrid.w
     	  for x=1,w-1 do
@@ -1656,11 +1645,6 @@ function to_ascii(explist, exp_i)
     	  local arrow = grid:new(w, 1, {txt})
     	  g = arrow:join_vert(belowgrid)
     	  g.my = belowgrid.my + 1
-
-    	  g = put_subsup_aside(exp, g)
-    	  g = put_if_only_sub(exp, g)
-    	  g = put_if_only_sup(exp, g)
-    	  return g
 
       elseif name == "{" then
         local inside_bra = {}

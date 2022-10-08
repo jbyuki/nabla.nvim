@@ -1,17 +1,11 @@
 ##../ascii
 @transform_function_into_ascii+=
 elseif name == "vec" then
-	assert(#exp.args == 1, "vec must have 1 arguments")
-
-  local belowgrid = to_ascii(exp.args[1])
+  local belowgrid = to_ascii({explist[exp_i+1]}, 1)
+  exp_i = exp_i + 1
   @generate_vector_arrow
   g = arrow:join_vert(belowgrid)
   g.my = belowgrid.my + 1
-
-  g = put_subsup_aside(exp, g)
-  g = put_if_only_sub(exp, g)
-  g = put_if_only_sup(exp, g)
-  return g
 
 @style_variables+=
 vec_arrow = "→",

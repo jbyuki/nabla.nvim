@@ -1,9 +1,8 @@
 ##../ascii
 @transform_function_into_ascii+=
 elseif name == "bar" then
-	assert(#exp.args == 1, "bar must have 1 arguments")
-
-  local ingrid = to_ascii(exp.args[1])
+  local ingrid = to_ascii({explist[exp_i+1]}, 1)
+  exp_i = exp_i + 1
   @generate_left_right_bar
 
   local  c1 = left_bar:join_hori(ingrid, true)
