@@ -746,10 +746,6 @@ function grid:new(w, h, content, t)
 	})
 end
 
-if not explist or not explist[exp_i] then
-	print(debug.traceback())
-end
-
 function grid:join_hori(g, top_align)
 	local combined = {}
 

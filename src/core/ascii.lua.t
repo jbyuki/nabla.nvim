@@ -83,13 +83,6 @@ function grid:new(w, h, content, t)
 	})
 end
 
-if not explist or not explist[exp_i] then
-	print(debug.traceback())
-end
-
-@append_side+=
-main_g = main_g:join_hori(g)
-
 @grid_prototype+=
 function grid:join_hori(g, top_align)
 	local combined = {}
