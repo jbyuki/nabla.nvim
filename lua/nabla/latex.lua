@@ -118,19 +118,19 @@ function parse()
 		    nextc()
 
 		    exp = {
-		      kind = "funexp",
+		      kind = "symexp",
 		      sym  = txt,
 		    }
 
 
 		  elseif sym.sym == "quad" then
 		  	exp = {
-		  		kind = "funexp",
+		  		kind = "symexp",
 		  		sym = "       ",
 		  	}
 		  elseif sym.sym == "qquad" then
 		  	exp = {
-		  		kind = "funexp",
+		  		kind = "symexp",
 		  		sym = "        ",
 		  	}
 
@@ -147,6 +147,12 @@ function parse()
 
 		    table.insert(explist.exps, chosexp)
 		    exp = left
+
+		  elseif sym.sym:sub(1,1) == " " then
+		  	exp = {
+		  		kind = "symexp",
+		  		sym = " ",
+		  	}
 
 		  elseif sym.sym == "left" and string.match(getc(), '%(') then
 		    nextc()

@@ -145,6 +145,7 @@ elseif string.match(getc(), "\\") then
   @if_sym_is_text_parse_verbatim
   @if_sym_is_quad_expand_here
   @if_sym_is_choose_reduce
+  @if_sym_is_space_passthrough
   @if_sym_is_left_open_paren
   else
     @create_function_expression
@@ -261,6 +262,13 @@ elseif getc() == "," then
 	}
 	nextc()
 
+@if_sym_is_space_passthrough+=
+elseif sym.sym:sub(1,1) == " " then
+	exp = {
+		kind = "symexp",
+		sym = " ",
+	}
+
 @if_open_bracket_parse_verbatim+=
 elseif getc() == "{" then
 	nextc()
@@ -288,7 +296,7 @@ if (sym.sym == "text" or sym.sym == "texttt") and string.match(getc(), '{') then
   nextc()
 
   exp = {
-    kind = "funexp",
+    kind = "symexp",
     sym  = txt,
   }
 
@@ -315,12 +323,12 @@ elseif getc() == ";" then
 @if_sym_is_quad_expand_here+=
 elseif sym.sym == "quad" then
 	exp = {
-		kind = "funexp",
+		kind = "symexp",
 		sym = "       ",
 	}
 elseif sym.sym == "qquad" then
 	exp = {
-		kind = "funexp",
+		kind = "symexp",
 		sym = "        ",
 	}
 
