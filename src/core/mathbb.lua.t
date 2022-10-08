@@ -19,9 +19,21 @@ local mathbb = {
   ["Q"] = "ℚ",
 }
 
+@declare_functions+=
+local unpack_explist
+
+@utility_functions+=
+function unpack_explist(exp)
+  while exp.kind == "explist" do
+    assert(#exp.exps == 1, "explist must be length 1")
+    exp = exp.exps[1]
+  end
+  return exp
+end
+
 @transform_function_into_ascii+=
 elseif name == "mathbb" then
-  local sym = explist[exp_i+1]
+  local sym = unpack_explist(explist[exp_i+1])
   exp_i = exp_i + 1
 	assert(sym.kind == "symexp", "mathbb must have 1 arguments")
 

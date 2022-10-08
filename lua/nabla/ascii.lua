@@ -7,6 +7,8 @@ local stack_subsup
 
 local grid_of_exps
 
+local unpack_explist
+
 local put_subsup_aside
 
 local put_if_only_sub
@@ -1095,6 +1097,14 @@ function grid_of_exps(explist)
   return cells
 end
 
+function unpack_explist(exp)
+  while exp.kind == "explist" do
+    assert(#exp.exps == 1, "explist must be length 1")
+    exp = exp.exps[1]
+  end
+  return exp
+end
+
 function put_subsup_aside(g, sub, sup)
   if sub and sup then 
   	local subscript = ""
@@ -1612,7 +1622,7 @@ function to_ascii(explist, exp_i)
     	  g = hat:join_vert(belowgrid)
     	  g.my = belowgrid.my + 1
     	elseif name == "mathbb" then
-    	  local sym = explist[exp_i+1]
+    	  local sym = unpack_explist(explist[exp_i+1])
     	  exp_i = exp_i + 1
     		assert(sym.kind == "symexp", "mathbb must have 1 arguments")
 
