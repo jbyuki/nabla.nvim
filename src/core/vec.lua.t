@@ -8,9 +8,9 @@ elseif name == "vec" then
   local g = arrow:join_vert(belowgrid)
   g.my = belowgrid.my + 1
 
-	@if_has_both_subscript_and_superscript_put_aside
-	@if_has_subscript_put_them_to_g
-	@if_has_superscript_put_them_to_g
+  g = put_subsup_aside(exp, g)
+  g = put_if_only_sub(exp, g)
+  g = put_if_only_sup(exp, g)
   return g
 
 @style_variables+=
