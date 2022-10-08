@@ -34,6 +34,8 @@ function parse()
 		exps = {},
 	}
 
+  local chosexp
+
 	while not finish() do
 		local exp
 
@@ -137,6 +139,20 @@ function parse()
 		  		sym = "        ",
 		  	}
 
+		  elseif sym.sym == "choose" then
+		    assert(#explist.exps > 0)
+		    local left = explist.exps[#explist.exps]
+		    table.remove(explist.exps)
+
+		    chosexp = {
+		      kind = "chosexp",
+		      left = nil,
+		      right = nil
+		    }
+
+		    table.insert(explist.exps, chosexp)
+		    exp = left
+
 		  elseif sym.sym == "left" and string.match(getc(), '%(') then
 		    nextc()
 		  	local in_exp = parse()
@@ -147,6 +163,7 @@ function parse()
 		  elseif sym.sym == "right" and string.match(getc(), '%)') then
 		    nextc()
 		    break
+
 		  else
 		    while not finish() and string.match(getc(), '{') do
 		      nextc()
@@ -179,39 +196,7 @@ function parse()
 
     elseif string.match(getc(), "{") then
       nextc()
-      local in_exp = parse()
-      
-      local left = {
-        kind = "explist",
-        exps = {},
-      }
-
-      local right = {
-        kind = "explist",
-        exps = {},
-      }
-
-      local in_left = true
-
-      for i=1,#in_exp.exps do
-        local e = in_exp.exps[i]
-
-        if in_left and e.kind == "funexp" and e.sym == "choose" then
-          in_left = false
-        else
-          if in_left then
-            table.insert(left.exps, e)
-          else
-            table.insert(right.exps, e)
-          end
-        end
-      end
-
-      exp = {
-        kind = "chosexp",
-        left = left,
-        right = right,
-      }
+      exp = parse()
 
 		else
 			if getc() == "_" then
@@ -274,7 +259,16 @@ function parse()
 
 
 		if exp then
-			table.insert(explist.exps, exp)
+      if chosexp then
+        if not chosexp.left then
+          chosexp.left = exp
+        elseif not chosexp.right then
+          chosexp.right = exp
+          chosexp = nil
+        end
+      else
+        table.insert(explist.exps, exp)
+      end
 		end
 	end
 
