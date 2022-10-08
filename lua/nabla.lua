@@ -305,7 +305,7 @@ local function gen_drawing(lines)
 
 
   if success and exp then
-    local succ, g = pcall(ascii.to_ascii, exp)
+    local succ, g = pcall(ascii.to_ascii, {exp}, 1)
     if not succ then
       print(g)
       return 0
@@ -359,7 +359,7 @@ local function popup(overrides)
 
 
   if success and exp then
-    local succ, g = pcall(ascii.to_ascii, exp)
+    local succ, g = pcall(ascii.to_ascii, {exp}, 1)
     if not succ then
       print(g)
       return 0
@@ -450,7 +450,7 @@ function enable_virt(opts)
 
 
       if success and exp then
-        local succ, g = pcall(ascii.to_ascii, exp)
+        local succ, g = pcall(ascii.to_ascii, {exp}, 1)
         if not succ then
           print(g)
           return 0
@@ -674,7 +674,7 @@ local function init()
 						local success, exp = pcall(parser.parse_all, line)
 
 						if success and exp then
-							local succ, g = pcall(ascii.to_ascii, exp)
+							local succ, g = pcall(ascii.to_ascii, {exp}, 1)
 							if not succ then
 							  print(g)
 							  return 0
@@ -732,7 +732,7 @@ local function replace_current()
 	local success, exp = pcall(parser.parse_all, line)
 
 	if success and exp then
-		local succ, g = pcall(ascii.to_ascii, exp)
+		local succ, g = pcall(ascii.to_ascii, {exp}, 1)
 		if not succ then
 		  print(g)
 		  return 0
@@ -780,7 +780,7 @@ local function replace_all()
 			local success, exp = pcall(parser.parse_all, line)
 
 			if success and exp then
-				local succ, g = pcall(ascii.to_ascii, exp)
+				local succ, g = pcall(ascii.to_ascii, {exp}, 1)
 				if not succ then
 				  print(g)
 				  return 0
@@ -826,7 +826,7 @@ local function draw_overlay()
 	local success, exp = pcall(parser.parse_all, line)
 
 	if success and exp then
-		local succ, g = pcall(ascii.to_ascii, exp)
+		local succ, g = pcall(ascii.to_ascii, {exp}, 1)
 		if not succ then
 		  print(g)
 		  return 0

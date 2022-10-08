@@ -66,7 +66,7 @@ right_bra.my = self.my
 @if_function_bracket_put_bracket_around_and_recurse+=
 elseif name == "{" then
   @collect_all_until_close_bracket
-	local g = to_ascii(inside_bra, 1):enclose_bracket()
+	g = to_ascii(inside_bra, 1):enclose_bracket()
 
 @collect_all_until_close_bracket+=
 local inside_bra = {}

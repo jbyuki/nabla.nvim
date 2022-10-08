@@ -28,7 +28,7 @@ elseif name == "mathbb" then
 
   local sym = sym.sym
   assert(mathbb[sym], "mathbb symbol not found")
-  local g = grid:new(1, 1, {mathbb[sym]})
+  g = grid:new(1, 1, {mathbb[sym]})
 
   g = put_subsup_aside(exp, g)
   g = put_if_only_sub(exp, g)

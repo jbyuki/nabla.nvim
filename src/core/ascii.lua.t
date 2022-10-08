@@ -36,14 +36,17 @@ local to_ascii
 
 @functions+=
 function to_ascii(explist, exp_i)
-	@init_grid_structure
-  for i=1,#explist do
+  local gs = {}
+  while exp_i <= #explist do
     local exp = explist[exp_i]
+    local g
     @transform_exp_to_grid
     @if_not_valid_exp_return_nil
-    @append_side
+    table.insert(gs, g)
+    exp_i = exp_i + 1
   end
-	return grid
+  @reduce_all_gs
+	return concat_g
 end
 
 @export_symbols+=
@@ -51,7 +54,15 @@ to_ascii = to_ascii,
 
 @if_not_valid_exp_return_nil+=
 else
-	return nil
+  assert(false, "Unrecognized token")
+end
+
+@reduce_all_gs+=
+local concat_g = grid:new()
+for _, g in ipairs(gs) do
+  if g then
+    concat_g = concat_g:join_hori(g)
+  end
 end
 
 @grid_prototype+=
@@ -71,9 +82,6 @@ function grid:new(w, h, content, t)
 		__index = grid,
 	})
 end
-
-@init_grid_structure+=
-local main_g = grid:new()
 
 if not explist or not explist[exp_i] then
 	print(debug.traceback())
@@ -121,7 +129,7 @@ table.insert(combined, r1 .. r2)
 @transform_exp_to_grid+=
 if exp.kind == "numexp" then
 	local numstr = tostring(exp.num)
-	local g = grid:new(string.len(numstr), 1, { tostring(numstr) }, "num")
+	g = grid:new(string.len(numstr), 1, { tostring(numstr) }, "num")
 
 @grid_metamethods+=
 __tostring = function(g)
@@ -299,7 +307,7 @@ right_paren.my = self.my
 @transform_exp_to_grid+=
 elseif exp.kind == "symexp" then
 	local sym = exp.sym
-	local g = grid:new(utf8len(sym), 1, { sym }, "sym")
+	g = grid:new(utf8len(sym), 1, { sym }, "sym")
 
 
 @style_variables+=
@@ -365,9 +373,6 @@ function grid:join_super(superscript)
 	result.my = self.my + superscript.h
 	return result
 end
-
-@combine_diagonally_for_superscript+=
-local result = leftgrid:join_super(rightgrid)
 
 @make_spacer_upper_left+=
 local spacer = grid:new(self.w, superscript.h)
@@ -471,8 +476,8 @@ if name == "frac" then
 	@build_ascii_fraction
 
 @build_ascii_fraction+=
-local leftgrid = to_ascii({exps[exp_i+1]}, 1)
-local rightgrid = to_ascii({exps[exp_i+2]}, 1)
+local leftgrid = to_ascii({explist[exp_i+1]}, 1)
+local rightgrid = to_ascii({explist[exp_i+2]}, 1)
 exp_i = exp_i + 2
 
 @generate_appropriate_size_fraction_bar
@@ -482,11 +487,11 @@ local opgrid = grid:new(w, 1, { bar })
 local c1 = leftgrid:join_vert(opgrid)
 local c2 = c1:join_vert(rightgrid)
 @set_middle_for_fraction
-local g = c2
+g = c2
 
 @otherwise_just_print_out_function_as_text+=
 else
-	local g = grid:new(utf8len(name), 1, { name })
+	g = grid:new(utf8len(name), 1, { name })
 end
 
 @transform_function_into_ascii+=
@@ -494,7 +499,7 @@ elseif special_syms[name] or special_nums[name] or greek_etc[name] then
 	local sym = special_syms[name] or special_nums[name] or greek_etc[name]
   local t
   @determine_type_special
-	local g = grid:new(utf8len(sym), 1, { sym }, t)
+	g = grid:new(utf8len(sym), 1, { sym }, t)
 
 
 @special_symbols+=
@@ -605,47 +610,6 @@ local sup_letters = {
   ["T"] = "ᵀ", ["A"] = "ᴬ", ["B"] = "ᴮ", ["D"] = "ᴰ", ["E"] = "ᴱ", ["G"] = "ᴳ", ["H"] = "ᴴ", ["I"] = "ᴵ", ["J"] = "ᴶ", ["K"] = "ᴷ", ["L"] = "ᴸ", ["M"] = "ᴹ", ["N"] = "ᴺ", ["O"] = "ᴼ", ["P"] = "ᴾ", ["R"] = "ᴿ", ["U"] = "ᵁ", ["V"] = "ⱽ", ["W"] = "ᵂ",
 }
 
-@append_number_superscript+=
-local num = exp.num
-if num == 0 then
-	superscript = superscript .. sub_letters["0"]
-else
-	if num < 0 then
-		superscript = "₋" .. superscript
-		num = math.abs(num)
-	end
-	local num_superscript = ""
-	while num ~= 0 do
-		num_superscript = sup_letters[tostring(num%10)] .. num_superscript 
-		num = math.floor(num / 10)
-	end
-	superscript = superscript .. num_superscript 
-end
-
-@append_characters_superscript+=
-if sup_letters[exp.sym] and not exp.sub and not exp.sup then
-	superscript = superscript .. sup_letters[exp.sym]
-else
-	superscript = nil
-	break
-end
-
-@combine_superscript_to_align_top+=
-local sup_g = grid:new(utf8len(superscript), 1, { superscript }, sup_t)
-g = g:join_hori(sup_g, true)
-
-@combine_superscript_diagonally+=
-local supgrid = to_ascii(exp.sup)
-local frac_exps = exp.sup.exps
-local frac_exp
-@if_numerical_fraction_put_smaller_form
-if not frac_exp then
-	supgrid = to_ascii(exp.sup)
-else
-	supgrid = frac_exp
-end
-g = g:join_super(supgrid)
-
 @transform_exp_to_grid+=
 elseif exp.kind == "parexp" then
 	g = to_ascii({exp.exp}, 1):enclose_paren()
@@ -660,11 +624,11 @@ elseif name == "sqrt" then
 	local res = left_root:join_hori(toroot)
 	res = top_root:join_vert(res)
 	res.my = top_root.h + toroot.my
-  local g = res
+  g = res
 
 @transform_function_into_ascii+=
 elseif name == "int" then
-	local g = grid:new(1, 1, { "∫" }, "sym")
+	g = grid:new(1, 1, { "∫" }, "sym")
   g, exp_i = stack_subsup(explist, exp_i, g)
 	@put_col_spacer_to_g
 
@@ -691,7 +655,7 @@ if exp.kind == "subexp" then
 	g.my = my
 
 @if_has_superscript_stack_with_g+=
-elseif exp.kind "supexp" then
+elseif exp.kind == "supexp" then
 	local my = g.my
 	local supgrid = to_ascii({explist[i+1]}, 1)
 	g = g:join_vert(supgrid)
@@ -710,43 +674,43 @@ end
 
 @transform_function_into_ascii+=
 elseif name == "iint" then
-	local g = grid:new(1, 1, { "∬" }, "sym")
+	g = grid:new(1, 1, { "∬" }, "sym")
 
   g, exp_i = stack_subsup(explist, exp_i, g)
 	@put_col_spacer_to_g
 
 elseif name == "iiint" then
-	local g = grid:new(1, 1, { "∭" }, "sym")
+	g = grid:new(1, 1, { "∭" }, "sym")
 
   g, exp_i = stack_subsup(explist, exp_i, g)
 	@put_col_spacer_to_g
 
 elseif name == "oint" then
-	local g = grid:new(1, 1, { "∮" }, "sym")
+	g = grid:new(1, 1, { "∮" }, "sym")
 
   g, exp_i = stack_subsup(explist, exp_i, g)
 	@put_col_spacer_to_g
 
 elseif name == "oiint" then
-	local g = grid:new(1, 1, { "∯" }, "sym")
+	g = grid:new(1, 1, { "∯" }, "sym")
 
   g, exp_i = stack_subsup(explist, exp_i, g)
 	@put_col_spacer_to_g
 
 elseif name == "oiiint" then
-	local g = grid:new(1, 1, { "∰" }, "sym")
+	g = grid:new(1, 1, { "∰" }, "sym")
 
   g, exp_i = stack_subsup(explist, exp_i, g)
 	@put_col_spacer_to_g
 
 elseif name == "sum" then
-	local g = grid:new(1, 1, { "∑" }, "sym")
+	g = grid:new(1, 1, { "∑" }, "sym")
 
   g, exp_i = stack_subsup(explist, exp_i, g)
 	@put_col_spacer_to_g
 
 elseif name == "prod" then
-	local g = grid:new(1, 1, { "∏" }, "sym")
+	g = grid:new(1, 1, { "∏" }, "sym")
 
   g, exp_i = stack_subsup(explist, exp_i, g)
 	@put_col_spacer_to_g
@@ -778,7 +742,7 @@ end
 
 @transform_function_into_ascii+=
 elseif name == "lim" then
-  local g = grid:new(3, 1, { "lim" }, "op")
+  g = grid:new(3, 1, { "lim" }, "op")
 
   g, exp_i = stack_subsup(explist, exp_i, g)
 	@put_col_spacer_to_g
@@ -789,7 +753,6 @@ elseif name == "lim" then
 
 @transform_exp_to_grid+=
 elseif exp.kind == "blockexp" then
-  local g
   local name = exp.sym
   @transform_block_expression
   @otherwise_error_with_unknown_block_expression
@@ -887,7 +850,7 @@ elseif name == "bmatrix" then
 @combine_to_matrix_grid
 @combine_matrix_brackets
 res.my = math.floor(res.h/2)
-local g = res
+g = res
 
 @put_children_join_horiz+=
 table.insert(c.children, { self, 0, s1 })
@@ -906,602 +869,42 @@ elseif greek_etc[name] then
   t = "var"
 end
 
+@transform_exp_to_grid+=
+elseif exp.kind == "supexp" or exp.kind == "subexp" then
+  assert(#gs >= 1, "No expression preceding '^'")
+  @collec_sub_and_sup
 
+  if sup and sup.kind ~= "explist" then
+    sup = {
+      kind = "explist",
+      exps = { sup },
+    }
+  end
 
-@special_symbols+=
-["otimes"] = "⊗",
-["oplus"] = "⊕",
-["times"] = "⨯",
-["perp"] = "⟂",
-["circ"] = "∘",
-["langle"] = "⟨",
-["rangle"] = "⟩",
-["dagger"] = "†",
-["intercal"] = "⊺",
-["wedge"] = "∧",
-["vert"] = "|",
-["Vert"] = "‖",
-["C"] = "ℂ",
-["N"] = "ℕ",
-["Q"] = "ℚ",
-["R"] = "ℝ",
-["Z"] = "ℤ",
-["qed"] = "∎",
-["AA"] = "Å",
-["aa"] = "å",
-["ae"] = "æ",
-["AE"] = "Æ",
-["aleph"] = "ℵ",
-["allequal"] = "≌",
-["amalg"] = "⨿",
-["angle"] = "∠",
-["Angle"] = "⦜",
-["approxeq"] = "≊",
-["approxnotequal"] = "≆",
-["aquarius"] = "♒",
-["arccos"] = "arccos",
-["arccot"] = "arccot",
-["arcsin"] = "arcsin",
-["arctan"] = "arctan",
-["aries"] = "♈",
-["arrowwaveright"] = "↜",
-["asymp"] = "≍",
-["backepsilon"] = "϶",
-["backprime"] = "‵",
-["backsimeq"] = "⋍",
-["backsim"] = "∽",
-["backslash"] = "⧵",
-["barwedge"] = "⌅",
-["because"] = "∵",
-["beth"] = "ℶ",
-["between"] = "≬",
-["bigcap"] = "⋂",
-["bigcirc"] = "○",
-["bigcup"] = "⋃",
-["bigtriangledown"] = "▽",
-["bigtriangleup"] = "△",
-["blacklozenge"] = "⧫",
-["blacksquare"] = "■",
-["blacktriangledown"] = "▾",
-["blacktriangleleft"] = "◂",
-["blacktriangleright"] = "▸",
-["blacktriangle"] = "▴",
-["bot"] = "⊥",
-["bowtie"] = "⋈",
-["boxdot"] = "⊡",
-["boxminus"] = "⊟",
-["boxplus"] = "⊞",
-["boxtimes"] = "⊠",
-["Box"] = "□",
-["bullet"] = "∙",
-["bumpeq"] = "≏",
-["Bumpeq"] = "≎",
-["cancer"] = "♋",
-["capricornus"] = "♑",
-["cap"] = "∩",
-["Cap"] = "⋒",
-["circeq"] = "≗",
-["circlearrowleft"] = "↺",
-["circlearrowright"] = "↻",
-["circledast"] = "⊛",
-["circledcirc"] = "⊚",
-["circleddash"] = "⊝",
-["circledS"] = "Ⓢ",
-["clockoint"] = "⨏",
-["clubsuit"] = "♣",
-["clwintegral"] = "∱",
-["Colon"] = "∷",
-["complement"] = "∁",
-["coprod"] = "∐",
-["copyright"] = "©",
-["cosh"] = "cosh",
-["cos"] = "cos",
-["coth"] = "coth",
-["cot"] = "cot",
-["csc"] = "csc",
-["cup"] = "∪",
-["Cup"] = "⋓",
-["curlyeqprec"] = "⋞",
-["curlyeqsucc"] = "⋟",
-["curlyvee"] = "⋎",
-["curlywedge"] = "⋏",
-["curvearrowleft"] = "↶",
-["curvearrowright"] = "↷",
-["daleth"] = "ℸ",
-["dashv"] = "⊣",
-["dblarrowupdown"] = "⇅",
-["ddagger"] = "‡",
-["dh"] = "ð",
-["DH"] = "Ð",
-["diagup"] = "╱",
-["diamondsuit"] = "♢",
-["diamond"] = "⋄",
-["Diamond"] = "◇",
-["digamma"] = "ϝ",
-["Digamma"] = "Ϝ",
-["divideontimes"] = "⋇",
-["div"] = "÷",
-["dj"] = "đ",
-["DJ"] = "Đ",
-["doteqdot"] = "≑",
-["dotplus"] = "∔",
-["DownArrowBar"] = "⤓",
-["downarrow"] = "↓",
-["Downarrow"] = "⇓",
-["DownArrowUpArrow"] = "⇵",
-["downdownarrows"] = "⇊",
-["downharpoonleft"] = "⇃",
-["downharpoonright"] = "⇂",
-["DownLeftRightVector"] = "⥐",
-["DownLeftTeeVector"] = "⥞",
-["DownLeftVectorBar"] = "⥖",
-["DownRightTeeVector"] = "⥟",
-["DownRightVectorBar"] = "⥗",
-["downslopeellipsis"] = "⋱",
-["eighthnote"] = "♪",
-["ell"] = "ℓ",
-["Elolarr"] = "⥀",
-["Elorarr"] = "⥁",
-["ElOr"] = "⩖",
-["Elroang"] = "⦆",
-["Elxsqcup"] = "⨆",
-["Elxuplus"] = "⨄",
-["ElzAnd"] = "⩓",
-["Elzbtdl"] = "ɬ",
-["ElzCint"] = "⨍",
-["Elzcirfb"] = "◒",
-["Elzcirfl"] = "◐",
-["Elzcirfr"] = "◑",
-["Elzclomeg"] = "ɷ",
-["Elzddfnc"] = "⦙",
-["Elzdefas"] = "⧋",
-["Elzdlcorn"] = "⎣",
-["Elzdshfnc"] = "┆",
-["Elzdyogh"] = "ʤ",
-["Elzesh"] = "ʃ",
-["Elzfhr"] = "ɾ",
-["Elzglst"] = "ʔ",
-["Elzhlmrk"] = "ˑ",
-["ElzInf"] = "⨇",
-["Elzinglst"] = "ʖ",
-["Elzinvv"] = "ʌ",
-["Elzinvw"] = "ʍ",
-["ElzLap"] = "⧊",
-["Elzlmrk"] = "ː",
-["Elzlow"] = "˕",
-["Elzlpargt"] = "⦠",
-["Elzltlmr"] = "ɱ",
-["Elzltln"] = "ɲ",
-["Elzminhat"] = "⩟",
-["Elzopeno"] = "ɔ",
-["ElzOr"] = "⩔",
-["Elzpbgam"] = "ɤ",
-["Elzpgamma"] = "ɣ",
-["Elzpscrv"] = "ʋ",
-["Elzpupsil"] = "ʊ",
-["Elzrais"] = "˔",
-["Elzrarrx"] = "⥇",
-["Elzreapos"] = "‛",
-["Elzreglst"] = "ʕ",
-["ElzrLarr"] = "⥄",
-["ElzRlarr"] = "⥂",
-["Elzrl"] = "ɼ",
-["Elzrtld"] = "ɖ",
-["Elzrtll"] = "ɭ",
-["Elzrtln"] = "ɳ",
-["Elzrtlr"] = "ɽ",
-["Elzrtls"] = "ʂ",
-["Elzrtlt"] = "ʈ",
-["Elzrtlz"] = "ʐ",
-["Elzrttrnr"] = "ɻ",
-["Elzrvbull"] = "◘",
-["Elzsblhr"] = "˓",
-["Elzsbrhr"] = "˒",
-["Elzschwa"] = "ə",
-["Elzsqfl"] = "◧",
-["Elzsqfnw"] = "┙",
-["Elzsqfr"] = "◨",
-["Elzsqfse"] = "◪",
-["Elzsqspne"] = "⋥",
-["ElzSup"] = "⨈",
-["Elztdcol"] = "⫶",
-["Elztesh"] = "ʧ",
-["Elztfnc"] = "⦀",
-["ElzThr"] = "⨅",
-["ElzTimes"] = "⨯",
-["Elztrna"] = "ɐ",
-["Elztrnh"] = "ɥ",
-["Elztrnmlr"] = "ɰ",
-["Elztrnm"] = "ɯ",
-["Elztrnrl"] = "ɺ",
-["Elztrnr"] = "ɹ",
-["Elztrnsa"] = "ɒ",
-["Elztrnt"] = "ʇ",
-["Elztrny"] = "ʎ",
-["Elzverti"] = "ˌ",
-["Elzverts"] = "ˈ",
-["Elzvrecto"] = "▯",
-["Elzxh"] = "ħ",
-["Elzxrat"] = "℞",
-["Elzyogh"] = "ʒ",
-["emptyset"] = "∅",
-["eqcirc"] = "≖",
-["eqslantgtr"] = "⪖",
-["eqslantless"] = "⪕",
-["Equal"] = "⩵",
-["equiv"] = "≡",
-["estimates"] = "≙",
-["eth"] = "ð",
-["exists"] = "∃",
-["fallingdotseq"] = "≒",
-["flat"] = "♭",
-["forall"] = "∀",
-["forcesextra"] = "⊨",
-["frown"] = "⌢",
-["gemini"] = "♊",
-["geqq"] = "≧",
-["geqslant"] = "⩾",
-["geq"] = "≥",
-["gets"] = "⟵",
-["ge"] = "≥",
-["gg"] = "≫",
-["gimel"] = "ℷ",
-["gnapprox"] = "⪊",
-["gneqq"] = "≩",
-["gneq"] = "⪈",
-["gnsim"] = "⋧",
-["greaterequivlnt"] = "≳",
-["gtrapprox"] = "⪆",
-["gtrdot"] = "⋗",
-["gtreqless"] = "⋛",
-["gtreqqless"] = "⪌",
-["gtrless"] = "≷",
-["guillemotleft"] = "«",
-["guillemotright"] = "»",
-["guilsinglleft"] = "‹",
-["guilsinglright"] = "›",
-["hbar"] = "ℏ",
-["heartsuit"] = "♡",
-["hermitconjmatrix"] = "⊹",
-["homothetic"] = "∻",
-["hookleftarrow"] = "↩",
-["hookrightarrow"] = "↪",
-["hslash"] = "ℏ",
-["idotsint"] = "∫⋯∫",
-["iff"] = "⟺",
-["image"] = "⊷",
-["imath"] = "ı",
-["Im"] = "ℑ",
-["in"] = "∈",
-["varin"] = "𝛜",
-["jmath"] = "ȷ",
-["Join"] = "⋈",
-["jupiter"] = "♃",
-["Koppa"] = "Ϟ",
-["land"] = "∧",
-["lazysinv"] = "∾",
-["lbrace"] = "{",
-["lceil"] = "⌈",
-["leadsto"] = "↝",
-["leftarrowtail"] = "↢",
-["Leftarrow"] = "⇐",
-["LeftDownTeeVector"] = "⥡",
-["LeftDownVectorBar"] = "⥙",
-["leftharpoondown"] = "↽",
-["leftharpoonup"] = "↼",
-["leftleftarrows"] = "⇇",
-["leftrightarrows"] = "⇆",
-["leftrightarrow"] = "↔",
-["Leftrightarrow"] = "⇔",
-["leftrightharpoons"] = "⇋",
-["leftrightsquigarrow"] = "↭",
-["LeftRightVector"] = "⥎",
-["LeftTeeVector"] = "⥚",
-["leftthreetimes"] = "⋋",
-["LeftTriangleBar"] = "⧏",
-["LeftUpDownVector"] = "⥑",
-["LeftUpTeeVector"] = "⥠",
-["LeftUpVectorBar"] = "⥘",
-["LeftVectorBar"] = "⥒",
-["leo"] = "♌",
-["leqq"] = "≦",
-["leqslant"] = "⩽",
-["lessapprox"] = "⪅",
-["lessdot"] = "⋖",
-["lesseqgtr"] = "⋚",
-["lesseqqgtr"] = "⪋",
-["lessequivlnt"] = "≲",
-["lessgtr"] = "≶",
-["le"] = "≤",
-["lfloor"] = "⌊",
-["lhd"] = "⊲",
-["libra"] = "♎",
-["llcorner"] = "⌞",
-["Lleftarrow"] = "⇚",
-["ll"] = "≪",
-["lmoustache"] = "⎰",
-["lnapprox"] = "⪉",
-["lneqq"] = "≨",
-["lneq"] = "⪇",
-["lnot"] = "¬",
-["lnsim"] = "≴",
-["longleftarrow"] = "⟵",
-["Longleftarrow"] = "⇐",
-["longleftrightarrow"] = "↔",
-["Longleftrightarrow"] = "⇔",
-["longmapsto"] = "⇖",
-["longrightarrow"] = "⟶",
-["Longrightarrow"] = "⇒",
-["looparrowleft"] = "↫",
-["looparrowright"] = "↬",
-["lor"] = "∨",
-["lozenge"] = "◊",
-["lrcorner"] = "⌟",
-["Lsh"] = "↰",
-["ltimes"] = "⋉",
-["l"] = "ł",
-["L"] = "Ł",
-["male"] = "♂",
-["mapsto"] = "↦",
-["measuredangle"] = "∡",
-["mercury"] = "☿",
-["mho"] = "℧",
-["mid"] = "∣",
-["models"] = "⊨",
-["multimap"] = "⊸",
-["natural"] = "♮",
-["nearrow"] = "↗",
-["neg"] = "¬",
-["neptune"] = "♆",
-["NestedGreaterGreater"] = "⪢",
-["NestedLessLess"] = "⪡",
-["nexists"] = "∄",
-["ngeq"] = "≠",
-["ngtr"] = "≯",
-["ng"] = "ŋ",
-["NG"] = "Ŋ",
-["ni"] = "∋",
-["nleftarrow"] = "↚",
-["nLeftarrow"] = "⇍",
-["nleftrightarrow"] = "↮",
-["nLeftrightarrow"] = "⇎",
-["nleq"] = "≰",
-["nless"] = "≮",
-["nmid"] = "∤",
-["notgreaterless"] = "≹",
-["notin"] = "∉",
-["notlessgreater"] = "≸",
-["nparallel"] = "∦",
-["nrightarrow"] = "↛",
-["nRightarrow"] = "⇏",
-["nsubseteq"] = "⊊",
-["nsupseteq"] = "⊋",
-["ntrianglelefteq"] = "⋬",
-["ntriangleleft"] = "⋪",
-["ntrianglerighteq"] = "⋭",
-["ntriangleright"] = "⋫",
-["nvdash"] = "⊬",
-["nvDash"] = "⊭",
-["nVdash"] = "⊮",
-["nVDash"] = "⊯",
-["nwarrow"] = "↖",
-["odot"] = "⊙",
-["oe"] = "œ",
-["OE"] = "Œ",
-["ominus"] = "⊖",
-["openbracketleft"] = "〚",
-["openbracketright"] = "〛",
-["original"] = "⊶",
-["oslash"] = "⊘",
-["o"] = "ø",
-["O"] = "Ø",
-["perspcorrespond"] = "⌆",
-["pisces"] = "♓",
-["pitchfork"] = "⋔",
-["pluto"] = "♇",
-["precapprox"] = "≾",
-["preccurlyeq"] = "≼",
-["precedesnotsimilar"] = "⋨",
-["preceq"] = "≼",
-["precnapprox"] = "⪹",
-["precneqq"] = "⪵",
-["prime"] = "′",
-["P"] = "¶",
-["quarternote"] = "♩",
-["rbrace"] = "}",
-["rceil"] = "⌉",
-["recorder"] = "⌕",
-["Re"] = "ℜ",
-["ReverseUpEquilibrium"] = "⥯",
-["rfloor"] = "⌋",
-["rhd"] = "⊳",
-["rightanglearc"] = "⊾",
-["rightangle"] = "∟",
-["rightarrowtail"] = "↣",
-["Rightarrow"] = "⇒",
-["RightDownTeeVector"] = "⥝",
-["RightDownVectorBar"] = "⥕",
-["rightharpoondown"] = "⇁",
-["rightharpoonup"] = "⇀",
-["rightleftarrows"] = "⇄",
-["rightleftharpoons"] = "⇌",
-["rightmoon"] = "☾",
-["rightrightarrows"] = "⇉",
-["rightsquigarrow"] = "⇝",
-["RightTeeVector"] = "⥛",
-["rightthreetimes"] = "⋌",
-["RightTriangleBar"] = "⧐",
-["RightUpDownVector"] = "⥏",
-["RightUpTeeVector"] = "⥜",
-["RightUpVectorBar"] = "⥔",
-["RightVectorBar"] = "⥓",
-["risingdotseq"] = "≓",
-["rmoustache"] = "⎱",
-["RoundImplies"] = "⥰",
-["Rrightarrow"] = "⇛",
-["Rsh"] = "↱",
-["rtimes"] = "⋊",
-["RuleDelayed"] = "⧴",
-["sagittarius"] = "♐",
-["Sampi"] = "Ϡ",
-["saturn"] = "♄",
-["scorpio"] = "♏",
-["searrow"] = "↘",
-["sec"] = "sec",
-["setminus"] = "∖",
-["sharp"] = "♯",
-["sinh"] = "sinh",
-["sin"] = "sin",
-["smile"] = "⌣",
-["space"] = " ",
-["spadesuit"] = "♠",
-["sphericalangle"] = "∢",
-["sqcap"] = "⊓",
-["sqcup"] = "⊔",
-["sqrint"] = "⨖",
-["sqsubseteq"] = "⊑",
-["sqsubset"] = "⊏",
-["sqsupseteq"] = "⊒",
-["sqsupset"] = "⊐",
-["square"] = "□",
-["ss"] = "ß",
-["starequal"] = "≛",
-["star"] = "⋆",
-["Stigma"] = "Ϛ",
-["S"] = "§",
-["subseteqq"] = "⫅",
-["subseteq"] = "⊆",
-["subsetneqq"] = "⫋",
-["subsetneq"] = "⊊",
-["subset"] = "⊂",
-["Subset"] = "⋐",
-["succapprox"] = "≿",
-["succcurlyeq"] = "≽",
-["succeq"] = "≽",
-["succnapprox"] = "⪺",
-["succneqq"] = "⪶",
-["succnsim"] = "⋩",
-["succ"] = "≻",
-["supseteqq"] = "⫆",
-["supseteq"] = "⊇",
-["supsetneqq"] = "⫌",
-["supsetneq"] = "⊋",
-["supset"] = "⊃",
-["Supset"] = "⋑",
-["surd"] = "√",
-["surfintegral"] = "∯",
-["swarrow"] = "↙",
-["tanh"] = "tanh",
-["tan"] = "tan",
-["taurus"] = "♉",
-["textasciiacute"] = "´",
-["textasciibreve"] = "˘",
-["textasciicaron"] = "ˇ",
-["textasciidieresis"] = "¨",
-["textasciigrave"] = "`",
-["textasciimacron"] = "¯",
-["textasciitilde"] = "~",
-["textbackslash"] = "\\",
-["textbrokenbar"] = "¦",
-["textbullet"] = "•",
-["textcent"] = "¢",
-["textcopyright"] = "©",
-["textcurrency"] = "¤",
-["textdaggerdbl"] = "‡",
-["textdagger"] = "†",
-["textdegree"] = "°",
-["textdollar"] = "$",
-["textdoublepipe"] = "ǂ",
-["textemdash"] = "—",
-["textendash"] = "–",
-["textexclamdown"] = "¡",
-["texthvlig"] = "ƕ",
-["textnrleg"] = "ƞ",
-["textonehalf"] = "½",
-["textonequarter"] = "¼",
-["textordfeminine"] = "ª",
-["textordmasculine"] = "º",
-["textparagraph"] = "¶",
-["textperiodcentered"] = "˙",
-["textpertenthousand"] = "‱",
-["textperthousand"] = "‰",
-["textphi"] = "ɸ",
-["textquestiondown"] = "¿",
-["textquotedblleft"] = "“",
-["textquotedblright"] = "”",
-["textquotesingle"] = "'",
-["textregistered"] = "®",
-["textsection"] = "§",
-["textsterling"] = "£",
-["textTheta"] = "ϴ",
-["texttheta"] = "θ",
-["textthreequarters"] = "¾",
-["texttildelow"] = "˜",
-["texttimes"] = "×",
-["texttrademark"] = "™",
-["textturnk"] = "ʞ",
-["textvartheta"] = "ϑ",
-["textvisiblespace"] = "␣",
-["textyen"] = "¥",
-["therefore"] = "∴",
-["th"] = "þ",
-["TH"] = "Þ",
-["tildetrpl"] = "≋",
-["top"] = "⊤",
-["triangledown"] = "▿",
-["trianglelefteq"] = "⊴",
-["triangleleft"] = "◁",
-["triangleq"] = "≜",
-["trianglerighteq"] = "⊵",
-["triangleright"] = "▷",
-["triangle"] = "△",
-["truestate"] = "⊧",
-["twoheadleftarrow"] = "↞",
-["twoheadrightarrow"] = "↠",
-["ulcorner"] = "⌜",
-["unlhd"] = "⊴",
-["unrhd"] = "⊵",
-["UpArrowBar"] = "⤒",
-["uparrow"] = "↑",
-["Uparrow"] = "⇑",
-["updownarrow"] = "↕",
-["Updownarrow"] = "⇕",
-["UpEquilibrium"] = "⥮",
-["upharpoonleft"] = "↿",
-["upharpoonright"] = "↾",
-["uplus"] = "⊎",
-["upslopeellipsis"] = "⋰",
-["upuparrows"] = "⇈",
-["uranus"] = "♅",
-["urcorner"] = "⌝",
-["varepsilon"] = "ɛ",
-["varkappa"] = "ϰ",
-["varnothing"] = "∅",
-["varphi"] = "φ",
-["varpi"] = "ϖ",
-["varrho"] = "ϱ",
-["varsigma"] = "ς",
-["vartheta"] = "ϑ",
-["vartriangleleft"] = "⊲",
-["vartriangleright"] = "⊳",
-["vartriangle"] = "▵",
-["vdash"] = "⊢",
-["Vdash"] = "⊩",
-["VDash"] = "⊫",
-["veebar"] = "⊻",
-["vee"] = "∨",
-["venus"] = "♀",
-["verymuchgreater"] = "⋙",
-["verymuchless"] = "⋘",
-["virgo"] = "♍",
-["volintegral"] = "∰",
-["Vvdash"] = "⊪",
-["wp"] = "℘",
-["wr"] = "≀",
+  if sub and sub.kind ~= "explist" then
+    sub = {
+      kind = "explist",
+      exps = { sub },
+    }
+  end
 
-@special_symbols+=
-["cdots"] = "⋯",
-["vdots"] = "⋮",
-["ddots"] = "⋱",
-["ldots"] = "…",
-["dots"] = "…", -- alias to ldots (for the moment)
+  local last_g = gs[#gs]
+  last_g = put_subsup_aside(last_g, sub, sup)
+  last_g = put_if_only_sub(last_g, sub, sup)
+  last_g = put_if_only_sup(last_g, sub, sup)
+  gs[#gs] = last_g
+
+@collec_sub_and_sup+=
+local sub, sup
+while exp_i <= #explist do
+  if explist[exp_i].kind == "subexp" then
+    sub = explist[exp_i+1]
+    exp_i = exp_i + 2
+  elseif explist[exp_i].kind == "supexp" then
+    sup = explist[exp_i+1]
+    exp_i = exp_i + 2
+  else
+    break
+  end
+end
+exp_i = exp_i - 1

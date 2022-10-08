@@ -13,7 +13,7 @@ elseif exp.kind == "chosexp" then
 	local c2 = c1:join_vert(rightgrid)
 	@set_middle_for_fraction
 
-  local g = c2:enclose_paren()
+  g = c2:enclose_paren()
 
 @generate_appropriate_size_empty_bar+=
 local bar = ""
