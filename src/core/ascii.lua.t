@@ -31,8 +31,11 @@ return {
 @export_symbols
 }
 
+@declare_functions+=
+local to_ascii
+
 @functions+=
-local function to_ascii(exp)
+function to_ascii(exp)
 	@init_grid_structure
 	@transform_exp_to_grid
 	@if_not_valid_exp_return_nil

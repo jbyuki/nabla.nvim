@@ -1,4 +1,6 @@
 -- Generated using ntangle.nvim
+local to_ascii
+
 local utf8len, utf8char
 
 local put_subsup_aside
@@ -1352,7 +1354,7 @@ function put_if_only_sup(exp, g)
   return g
 end
 
-local function to_ascii(exp)
+function to_ascii(exp)
 	local g = grid:new()
 	if not exp then
 		print(debug.traceback())
