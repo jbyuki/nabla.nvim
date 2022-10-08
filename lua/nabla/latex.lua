@@ -58,7 +58,6 @@ function parse()
 		elseif string.match(getc(), "\\") then
 			nextc()
 			local sym
-			local args = {}
 			if getc() == " " then
 				sym = {
 					kind = "symexp",
@@ -87,13 +86,6 @@ function parse()
 		    nextc()
 		  elseif getc() == "{" then
 		  	nextc()
-		  	local in_exp = parse()
-		  	exp = {
-		  		kind = "braexp",
-		  		exp = in_exp,
-		  	}
-		    table.insert(args, exp)
-		    
 		    sym = {
 		      kind = "symexp", 
 		      sym = "{", 
@@ -101,7 +93,10 @@ function parse()
 
 		  elseif getc() == "}" then
 		    nextc()
-		    break
+		    sym = {
+		      kind = "symexp", 
+		      sym = "}", 
+		    }
 
 		  elseif getc() == "," then
 		  	sym = {
@@ -165,23 +160,17 @@ function parse()
 		    break
 
 		  else
-		    while not finish() and string.match(getc(), '{') do
-		      nextc()
-		      table.insert(args, parse())
-		    end
 		    exp = {
 		    	kind = "funexp",
 		    	sym = sym.sym,
-		    	args = args,
 		    }
 
 
 		    if sym.sym == "begin" then
-		    	assert(#args == 1, "begin must have 1 argument")
 		    	local explist = parse()
+
 		    	exp = {
 		    		kind = "blockexp",
-		    		sym = args[1].exps[1].sym,
 		    		content = explist,
 		    	}
 
@@ -201,34 +190,17 @@ function parse()
 		else
 			if getc() == "_" then
 				assert(#explist.exps > 0, "subscript no preceding token")
-				local subscript
 				nextc()
-				if getc() == "{" then
-					nextc()
-					subscript = parse()
-				else
-					local sym_exp = { kind = "symexp", sym = getc() }
-					subscript = { kind = "explist", exps = { sym_exp } }
-					nextc()
-				end
-
-				explist.exps[#explist.exps].sub = subscript
+			  exp = {
+			    kind = "subexp"
+			  }
 
 			elseif getc() == "^" then
 				assert(#explist.exps > 0, "superscript no preceding token")
-				local superscript
-
 				nextc()
-				if getc() == "{" then
-					nextc()
-					superscript = parse()
-				else
-					local sym_exp = { kind = "symexp", sym = getc() }
-					superscript = { kind = "explist", exps = { sym_exp } }
-					nextc()
-				end
-
-				explist.exps[#explist.exps].sup = superscript
+			  exp = {
+			    kind = "supexp"
+			  }
 
 			elseif getc() == "(" then
 				nextc()

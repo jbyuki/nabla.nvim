@@ -35,10 +35,14 @@ return {
 local to_ascii
 
 @functions+=
-function to_ascii(exp)
+function to_ascii(explist, exp_i)
 	@init_grid_structure
-	@transform_exp_to_grid
-	@if_not_valid_exp_return_nil
+  for i=1,#explist do
+    local exp = explist[exp_i]
+    @transform_exp_to_grid
+    @if_not_valid_exp_return_nil
+    @append_side
+  end
 	return grid
 end
 
@@ -69,10 +73,14 @@ function grid:new(w, h, content, t)
 end
 
 @init_grid_structure+=
-local g = grid:new()
-if not exp then
+local main_g = grid:new()
+
+if not explist or not explist[exp_i] then
 	print(debug.traceback())
 end
+
+@append_side+=
+main_g = main_g:join_hori(g)
 
 @grid_prototype+=
 function grid:join_hori(g, top_align)
@@ -110,63 +118,10 @@ local r2 = g:get_row(y-s2)
 @combine_rows_and_put_in_result+=
 table.insert(combined, r1 .. r2)
 
-@style_variables+=
-plus_sign = " + ",
-
 @transform_exp_to_grid+=
 if exp.kind == "numexp" then
 	local numstr = tostring(exp.num)
 	local g = grid:new(string.len(numstr), 1, { tostring(numstr) }, "num")
-
-  g = put_subsup_aside(exp, g)
-  g = put_if_only_sub(exp, g)
-  g = put_if_only_sup(exp, g)
-
-	return g
-
-
-elseif exp.kind == "addexp" then
-	local leftgrid = to_ascii(exp.left):put_paren(exp.left, exp)
-	local rightgrid = to_ascii(exp.right):put_paren(exp.right, exp)
-	local opgrid = grid:new(utf8len(style.plus_sign), 1, { style.plus_sign }, "op")
-	local c1 = leftgrid:join_hori(opgrid)
-	local c2 = c1:join_hori(rightgrid)
-	return c2
-
-@style_variables+=
-minus_sign = " − ",
-
-@transform_exp_to_grid+=
-elseif exp.kind == "subexp" then
-	local leftgrid = to_ascii(exp.left):put_paren(exp.left, exp)
-	local rightgrid = to_ascii(exp.right):put_paren(exp.right, exp)
-	local opgrid = grid:new(utf8len(style.minus_sign), 1, { style.minus_sign })
-	local c1 = leftgrid:join_hori(opgrid)
-	local c2 = c1:join_hori(rightgrid)
-	return c2
-
-@style_variables+=
-multiply_sign = " ∙ ",
-
-@transform_exp_to_grid+=
-elseif exp.kind == "mulexp" then
-	local leftgrid = to_ascii(exp.left):put_paren(exp.left, exp)
-	local rightgrid = to_ascii(exp.right):put_paren(exp.right, exp)
-	local c2
-	if exp.left.kind == "numexp" and exp.right.kind == "numexp" then
-		@if_two_numbers_put_multiply_symbol
-	else
-		@otherwise_multiplication_just_as_concatenation
-	end
-	return c2
-
-@if_two_numbers_put_multiply_symbol+=
-local opgrid = grid:new(utf8len(style.multiply_sign), 1, { style.multiply_sign })
-local c1 = leftgrid:join_hori(opgrid)
-c2 = c1:join_hori(rightgrid)
-
-@otherwise_multiplication_just_as_concatenation+=
-c2 = leftgrid:join_hori(rightgrid)
 
 @grid_metamethods+=
 __tostring = function(g)
@@ -245,20 +200,6 @@ for y=1,h do
 	end
 	table.insert(rows, row)
 end
-
-@transform_exp_to_grid+=
-elseif exp.kind == "divexp" then
-	local leftgrid = to_ascii(exp.left)
-	local rightgrid = to_ascii(exp.right)
-
-	@generate_appropriate_size_fraction_bar
-
-	local opgrid = grid:new(w, 1, { bar })
-
-	local c1 = leftgrid:join_vert(opgrid)
-	local c2 = c1:join_vert(rightgrid)
-	@set_middle_for_fraction
-	return c2
 
 @style_variables+=
 div_bar = "―",
@@ -358,46 +299,11 @@ right_paren.my = self.my
 @transform_exp_to_grid+=
 elseif exp.kind == "symexp" then
 	local sym = exp.sym
-	-- if special_syms[sym] then
-		-- sym = special_syms[sym]
-	-- end
 	local g = grid:new(utf8len(sym), 1, { sym }, "sym")
-
-  g = put_subsup_aside(exp, g)
-  g = put_if_only_sub(exp, g)
-  g = put_if_only_sup(exp, g)
-	return g
 
 
 @style_variables+=
 comma_sign = ", ", 
-
-@transform_exp_to_grid+=
--- elseif exp.kind == "funexp" then
-	-- local name = exp.name.kind == "symexp" and exp.name.sym
-	-- @transform_special_functions
-	-- else
-		-- local c0 = to_ascii(exp.name)
--- 
-		-- local comma = grid:new(utf8len(style.comma_sign), 1, { style.comma_sign })
--- 
-		-- local args
-		-- for _, arg in ipairs(exp.args) do
-			-- local garg = to_ascii(arg)
-			-- if not args then args = garg
-			-- else
-				-- args = args:join_hori(comma)
-				-- args = args:join_hori(garg)
-			-- end
-		-- end
--- 
-		-- if args then
-			-- args = args:enclose_paren()
-		-- else
-			-- args = grid:new(2, 1, { style.left_single_par .. style.right_single_par })
-		-- end
-		-- return c0:join_hori(args)
-	-- end
 
 @style_variables+=
 eq_sign = {
@@ -416,21 +322,6 @@ eq_sign = {
 ["!="] = " ≠ ",
 ["=>"] = " → ",
 
-@transform_exp_to_grid+=
-elseif exp.kind == "eqexp" then
-	if style.eq_sign[exp.sign] then
-		local leftgrid = to_ascii(exp.left)
-		local rightgrid = to_ascii(exp.right)
-		local opgrid = grid:new(utf8len(style.eq_sign[exp.sign]), 1, { style.eq_sign[exp.sign] })
-		local c1 = leftgrid:join_hori(opgrid)
-
-		local c2 = c1:join_hori(rightgrid)
-		return c2
-	else
-		return nil
-	end
-
-
 @greek_etc+=
 ["Alpha"] = "Α", ["Beta"] = "Β", ["Gamma"] = "Γ", ["Delta"] = "Δ", ["Epsilon"] = "Ε", ["Zeta"] = "Ζ", ["Eta"] = "Η", ["Theta"] = "Θ", ["Iota"] = "Ι", ["Kappa"] = "Κ", ["Lambda"] = "Λ", ["Mu"] = "Μ", ["Nu"] = "Ν", ["Xi"] = "Ξ", ["Omicron"] = "Ο", ["Pi"] = "Π", ["Rho"] = "Ρ", ["Sigma"] = "Σ", ["Tau"] = "Τ", ["Upsilon"] = "Υ", ["Phi"] = "Φ", ["Chi"] = "Χ", ["Psi"] = "Ψ", ["Omega"] = "Ω",
 
@@ -438,51 +329,11 @@ elseif exp.kind == "eqexp" then
 
 ["nabla"] = "∇",
 
-@transform_special_functions+=
-if name == "int" and #exp.args == 3 then
-	local lowerbound = to_ascii(exp.args[1])
-	local upperbound = to_ascii(exp.args[2])
-	local integrand = to_ascii(exp.args[3])
-
-	@make_integral_symbol
-
-	local res = upperbound:join_vert(int_bar)
-	res = res:join_vert(lowerbound)
-	res.my = upperbound.h + integrand.my + 1
-
-	res = res:join_hori(col_spacer)
-
-	return res:join_hori(integrand)
-
-@style_variables+=
-int_top = "⌠",
-int_middle = "⎮",
-int_single = "∫",
-int_bottom = "⌡",
-
-@make_integral_symbol+=
-local int_content = {}
-for y=1,integrand.h+1 do
-	if y == 1 then table.insert(int_content, style.int_top)
-	elseif y == integrand.h+1 then table.insert(int_content, style.int_bottom)
-	else table.insert(int_content, style.int_middle)
-	end
-end
-
-local int_bar = grid:new(1, integrand.h+1, int_content)
-local col_spacer = grid:new(1, 1, { " " })
-
 @special_numbers+=
 ["infty"] = "∞",
 
 @style_variables+=
 prefix_minus_sign = "‐",
-
-@transform_exp_to_grid+=
-elseif exp.kind == "presubexp" then
-	local minus = grid:new(utf8len(style.prefix_minus_sign), 1, { style.prefix_minus_sign })
-	local leftgrid = to_ascii(exp.left):put_paren(exp.left, exp)
-	return minus:join_hori(leftgrid)
 
 @grid_prototype+=
 function grid:put_paren(exp, parent)
@@ -565,100 +416,6 @@ local result = leftgrid:combine_sub(rightgrid)
 @make_spacer_lower_left+=
 local spacer = grid:new(self.w, other.h)
 
-@transform_special_functions+=
-elseif name == "lim" and #exp.args == 3 then
-	local variable = to_ascii(exp.args[1])
-	local limit = to_ascii(exp.args[2])
-	local formula = to_ascii(exp.args[3])
-
-	@make_limit_symbols
-	@combine_limit_symbols
-
-	return res
-
-@style_variables+=
-limit = "lim",
-limit_arrow = " → ",
-
-@make_limit_symbols+=
-local limit_text = grid:new(utf8len(style.limit), 1, { style.limit })
-local arrow_text = grid:new(utf8len(style.limit_arrow), 1, { style.limit_arrow })
-local col_spacer = grid:new(1, 1, { " " })
-
-@combine_limit_symbols+=
-local lower = variable:join_hori(arrow_text)
-lower = lower:join_hori(limit)
-
-local res = limit_text:join_vert(lower)
-res.my = 0
-res = res:join_hori(col_spacer)
-res = res:join_hori(formula)
-
-@transform_exp_to_grid+=
-elseif exp.kind == "matexp" then
-	if #exp.rows > 0 then
-		@make_grid_of_individual_cells
-
-		@combine_to_matrix_grid
-		@combine_matrix_brackets
-		res.my = math.floor(res.h/2)
-		return res
-	else
-		return nil, "empty matrix"
-	end
-
-@make_grid_of_individual_cells+=
-local cellsgrid = {}
-local maxheight = 0
-for _, row in ipairs(exp.rows) do
-	local rowgrid = {}
-	for _, cell in ipairs(row) do
-		local cellgrid = to_ascii(cell)
-		table.insert(rowgrid, cellgrid)
-		maxheight = math.max(maxheight, cellgrid.h)
-	end
-	table.insert(cellsgrid, rowgrid)
-end
-
-@combine_to_matrix_grid+=
-local res
-for i=1,#cellsgrid[1] do
-	local col 
-	for j=1,#cellsgrid do
-		local cell = cellsgrid[j][i]
-		@add_row_spacer_to_center_cell
-		@add_col_spacer_to_center_cell
-		@add_cell_grid_to_row_grid
-	end
-	@add_row_grid_to_matrix_grid
-end
-
-@add_cell_grid_to_row_grid+=
-if not col then col = cell
-else col = col:join_vert(cell, true) end
-
-@add_row_grid_to_matrix_grid+=
-if not res then res = col
-else res = res:join_hori(col, true) end
-
-@add_row_spacer_to_center_cell+=
-local sup = maxheight - cell.h
-local sdown = 0
-local up, down
-if sup > 0 then up = grid:new(cell.w, sup) end
-if sdown > 0 then down = grid:new(cell.w, sdown) end
-
-if up then cell = up:join_vert(cell) end
-if down then cell = cell:join_vert(down) end
-
-@add_col_spacer_to_center_cell+=
-local colspacer = grid:new(1, cell.h)
-colspacer.my = cell.my
-
-if i < #cellsgrid[1] then
-	cell = cell:join_hori(colspacer)
-end
-
 @style_variables+=
 matrix_upper_left = "⎡", 
 matrix_upper_right = "⎤", 
@@ -699,172 +456,8 @@ res = res:join_hori(rightbracket, true)
 ["..."] = "…",
 
 @transform_exp_to_grid+=
-elseif exp.kind == "derexp" then
-	local leftgrid = to_ascii(exp.left):put_paren(exp.left, exp)
-
-	@make_derivates_symbol_derexp
-
-	local result = leftgrid:join_hori(superscript, true)
-	result.my = leftgrid.my
-	return result
-
-@make_derivates_symbol_derexp+=
-local super_content = ""
-for i=1,exp.order do
-	super_content = super_content .. "'"
-end
-
-local superscript = grid:new(exp.order, 1, { super_content })
-
-@transform_special_functions+=
-elseif name == "sum" and #exp.args == 3 then
-	local lowerbound = to_ascii(exp.args[1])
-	local upperbound = to_ascii(exp.args[2])
-	local sum = to_ascii(exp.args[3])
-
-	@make_sum_symbol
-
-	local res = upperbound:join_vert(sum_sym)
-	res = res:join_vert(lowerbound)
-	res.my = upperbound.h + math.floor(sum_sym.h/2)
-
-	res = res:join_hori(col_spacer)
-	return res:join_hori(sum)
-
-@style_variables+=
-sum_up   = "⎲",
-sum_down = "⎳",
-
-@make_sum_symbol+=
-assert(utf8len(style.sum_up) == utf8len(style.sum_down))
-local sum_sym = grid:new(utf8len(style.sum_up), 2, { style.sum_up, style.sum_down })
-local col_spacer = grid:new(1, 1, { " " })
-
-@transform_special_functions+=
-elseif name == "sum" and #exp.args == 1 then
-	local sum = to_ascii(exp.args[1])
-
-	@make_sum_symbol
-
-	local res = sum_sym:join_hori(col_spacer)
-	return res:join_hori(sum)
-
-@transform_special_functions+=
-elseif name == "d" and #exp.args == 2 then
-	local var = to_ascii(exp.args[1])
-	local fun = to_ascii(exp.args[2])
-
-	@make_numerator_derivative
-	@make_denominator_derivative
-
-	@generate_appropriate_size_fraction_bar
-
-	local opgrid = grid:new(w, 1, { bar })
-
-	local c1 = leftgrid:join_vert(opgrid)
-	local c2 = c1:join_vert(rightgrid)
-	@set_middle_for_fraction
-	return c2
-
-@style_variables+=
-derivative = "d",
-
-@make_numerator_derivative+=
-local d = grid:new(utf8len(style.derivative), 1, { style.derivative })
-local leftgrid = d:join_hori(fun)
-
-@make_denominator_derivative+=
-local d = grid:new(utf8len(style.derivative), 1, { style.derivative })
-local rightgrid = d:join_hori(var)
-
-@transform_special_functions+=
-elseif name == "dp" and #exp.args == 2 then
-	local var = to_ascii(exp.args[1])
-	local fun = to_ascii(exp.args[2])
-
-	@make_numerator_partial_derivative
-	@make_denominator_partial_derivative
-
-	@generate_appropriate_size_fraction_bar
-
-	local opgrid = grid:new(w, 1, { bar })
-
-	local c1 = leftgrid:join_vert(opgrid)
-	local c2 = c1:join_vert(rightgrid)
-	@set_middle_for_fraction
-	return c2
-
-@style_variables+=
-partial_derivative = "∂",
-
-@make_numerator_partial_derivative+=
-local d = grid:new(utf8len(style.derivative), 1, { style.partial_derivative })
-local leftgrid = d:join_hori(fun)
-
-@make_denominator_partial_derivative+=
-local d = grid:new(utf8len(style.derivative), 1, { style.partial_derivative })
-local rightgrid = d:join_hori(var)
-
-@transform_special_functions+=
-elseif name == "abs" and #exp.args == 1 then
-	local arg = to_ascii(exp.args[1])
-
-	@make_vertical_bar_absolute
-
-	local c1 = vbar_left:join_hori(arg, true)
-	local c2 = c1:join_hori(vbar_right, true)
-	c2.my = arg.my
-	return c2
-
-
-@style_variables+=
-abs_bar_left = "⎮",
-abs_bar_right = "⎮",
-
-@make_vertical_bar_absolute+=
-local vbar_left_content = {}
-local vbar_right_content = {}
-for _=1,arg.h do
-	table.insert(vbar_left_content, style.abs_bar_left)
-	table.insert(vbar_right_content, style.abs_bar_right)
-end
-
-local vbar_left = grid:new(utf8len(style.abs_bar_left), arg.h, vbar_left_content)
-local vbar_right = grid:new(utf8len(style.abs_bar_right), arg.h, vbar_right_content)
-
-@transform_special_functions+=
-elseif (name == "Del" or name == "del") and #exp.args == 1 then
-	local arg = to_ascii(exp.args[1])
-	exp.name.sym = exp.name.sym .. "ta"
-	local delta = to_ascii(exp.name)
-
-	local res = delta:join_hori(arg)
-	res.my = arg.my
-	return res
-
-@relation_signs+=
-["->"] = " → ",
-["<-"] = " ← ",
-
-@transform_exp_to_grid+=
 elseif exp.kind == "explist" then
-	local res
-	for _, exp_el in ipairs(exp.exps) do
-		local exp_grid = to_ascii(exp_el)
-		-- @put_horizontal_spacer
-		if not res then
-			res = exp_grid
-		else
-			res = res:join_hori(exp_grid)
-		end
-	end
-	return res
-
-@put_horizontal_spacer+=
-local col_spacer = grid:new(1, 1, { " " })
-if res then
-	res = res:join_hori(col_spacer)
-end
+  g = to_ascii(exp.exps, 1)
 
 @transform_exp_to_grid+=
 elseif exp.kind == "funexp" then
@@ -875,12 +468,12 @@ elseif exp.kind == "funexp" then
 
 @transform_function_into_ascii+=
 if name == "frac" then
-	assert(#exp.args == 2, "frac must have 2 arguments")
 	@build_ascii_fraction
 
 @build_ascii_fraction+=
-local leftgrid = to_ascii(exp.args[1])
-local rightgrid = to_ascii(exp.args[2])
+local leftgrid = to_ascii({exps[exp_i+1]}, 1)
+local rightgrid = to_ascii({exps[exp_i+2]}, 1)
+exp_i = exp_i + 2
 
 @generate_appropriate_size_fraction_bar
 
@@ -889,11 +482,11 @@ local opgrid = grid:new(w, 1, { bar })
 local c1 = leftgrid:join_vert(opgrid)
 local c2 = c1:join_vert(rightgrid)
 @set_middle_for_fraction
-return c2
+local g = c2
 
 @otherwise_just_print_out_function_as_text+=
 else
-	return grid:new(utf8len(name), 1, { name })
+	local g = grid:new(utf8len(name), 1, { name })
 end
 
 @transform_function_into_ascii+=
@@ -902,11 +495,6 @@ elseif special_syms[name] or special_nums[name] or greek_etc[name] then
   local t
   @determine_type_special
 	local g = grid:new(utf8len(sym), 1, { sym }, t)
-
-  g = put_subsup_aside(exp, g)
-  g = put_if_only_sub(exp, g)
-  g = put_if_only_sup(exp, g)
-	return g
 
 
 @special_symbols+=
@@ -1060,111 +648,113 @@ g = g:join_super(supgrid)
 
 @transform_exp_to_grid+=
 elseif exp.kind == "parexp" then
-	local g = to_ascii(exp.exp):enclose_paren()
-
-  g = put_subsup_aside(exp, g)
-  g = put_if_only_sub(exp, g)
-  g = put_if_only_sup(exp, g)
-	return g
+	g = to_ascii({exp.exp}, 1):enclose_paren()
 
 @transform_function_into_ascii+=
 elseif name == "sqrt" then
-	assert(#exp.args == 1, "sqrt must have 2 arguments")
-	local toroot = to_ascii(exp.args[1])
+	local toroot = to_ascii(explist[exp_i+1])
+  exp_i = exp_i + 1
 
 	@make_root_symbols
 
 	local res = left_root:join_hori(toroot)
 	res = top_root:join_vert(res)
 	res.my = top_root.h + toroot.my
-	return res
+  local g = res
 
 @transform_function_into_ascii+=
 elseif name == "int" then
 	local g = grid:new(1, 1, { "∫" }, "sym")
-
-	@if_has_both_subscript_and_superscript_stack
-	@if_has_subscript_stack_with_g
-	@if_has_superscript_stack_with_g
-
+  g, exp_i = stack_subsup(explist, exp_i, g)
 	@put_col_spacer_to_g
-	return g
+
+@declare_functions+=
+local stack_subsup
+
+@utility_functions+=
+function stack_subsup(explist, i, g)
+  while i+1 <= #explist do
+    local exp = explist[i+1]
+    @if_has_subscript_stack_with_g
+    @if_has_superscript_stack_with_g
+    @otherwise_break_subsup
+  end
+  return g, i
+end
+
+@if_has_subscript_stack_with_g+=
+if exp.kind == "subexp" then
+  i = i + 1
+	local my = g.my
+	local subgrid = to_ascii({explist[i+1]}, 1)
+	g = g:join_vert(subgrid)
+	g.my = my
+
+@if_has_superscript_stack_with_g+=
+elseif exp.kind "supexp" then
+	local my = g.my
+	local supgrid = to_ascii({explist[i+1]}, 1)
+	g = g:join_vert(supgrid)
+	g.my = my + supgrid.h
+
+@otherwise_break_subsup+=
+else 
+  break
+end
 
 @put_col_spacer_to_g+=
-	local col_spacer = grid:new(1, 1, { " " })
-	if g then
-		g = g:join_hori(col_spacer)
-	end
+local col_spacer = grid:new(1, 1, { " " })
+if g then
+  g = g:join_hori(col_spacer)
+end
 
 @transform_function_into_ascii+=
 elseif name == "iint" then
 	local g = grid:new(1, 1, { "∬" }, "sym")
 
-	@if_has_both_subscript_and_superscript_stack
-	@if_has_subscript_stack_with_g
-	@if_has_superscript_stack_with_g
+  g, exp_i = stack_subsup(explist, exp_i, g)
 	@put_col_spacer_to_g
-	return g
 
 elseif name == "iiint" then
 	local g = grid:new(1, 1, { "∭" }, "sym")
 
-	@if_has_both_subscript_and_superscript_stack
-	@if_has_subscript_stack_with_g
-	@if_has_superscript_stack_with_g
+  g, exp_i = stack_subsup(explist, exp_i, g)
 	@put_col_spacer_to_g
-	return g
 
 elseif name == "oint" then
 	local g = grid:new(1, 1, { "∮" }, "sym")
 
-	@if_has_both_subscript_and_superscript_stack
-	@if_has_subscript_stack_with_g
-	@if_has_superscript_stack_with_g
+  g, exp_i = stack_subsup(explist, exp_i, g)
 	@put_col_spacer_to_g
-	return g
 
 elseif name == "oiint" then
 	local g = grid:new(1, 1, { "∯" }, "sym")
 
-	@if_has_both_subscript_and_superscript_stack
-	@if_has_subscript_stack_with_g
-	@if_has_superscript_stack_with_g
+  g, exp_i = stack_subsup(explist, exp_i, g)
 	@put_col_spacer_to_g
-	return g
 
 elseif name == "oiiint" then
 	local g = grid:new(1, 1, { "∰" }, "sym")
 
-	@if_has_both_subscript_and_superscript_stack
-	@if_has_subscript_stack_with_g
-	@if_has_superscript_stack_with_g
+  g, exp_i = stack_subsup(explist, exp_i, g)
 	@put_col_spacer_to_g
-	return g
 
 elseif name == "sum" then
 	local g = grid:new(1, 1, { "∑" }, "sym")
 
-	@if_has_both_subscript_and_superscript_stack
-	@if_has_subscript_stack_with_g
-	@if_has_superscript_stack_with_g
+  g, exp_i = stack_subsup(explist, exp_i, g)
 	@put_col_spacer_to_g
-	return g
 
 elseif name == "prod" then
 	local g = grid:new(1, 1, { "∏" }, "sym")
 
-	@if_has_both_subscript_and_superscript_stack
-	@if_has_subscript_stack_with_g
-	@if_has_superscript_stack_with_g
+  g, exp_i = stack_subsup(explist, exp_i, g)
 	@put_col_spacer_to_g
-	return g
 
 @special_symbols+=
 	["pm"] = "±",
 	["mp"] = "∓",
 	["to"] = "→",
-
 
 @grid_prototype+=
 function grid:join_sub_sup(sub, sup)
@@ -1180,16 +770,6 @@ function grid:join_sub_sup(sub, sup)
 	return res
 end
 
-@if_has_both_subscript_and_superscript_stack+=
-if exp.sub and exp.sup then 
-	local subgrid = to_ascii(exp.sub)
-	local supgrid = to_ascii(exp.sup)
-	local my = g.my
-	g = supgrid:join_vert(g)
-	g = g:join_vert(subgrid)
-	g.my = my + supgrid.h
-end
-
 @special_symbols+=
 ["rightarrow"] = "→",
 ["implies"] = "→",
@@ -1200,29 +780,12 @@ end
 elseif name == "lim" then
   local g = grid:new(3, 1, { "lim" }, "op")
 
-  @if_has_subscript_stack_with_g
-  @put_col_spacer_to_g
-  return g
+  g, exp_i = stack_subsup(explist, exp_i, g)
+	@put_col_spacer_to_g
 
-@if_has_subscript_stack_with_g+=
-if exp.sub and not exp.sup then
-	local my = g.my
-	local subgrid = to_ascii(exp.sub)
-	g = g:join_vert(subgrid)
-	g.my = my
-end
-
-@if_has_superscript_stack_with_g+=
-if exp.sup and not exp.sub then
-	local my = g.my
-	local supgrid = to_ascii(exp.sup)
-	g = g:join_vert(supgrid)
-	g.my = my + supgrid.h
-end
 
 @special_symbols+=
 ["partial"] = "∂",
-
 
 @transform_exp_to_grid+=
 elseif exp.kind == "blockexp" then
@@ -1230,7 +793,6 @@ elseif exp.kind == "blockexp" then
   local name = exp.sym
   @transform_block_expression
   @otherwise_error_with_unknown_block_expression
-  return g
 
 @otherwise_error_with_unknown_block_expression+=
 else
@@ -1239,18 +801,26 @@ end
 
 @transform_block_expression+=
 if name == "matrix" then
-local cells = {}
-@make_grid_of_cells_from_exp_list
+  local cells = grid_of_exps(exp.content.exps)
 
-@combine_to_matrix_grid
--- @combine_matrix_brackets
-res.my = math.floor(res.h/2)
-return res
+  @combine_to_matrix_grid
+  -- @combine_matrix_brackets
+  res.my = math.floor(res.h/2)
+  g = res
+
+@declare_functions+=
+local grid_of_exps
+
+@utility_functions+=
+function grid_of_exps(explist)
+  local cells = {}
+  @make_grid_of_cells_from_exp_list
+  return cells
+end
 
 @make_grid_of_cells_from_exp_list+=
 local cellsgrid = {}
 local maxheight = 0
-local explist = exp.content.exps
 local i = 1
 local rowgrid = {}
 while i <= #explist do
@@ -1304,8 +874,7 @@ end
 
 @transform_block_expression+=
 elseif name == "pmatrix" then
-	local cells = {}
-	@make_grid_of_cells_from_exp_list
+  local cells = grid_of_exps(exp.content.exps)
 
 @combine_to_matrix_grid
 res.my = math.floor(res.h/2)
@@ -1313,13 +882,12 @@ return res:enclose_paren()
 
 @transform_block_expression+=
 elseif name == "bmatrix" then
-	local cells = {}
-	@make_grid_of_cells_from_exp_list
+  local cells = grid_of_exps(exp.content.exps)
 
 @combine_to_matrix_grid
 @combine_matrix_brackets
 res.my = math.floor(res.h/2)
-return res
+local g = res
 
 @put_children_join_horiz+=
 table.insert(c.children, { self, 0, s1 })
@@ -1339,23 +907,6 @@ elseif greek_etc[name] then
 end
 
 
-@determine_subscript_type+=
-if #subexps == 1 and subexps[1].kind == "numexp" or (subexps[1].kind == "symexp" and string.match(subexps[1].sym, "^%d+$")) then
-  sub_t = "num"
-elseif subexps[1].kind == "symexp" and string.match(subexps[1].sym, "^%a+$") then
-  sub_t = "var"
-else
-  sub_t = "sym"
-end
-
-@determine_superscript_type+=
-if #supexps == 1 and supexps[1].kind == "numexp" or (supexps[1].kind == "symexp" and string.match(supexps[1].sym, "^%d+$")) then
-  sup_t = "num"
-elseif supexps[1].kind == "symexp" and string.match(supexps[1].sym, "^%a+$") then
-  sup_t = "var"
-else
-  sup_t = "sym"
-end
 
 @special_symbols+=
 ["otimes"] = "⊗",
@@ -1948,121 +1499,9 @@ end
 ["wp"] = "℘",
 ["wr"] = "≀",
 
-@grid_prototype+=
-function grid:enclose_bracket()
-	@create_left_bracket_with_correct_height
-	@create_right_bracket_with_correct_height
-
-	local c1 = left_bra:join_hori(self)
-	local c2 = c1:join_hori(right_bra)
-	return c2
-end
-
-@style_variables+=
-left_top_bra    = '⎧',
-left_middle_bra = '⎨',
-left_other_bra  = '⎥',
-left_bottom_bra = '⎩',
-
-right_top_bra    = '⎫',
-right_middle_bra = '⎬',
-right_other_bra =  '⎪',
-right_bottom_bra = '⎭',
-
-left_single_bra = '{',
-right_single_bra = '}',
-
-@create_left_bracket_with_correct_height+=
-local left_content = {}
-if self.h == 1 then
-	left_content = { style.left_single_bra }
-elseif self.h == 2 then
-	left_content = { ' ', style.left_single_bra }
-else
-	for y=1,self.h do
-		if y == 1 then table.insert(left_content, style.left_top_bra)
-		elseif y == self.h then table.insert(left_content, style.left_bottom_bra)
-		elseif y == math.ceil(self.h/2) then table.insert(left_content, style.left_middle_bra)
-    else
-      table.insert(left_content, style.left_other_bra)
-		end
-	end
-end
-
-local left_bra = grid:new(1, self.h, left_content, "bra")
-left_bra.my = self.my
-
-@create_right_bracket_with_correct_height+=
-local right_content = {}
-if self.h == 1 then
-	right_content = { style.right_single_bra }
-elseif self.h == 2 then
-	right_content = { ' ', style.right_single_bra }
-else
-	for y=1,self.h do
-		if y == 1 then table.insert(right_content, style.right_top_bra)
-		elseif y == self.h then table.insert(right_content, style.right_bottom_bra)
-		elseif y == math.ceil(self.h/2) then table.insert(right_content, style.right_middle_bra)
-    else
-      table.insert(right_content, style.right_other_bra)
-		end
-	end
-end
-
-local right_bra = grid:new(1, self.h, right_content, "bra")
-right_bra.my = self.my
-
-@if_function_bracket_put_bracket_around_and_recurse+=
-elseif name == "{" then
-	assert(#exp.args == 1, "{ must have 1 argument")
-	local g = to_ascii(exp.args[1].exp):enclose_bracket()
-
-  g = put_subsup_aside(exp, g)
-  g = put_if_only_sub(exp, g)
-  g = put_if_only_sup(exp, g)
-	return g
-
-@transform_function_into_ascii+=
-elseif name == "text" then
-	assert(#exp.args == 1, "text must have 1 argument")
-	return grid:new(utf8len(exp.args[1]), 1, { exp.args[1] })
-
-@transform_exp_to_grid+=
-elseif exp.kind == "chosexp" then
-  -- same thing as frac without the bar
-  local leftgrid = to_ascii(exp.left)
-  local rightgrid = to_ascii(exp.right)
-  
-	@generate_appropriate_size_empty_bar
-
-	local opgrid = grid:new(w, 1, { bar })
-
-	local c1 = leftgrid:join_vert(opgrid)
-	local c2 = c1:join_vert(rightgrid)
-	@set_middle_for_fraction
-
-  local g = c2:enclose_paren()
-
-  g = put_subsup_aside(exp, g)
-  g = put_if_only_sub(exp, g)
-  g = put_if_only_sup(exp, g)
-	return g
-
-@generate_appropriate_size_empty_bar+=
-local bar = ""
-local w = math.max(leftgrid.w, rightgrid.w)
-for x=1,w do
-	bar = bar .. " "
-end
-
 @special_symbols+=
 ["cdots"] = "⋯",
 ["vdots"] = "⋮",
 ["ddots"] = "⋱",
 ["ldots"] = "…",
 ["dots"] = "…", -- alias to ldots (for the moment)
-
-@transform_function_into_ascii+=
-elseif name == "texttt" then
-	assert(#exp.args == 1, "texttt must have 1 argument")
-	return grid:new(utf8len(exp.args[1]), 1, { exp.args[1] })

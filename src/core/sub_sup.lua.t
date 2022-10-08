@@ -70,6 +70,24 @@ for _, exp in ipairs(subexps) do
 	end
 end
 
+@determine_subscript_type+=
+if #subexps == 1 and subexps[1].kind == "numexp" or (subexps[1].kind == "symexp" and string.match(subexps[1].sym, "^%d+$")) then
+  sub_t = "num"
+elseif subexps[1].kind == "symexp" and string.match(subexps[1].sym, "^%a+$") then
+  sub_t = "var"
+else
+  sub_t = "sym"
+end
+
+@determine_superscript_type+=
+if #supexps == 1 and supexps[1].kind == "numexp" or (supexps[1].kind == "symexp" and string.match(supexps[1].sym, "^%d+$")) then
+  sup_t = "num"
+elseif supexps[1].kind == "symexp" and string.match(supexps[1].sym, "^%a+$") then
+  sup_t = "var"
+else
+  sup_t = "sym"
+end
+
 @append_number_subscript+=
 local num = exp.num
 if num == 0 then
