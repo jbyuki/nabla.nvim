@@ -1,28 +1,30 @@
 ##../nabla
 @../lua/nabla/utils.lua=
 local utils = {}
+
+local has_treesitter, ts = pcall(require, "vim.treesitter")
+local _, query = pcall(require, "vim.treesitter.query")
+
+local MATH_ENVIRONMENTS = {
+    displaymath = true,
+    eqnarray = true,
+    equation = true,
+    math = true,
+    array = true,
+}
+local MATH_NODES = {
+    displayed_equation = true,
+    inline_formula = true,
+}
+
 utils.in_mathzone = function()
-    local has_treesitter, ts = pcall(require, "vim.treesitter")
-    local _, query = pcall(require, "vim.treesitter.query")
-
-    local MATH_ENVIRONMENTS = {
-        displaymath = true,
-        eqnarray = true,
-        equation = true,
-        math = true,
-        array = true,
-    }
-    local MATH_NODES = {
-        displayed_equation = true,
-        inline_formula = true,
-    }
-
     local function get_node_at_cursor()
         local cursor = vim.api.nvim_win_get_cursor(0)
         local cursor_range = { cursor[1] - 1, cursor[2] }
         local buf = vim.api.nvim_get_current_buf()
         local ok, parser = pcall(ts.get_parser, buf, "latex")
         if not ok or not parser then
+          @warn_if_latex_is_not_installed
             vim.api.nvim_echo({{"Latex parser not found. Please install with nvim-tresitter using \":TSInstall latex\".", "ErrorMsg"}}, true, {})
             return
         end
@@ -71,6 +73,8 @@ utils.in_mathzone = function()
         return false
     end
 end
+
+@utils_functions
 
 return utils
 

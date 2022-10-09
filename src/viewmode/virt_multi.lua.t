@@ -3,9 +3,8 @@
 local enable_virt
 
 @functions+=
-function enable_virt(opts)
+function enable_virt()
   local buf = vim.api.nvim_get_current_buf()
-  @set_local_delimitors_if_any
   @set_as_enabled
   @read_whole_buffer
   @foreach_line_generate_drawings
@@ -19,29 +18,10 @@ enable_virt = enable_virt,
 @foreach_line_generate_drawings+=
 local annotations = {}
 
-for _, str in ipairs(lines) do
+@detect_all_formulas
+for row, str in ipairs(lines) do
   @detect_formulas_in_line
   @foreach_formulas_generate_drawing
-end
-
-@detect_formulas_in_line+=
-local formulas = {}
-
-local rem = str
-local acc = 0
-while true do
-  local p1 = rem:find(local_delims[buf]["start_delim"])
-  if not p1 then break end
-
-  rem = rem:sub(p1+1)
-
-  local p2 = rem:find(local_delims[buf]["end_delim"])
-  if not p2 then break end
-
-  rem = rem:sub(p2+1)
-  table.insert(formulas, {p1+acc+1, p2+p1+acc-1})
-
-  acc = acc + p1 + p2
 end
 
 @foreach_formulas_generate_drawing+=
@@ -49,8 +29,9 @@ local line_annotations = {}
 
 for _, form in ipairs(formulas) do
   local p1, p2 = unpack(form)
-  local line = str:sub(p1, p2)
+  local line = str:sub(p1+1, p2)
 
+  @transform_line_to_remove_delimiters
   @parse_math_expression
 
   if success and exp then
@@ -232,8 +213,8 @@ local inline_virt = {}
 local chunks = {}
 
 @select_inline_conceal_based_if_first_line
-local margin_left = desired_col - p1 + 2
-local margin_right = p2 - #line_virt - desired_col + 1
+local margin_left = desired_col - p1
+local margin_right = p2 - #line_virt - desired_col
 
 for i=1,margin_left do
   table.insert(chunks, {" ", "NonText"})
@@ -269,9 +250,9 @@ for _, iv in ipairs(inline_virt) do
 
   for j, chunk in ipairs(chunks) do
     local c, hl_group = unpack(chunk)
-    vim.api.nvim_buf_set_extmark(buf, inline_virt_ns[buf], i-1, p1-2+j-1, {
+    vim.api.nvim_buf_set_extmark(buf, inline_virt_ns[buf], i-1, p1+j-1, {
       end_row = i-1,
-      end_col = p1-2+j,
+      end_col = p1+j,
       conceal = c,
       hl_group = hl_group,
     })

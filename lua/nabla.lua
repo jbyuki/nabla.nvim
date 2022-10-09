@@ -9,8 +9,6 @@ local utils=require"nabla.utils"
 
 local vtext = vim.api.nvim_create_namespace("nabla")
 
-local local_delims = {}
-
 local mult_virt_ns = {}
 
 local virt_enabled = {}
@@ -395,54 +393,41 @@ local function popup(overrides)
 
 end
 
-function enable_virt(opts)
+function enable_virt()
   local buf = vim.api.nvim_get_current_buf()
-  local_delims[buf] = {
-    start_delim = "%$",
-    end_delim = "%$"
-  }
-
-  if type(opts) == "table" then
-    if opts["start_delim"] then
-      local_delims[buf]["start_delim"] = vim.pesc(opts["start_delim"])
-    end
-
-    if opts["end_delim"] then
-      local_delims[buf]["end_delim"] = vim.pesc(opts["end_delim"])
-    end
-  end
   virt_enabled[buf] = true
 
   local lines = vim.api.nvim_buf_get_lines(buf, 0, -1, true)
 
   local annotations = {}
 
-  for _, str in ipairs(lines) do
-    local formulas = {}
-
-    local rem = str
-    local acc = 0
-    while true do
-      local p1 = rem:find(local_delims[buf]["start_delim"])
-      if not p1 then break end
-
-      rem = rem:sub(p1+1)
-
-      local p2 = rem:find(local_delims[buf]["end_delim"])
-      if not p2 then break end
-
-      rem = rem:sub(p2+1)
-      table.insert(formulas, {p1+acc+1, p2+p1+acc-1})
-
-      acc = acc + p1 + p2
+  local formula_nodes = utils.get_all_mathzones()
+  local formula_at_line = {}
+  for _, node in ipairs(formula_nodes) do
+    local srow, scol, erow, ecol = ts_utils.get_node_range(node)
+    -- For now only support single line formulas
+    -- will probably change this in the near future
+    if srow == erow then
+      formula_at_line[srow] = formula_at_line[srow] or {}
+      table.insert(formula_at_line[srow], {scol, ecol})
     end
+  end
+
+  for row, str in ipairs(lines) do
+    local formulas = formula_at_line[row-1] or {}
 
     local line_annotations = {}
 
     for _, form in ipairs(formulas) do
       local p1, p2 = unpack(form)
-      local line = str:sub(p1, p2)
+      local line = str:sub(p1+1, p2)
 
+      line = line:gsub("%$", "")
+      line = line:gsub("\\%[", "")
+      line = line:gsub("\\%]", "")
+      line = line:gsub("^\\%(", "")
+      line = line:gsub("\\%)$", "")
+      line = vim.trim(line)
       local success, exp = pcall(parser.parse_all, line)
 
 
@@ -571,8 +556,8 @@ function enable_virt(opts)
         else
           line_virt = drawing_virt[#drawing_virt]
         end
-        local margin_left = desired_col - p1 + 2
-        local margin_right = p2 - #line_virt - desired_col + 1
+        local margin_left = desired_col - p1
+        local margin_right = p2 - #line_virt - desired_col
 
         for i=1,margin_left do
           table.insert(chunks, {" ", "NonText"})
@@ -598,9 +583,9 @@ function enable_virt(opts)
 
         for j, chunk in ipairs(chunks) do
           local c, hl_group = unpack(chunk)
-          vim.api.nvim_buf_set_extmark(buf, inline_virt_ns[buf], i-1, p1-2+j-1, {
+          vim.api.nvim_buf_set_extmark(buf, inline_virt_ns[buf], i-1, p1+j-1, {
             end_row = i-1,
-            end_col = p1-2+j,
+            end_col = p1+j,
             conceal = c,
             hl_group = hl_group,
           })
