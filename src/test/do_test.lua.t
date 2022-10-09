@@ -92,6 +92,7 @@ if type(result) == "table" then
   end
 else
   result = "NO OUTPUT"
+  correct = false
 end
 
 @print_test_result+=

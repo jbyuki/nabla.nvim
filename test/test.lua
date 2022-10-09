@@ -55,6 +55,7 @@ for _, file in ipairs(files) do
     end
   else
     result = "NO OUTPUT"
+    correct = false
   end
 
   local name = vim.fn.fnamemodify(file, ":t")
