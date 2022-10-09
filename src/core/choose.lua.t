@@ -2,8 +2,8 @@
 @transform_exp_to_grid+=
 elseif exp.kind == "chosexp" then
   -- same thing as frac without the bar
-  local leftgrid = to_ascii(exp.left)
-  local rightgrid = to_ascii(exp.right)
+  local leftgrid = to_ascii({exp.left}, 1)
+  local rightgrid = to_ascii({exp.right}, 1)
   
 	@generate_appropriate_size_empty_bar
 

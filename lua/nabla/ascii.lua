@@ -1762,8 +1762,8 @@ function to_ascii(explist, exp_i)
 
     elseif exp.kind == "chosexp" then
       -- same thing as frac without the bar
-      local leftgrid = to_ascii(exp.left)
-      local rightgrid = to_ascii(exp.right)
+      local leftgrid = to_ascii({exp.left}, 1)
+      local rightgrid = to_ascii({exp.right}, 1)
       
     	local bar = ""
     	local w = math.max(leftgrid.w, rightgrid.w)
