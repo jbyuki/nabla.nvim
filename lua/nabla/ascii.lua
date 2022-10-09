@@ -15,8 +15,6 @@ local put_if_only_sub
 
 local put_if_only_sup
 
-local to_ascii
-
 
 local style = {
 	div_bar = "―",
@@ -1419,7 +1417,6 @@ function put_if_only_sup(g, sub, sup)
 
   return g
 end
-
 
 function to_ascii(explist, exp_i)
   local gs = {}

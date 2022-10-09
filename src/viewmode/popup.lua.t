@@ -13,10 +13,6 @@ colorize(g, 0, 0, 0, ns_id, drawing, 0, 0, bufnr_float)
 
 @functions+=
 local function popup(overrides)
-  local buf = vim.api.nvim_get_current_buf()
-  local row, col = unpack(vim.api.nvim_win_get_cursor(0))
-  local line
-
   @extract_latex_formula
 
   @parse_math_expression

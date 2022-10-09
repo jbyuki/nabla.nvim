@@ -1,20 +1,12 @@
 -- Generated using ntangle.nvim
 -- local parser = require("nabla.parser")
 local parser = require("nabla.latex")
-local ts_utils = require("nvim-treesitter.ts_utils")
-local utils=require"nabla.utils"
-
 
 local ascii = require("nabla.ascii")
 
-local function get_param(name, default)
-  local succ, val = pcall(vim.api.nvim_get_var, name)
-  if not succ then 
-    return default
-  else
-    return val
-  end
-end
+local ts_utils = require("nvim-treesitter.ts_utils")
+local utils=require"nabla.utils"
+
 local vtext = vim.api.nvim_create_namespace("nabla")
 
 local local_delims = {}
@@ -336,29 +328,29 @@ local function gen_drawing(lines)
 end
 
 local function popup(overrides)
-    if not utils.in_mathzone() then
-        return
-    end
-    local line
+  if not utils.in_mathzone() then
+      return
+  end
 
-    cur_line = line
+  local math_node = utils.in_mathzone()
 
-    local math_node = utils.in_mathzone()
+  local srow, scol, erow, ecol = ts_utils.get_node_range(math_node)
 
-    local srow, scol, erow, ecol = ts_utils.get_node_range(math_node)
-    local lines = vim.api.nvim_buf_get_text(0, srow, scol, erow, ecol, {})
+  local lines = vim.api.nvim_buf_get_text(0, srow, scol, erow, ecol, {})
+   
+  line = table.concat(lines, " ")
+  line = line:gsub("%$", "")
+  line = line:gsub("\\%[", "")
+  line = line:gsub("\\%]", "")
+  line = line:gsub("^\\%(", "")
+  line = line:gsub("\\%)$", "")
+  local whitespace = string.match(line, "^(%s*)%S")
+  line = vim.trim(line)
+  if line == "" then
+      return
+  end
 
-    line = table.concat(lines, " ")
-    line = line:gsub("%$", "")
-    line = line:gsub("\\%[", "")
-    line = line:gsub("\\%]", "")
-    line = line:gsub("^\\%(", "")
-    line = line:gsub("\\%)$", "")
-    local whitespace = string.match(line, "^(%s*)%S")
-    line = vim.trim(line)
-    if line == "" then
-        return
-    end
+
 
   local success, exp = pcall(parser.parse_all, line)
 

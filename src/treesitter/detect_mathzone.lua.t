@@ -1,4 +1,5 @@
--- Generated using ntangle.nvim
+##../nabla
+@../lua/nabla/utils.lua=
 local utils = {}
 utils.in_mathzone = function()
     local has_treesitter, ts = pcall(require, "vim.treesitter")
@@ -71,4 +72,34 @@ utils.in_mathzone = function()
 end
 
 return utils
+
+@requires+=
+local ts_utils = require("nvim-treesitter.ts_utils")
+local utils=require"nabla.utils"
+
+@extract_latex_formula+=
+if not utils.in_mathzone() then
+    return
+end
+
+local math_node = utils.in_mathzone()
+
+local srow, scol, erow, ecol = ts_utils.get_node_range(math_node)
+
+@get_text_in_range
+
+@get_text_in_range+=
+local lines = vim.api.nvim_buf_get_text(0, srow, scol, erow, ecol, {})
+ 
+line = table.concat(lines, " ")
+line = line:gsub("%$", "")
+line = line:gsub("\\%[", "")
+line = line:gsub("\\%]", "")
+line = line:gsub("^\\%(", "")
+line = line:gsub("\\%)$", "")
+local whitespace = string.match(line, "^(%s*)%S")
+line = vim.trim(line)
+if line == "" then
+    return
+end
 
