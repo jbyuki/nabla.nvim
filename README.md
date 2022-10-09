@@ -23,7 +23,7 @@ Install
 -------
 
 <details>
-  <summary>Using [vim-plug](https://github.com/junegunn/vim-plug)</summary>
+  <summary>Using <a href="https://github.com/junegunn/vim-plug">vim-plug</a></summary>
 
   ```vim
   Plug 'jbyuki/nabla.nvim'
@@ -31,7 +31,7 @@ Install
 </details>
 
 <details>
-  <summary>Using [packer.nvim](https://github.com/wbthomason/packer.nvim)</summary>
+  <summary>Using <a href="https://github.com/wbthomason/packer.nvim">packer.nvim</a></summary>
 
   ```vim
   use 'jbyuki/nabla.nvim'
