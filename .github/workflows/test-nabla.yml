@@ -16,7 +16,7 @@ jobs:
             mv nvim.appimage ./build/nvim
           }
           mkdir -p ~/.local/share/nvim/site/pack/vendor/start
-          cp ${{ github.workspace }} ~/.local/share/nvim/site/pack/vendor/start
+          cp -R ${{ github.workspace }} ~/.local/share/nvim/site/pack/vendor/start
       - run: echo "Neovim has been installed."
       - name: List files in the repository
         run: |
