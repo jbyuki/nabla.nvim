@@ -5,7 +5,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check out repository code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - name: Prepare
         run: |
           sudo apt install fd-find
@@ -17,7 +17,6 @@ jobs:
           }
           mkdir -p ~/.local/share/nvim/site/pack/vendor/start
           ls $GITHUB_WORKSPACE
-          cp -R $GITHUB_WORKSPACE ~/.local/share/nvim/site/pack/vendor/start
       - run: echo "Neovim has been installed."
       - name: List files in the repository
         run: |
