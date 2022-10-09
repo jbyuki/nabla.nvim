@@ -16,16 +16,42 @@ Requirements
 
 * Neovim nightly
 * A colorscheme which supports treesitter [see here](https://github.com/rockerBOO/awesome-neovim#treesitter-supported-colorschemes)
-* The latex parser for treesitter (can be installed via `:TSInstall latex` with [nvim-treesitter](https://github.com/nvim-treesitter/nvim-treesitter#language-parsers))
+* Tree-sitter : [nvim-treesitter/nvim-treesitter](https://github.com/nvim-treesitter/nvim-treesitter)
+* Latex parser : Install with `TSInstall latex`.
 
 Install
 -------
 
-Using [vim-plug](https://github.com/junegunn/vim-plug)
+<details>
+  <summary>Using [vim-plug](https://github.com/junegunn/vim-plug)</summary>
 
-```vim
-Plug 'jbyuki/nabla.nvim'
-```
+  ```vim
+  Plug 'jbyuki/nabla.nvim'
+  ```
+</details>
+
+<details>
+  <summary>Using [packer.nvim](https://github.com/wbthomason/packer.nvim)</summary>
+
+  ```vim
+  use 'jbyuki/nabla.nvim'
+  ```
+</details>
+
+<details>
+  <summary>Using the built-in package manager</summary>
+
+  * Create a folder `pack/<a folder name of your choosing>/start`
+  * Inside the `start` folder `git clone` nabla.nvim
+    * `git clone https://github.com/jbyuki/nabla.nvim`
+  * In your init.lua, add the pack folder to packpath (see `:help packpath`)
+    ```lua
+    vim.o.packpath = vim.o.packpath .. ",<path to where pack/ is located>"
+    ```
+
+  * `git pull` in the plugin folder to update it. You want something more viable
+  though, that's why package managers are useful.
+</details>
 
 Configuration
 -------------
