@@ -101,7 +101,7 @@ vim.api.nvim_buf_set_virtual_text(buf, vtext, y-1, {{ vim.inspect(errmsg), "Spec
 local ascii = require("nabla.ascii")
 
 @generate_ascii_art+=
-local succ, g = pcall(ascii.to_ascii, exp)
+local succ, g = pcall(ascii.to_ascii, {exp}, 1)
 if not succ then
   print(g)
   return 0

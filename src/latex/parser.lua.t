@@ -128,7 +128,6 @@ local exp = {
 elseif string.match(getc(), "\\") then
 	nextc()
 	local sym
-	local args = {}
 	@if_space_parse_as_single_space
   @if_other_type_of_spaces_expand
   elseif getc() == "\\" then
@@ -137,7 +136,7 @@ elseif string.match(getc(), "\\") then
       sym = "\\",
     }
     nextc()
-  @if_open_bracket_parse_inside_it
+  @if_open_bracket_parse_verbatim
   @if_close_bracket_break
   @if_comma_parse_as_space
 	else
@@ -146,12 +145,9 @@ elseif string.match(getc(), "\\") then
   @if_sym_is_text_parse_verbatim
   @if_sym_is_quad_expand_here
   @if_sym_is_choose_reduce
+  @if_sym_is_space_passthrough
   @if_sym_is_left_open_paren
   else
-    while not finish() and string.match(getc(), '{') do
-      nextc()
-      table.insert(args, parse())
-    end
     @create_function_expression
 
     @if_it_begins_until_enclosing_end
@@ -168,7 +164,6 @@ end
 exp = {
 	kind = "funexp",
 	sym = sym.sym,
-	args = args,
 }
 
 @if_operator_parse_operator+=
@@ -183,35 +178,18 @@ end
 @if_subscript_parse_with_sub+=
 if getc() == "_" then
 	assert(#explist.exps > 0, "subscript no preceding token")
-	local subscript
 	nextc()
-	if getc() == "{" then
-		nextc()
-		subscript = parse()
-	else
-		local sym_exp = { kind = "symexp", sym = getc() }
-		subscript = { kind = "explist", exps = { sym_exp } }
-		nextc()
-	end
-
-	explist.exps[#explist.exps].sub = subscript
+  exp = {
+    kind = "subexp"
+  }
 
 @if_superscript_parse_with_sup+=
 elseif getc() == "^" then
 	assert(#explist.exps > 0, "superscript no preceding token")
-	local superscript
-
 	nextc()
-	if getc() == "{" then
-		nextc()
-		superscript = parse()
-	else
-		local sym_exp = { kind = "symexp", sym = getc() }
-		superscript = { kind = "explist", exps = { sym_exp } }
-		nextc()
-	end
-
-	explist.exps[#explist.exps].sup = superscript
+  exp = {
+    kind = "supexp"
+  }
 
 @if_paren_parse_inside_it+=
 elseif getc() == "(" then
@@ -239,11 +217,10 @@ end
 
 @if_it_begins_until_enclosing_end+=
 if sym.sym == "begin" then
-	assert(#args == 1, "begin must have 1 argument")
 	local explist = parse()
+
 	exp = {
 		kind = "blockexp",
-		sym = args[1].exps[1].sym,
 		content = explist,
 	}
 
@@ -285,16 +262,16 @@ elseif getc() == "," then
 	}
 	nextc()
 
-@if_open_bracket_parse_inside_it+=
+@if_sym_is_space_passthrough+=
+elseif sym.sym:sub(1,1) == " " then
+	exp = {
+		kind = "symexp",
+		sym = " ",
+	}
+
+@if_open_bracket_parse_verbatim+=
 elseif getc() == "{" then
 	nextc()
-	local in_exp = parse()
-	exp = {
-		kind = "braexp",
-		exp = in_exp,
-	}
-  table.insert(args, exp)
-  
   sym = {
     kind = "symexp", 
     sym = "{", 
@@ -303,7 +280,10 @@ elseif getc() == "{" then
 @if_close_bracket_break+=
 elseif getc() == "}" then
   nextc()
-  break
+  sym = {
+    kind = "symexp", 
+    sym = "}", 
+  }
 
 @if_sym_is_text_parse_verbatim+=
 if (sym.sym == "text" or sym.sym == "texttt") and string.match(getc(), '{') then
@@ -316,7 +296,7 @@ if (sym.sym == "text" or sym.sym == "texttt") and string.match(getc(), '{') then
   nextc()
 
   exp = {
-    kind = "funexp",
+    kind = "symexp",
     sym  = txt,
   }
 
@@ -343,12 +323,12 @@ elseif getc() == ";" then
 @if_sym_is_quad_expand_here+=
 elseif sym.sym == "quad" then
 	exp = {
-		kind = "funexp",
+		kind = "symexp",
 		sym = "       ",
 	}
 elseif sym.sym == "qquad" then
 	exp = {
-		kind = "funexp",
+		kind = "symexp",
 		sym = "        ",
 	}
 
