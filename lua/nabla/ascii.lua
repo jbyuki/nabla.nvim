@@ -7,6 +7,8 @@ local put_if_only_sub
 
 local put_if_only_sup
 
+local to_ascii
+
 
 local style = {
 	plus_sign = " + ",
@@ -1352,7 +1354,7 @@ function put_if_only_sup(exp, g)
   return g
 end
 
-local function to_ascii(exp)
+to_ascii=function(exp)
 	local g = grid:new()
 	if not exp then
 		print(debug.traceback())
