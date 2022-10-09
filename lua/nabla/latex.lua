@@ -174,14 +174,17 @@ function parse()
 
 		    if sym.sym == "begin" then
 		    	local explist = parse()
+		      local block_name = explist.exps[1]
+		      table.remove(explist.exps, 1)
 
 		    	exp = {
 		    		kind = "blockexp",
+		        first = block_name,
 		    		content = explist,
 		    	}
 
 		    elseif sym.sym == "end" then
-		    	return explist
+		      break
 		    end
 
 		  end

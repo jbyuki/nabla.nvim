@@ -414,6 +414,8 @@ local result = leftgrid:combine_sub(rightgrid)
 @make_spacer_lower_left+=
 local spacer = grid:new(self.w, other.h)
 
+
+
 @style_variables+=
 matrix_upper_left = "⎡", 
 matrix_upper_right = "⎤", 
@@ -751,21 +753,22 @@ elseif name == "lim" then
 
 @transform_exp_to_grid+=
 elseif exp.kind == "blockexp" then
-  local name = exp.sym
+  local sym = unpack_explist(exp.first)
+  exp_i = exp_i + 1
+  local name = sym.sym
   @transform_block_expression
   @otherwise_error_with_unknown_block_expression
 
 @otherwise_error_with_unknown_block_expression+=
 else
-  error("Unknown block expression " .. exp.sym)
+  error("Unknown block expression " .. name)
 end
 
 @transform_block_expression+=
 if name == "matrix" then
-  local cells = grid_of_exps(exp.content.exps)
+  local cellsgrid, maxheight = grid_of_exps(exp.content.exps)
+  local res = combine_matrix_grid(cellsgrid, maxheight)
 
-  @combine_to_matrix_grid
-  -- @combine_matrix_brackets
   res.my = math.floor(res.h/2)
   g = res
 
@@ -774,9 +777,8 @@ local grid_of_exps
 
 @utility_functions+=
 function grid_of_exps(explist)
-  local cells = {}
   @make_grid_of_cells_from_exp_list
-  return cells
+  return cellsgrid, maxheight
 end
 
 @make_grid_of_cells_from_exp_list+=
@@ -808,14 +810,14 @@ while i <= #explist do
 end
 
 @switch_to_next_cell+=
-local cellgrid = to_ascii(cell_list)
+local cellgrid = to_ascii({cell_list}, 1)
 table.insert(rowgrid, cellgrid)
 maxheight = math.max(maxheight, cellgrid.h)
 i = i+1
 break
 
 @switch_to_next_cell_and_row+=
-local cellgrid = to_ascii(cell_list)
+local cellgrid = to_ascii({cell_list}, 1)
 table.insert(rowgrid, cellgrid)
 maxheight = math.max(maxheight, cellgrid.h)
 
@@ -826,29 +828,85 @@ break
 
 @if_last_one_add_cellgrid+=
 if i > #explist then
-	local cellgrid = to_ascii(cell_list)
+	local cellgrid = to_ascii({cell_list}, 1)
 	table.insert(rowgrid, cellgrid)
 	maxheight = math.max(maxheight, cellgrid.h)
 
 	table.insert(cellsgrid, rowgrid)
 end
 
+@make_grid_of_individual_cells+=
+local cellsgrid = {}
+local maxheight = 0
+for _, row in ipairs(exp.rows) do
+	local rowgrid = {}
+	for _, cell in ipairs(row) do
+		local cellgrid = to_ascii(cell)
+		table.insert(rowgrid, cellgrid)
+		maxheight = math.max(maxheight, cellgrid.h)
+	end
+	table.insert(cellsgrid, rowgrid)
+end
+
+@declare_functions+=
+local combine_matrix_grid
+
+@utility_functions+=
+function combine_matrix_grid(cellsgrid, maxheight)
+  local res
+  for i=1,#cellsgrid[1] do
+    local col 
+    for j=1,#cellsgrid do
+      local cell = cellsgrid[j][i]
+      @add_row_spacer_to_center_cell
+      @add_col_spacer_to_center_cell
+      @add_cell_grid_to_row_grid
+    end
+    @add_row_grid_to_matrix_grid
+  end
+  return res
+end
+
+@add_cell_grid_to_row_grid+=
+if not col then col = cell
+else col = col:join_vert(cell, true) end
+
+@add_row_grid_to_matrix_grid+=
+if not res then res = col
+else res = res:join_hori(col, true) end
+
+@add_row_spacer_to_center_cell+=
+local sup = maxheight - cell.h
+local sdown = 0
+local up, down
+if sup > 0 then up = grid:new(cell.w, sup) end
+if sdown > 0 then down = grid:new(cell.w, sdown) end
+
+if up then cell = up:join_vert(cell) end
+if down then cell = cell:join_vert(down) end
+
+@add_col_spacer_to_center_cell+=
+local colspacer = grid:new(1, cell.h)
+colspacer.my = cell.my
+
+if i < #cellsgrid[1] then
+	cell = cell:join_hori(colspacer)
+end
+
 @transform_block_expression+=
 elseif name == "pmatrix" then
-  local cells = grid_of_exps(exp.content.exps)
-
-@combine_to_matrix_grid
-res.my = math.floor(res.h/2)
-return res:enclose_paren()
+  local cellsgrid, maxheight = grid_of_exps(exp.content.exps)
+  local res = combine_matrix_grid(cellsgrid, maxheight)
+  res.my = math.floor(res.h/2)
+  g = res:enclose_paren()
 
 @transform_block_expression+=
 elseif name == "bmatrix" then
-  local cells = grid_of_exps(exp.content.exps)
-
-@combine_to_matrix_grid
-@combine_matrix_brackets
-res.my = math.floor(res.h/2)
-g = res
+  local cellsgrid, maxheight = grid_of_exps(exp.content.exps)
+  local res = combine_matrix_grid(cellsgrid, maxheight)
+  @combine_matrix_brackets
+  res.my = math.floor(res.h/2)
+  g = res
 
 @put_children_join_horiz+=
 table.insert(c.children, { self, 0, s1 })

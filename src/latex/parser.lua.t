@@ -218,15 +218,18 @@ end
 @if_it_begins_until_enclosing_end+=
 if sym.sym == "begin" then
 	local explist = parse()
+  local block_name = explist.exps[1]
+  table.remove(explist.exps, 1)
 
 	exp = {
 		kind = "blockexp",
+    first = block_name,
 		content = explist,
 	}
 
 @if_it_ends_return_explist+=
 elseif sym.sym == "end" then
-	return explist
+  break
 end
 
 @if_space_parse_as_single_space+=
