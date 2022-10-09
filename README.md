@@ -52,12 +52,13 @@ See [test/input.txt](https://github.com/jbyuki/nabla.nvim/blob/master/test/input
 Credits
 -------
 
-* Thanks to jetrosut for his helpful feedback and bug troubleshoot
-* Thanks to nbCloud91 for pointing me to VIM conceals
+* Thanks to jetrosut for his helpful feedback and bug troubleshoot.
+* Thanks to nbCloud91 for pointing me to VIM conceals.
 * Thanks to clstb for giving suggestions on how to enhance the interaction.
 * Thanks to aspeddro for adding preview popups.
 * Thanks to Areustle for adding more than 500 new symbols.
-* Thanks to kkharji for pointing out virt_lines
+* Thanks to kkharji for pointing out virt_lines.
+* Thanks to max397574 for a proper treesitter implementation.
 
 Contribute
 ----------
