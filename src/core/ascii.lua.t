@@ -527,11 +527,11 @@ g = g:join_hori(sub_g)
 
 @combine_subscript_diagonally+=
 local subgrid
-local frac_exps = exp.sub.exps
+local frac_exps = sub.exps
 local frac_exp
 @if_numerical_fraction_put_smaller_form
 if not frac_exp then
-	subgrid = to_ascii(exp.sub)
+	subgrid = to_ascii({sub}, 1)
 else
 	subgrid = frac_exp
 end
@@ -609,7 +609,7 @@ elseif exp.kind == "parexp" then
 
 @transform_function_into_ascii+=
 elseif name == "sqrt" then
-	local toroot = to_ascii(explist[exp_i+1])
+	local toroot = to_ascii({explist[exp_i+1]}, 1)
   exp_i = exp_i + 1
 
 	@make_root_symbols

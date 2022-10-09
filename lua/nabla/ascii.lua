@@ -1259,7 +1259,7 @@ function put_if_only_sub(g, sub, sup)
 
   	else
   		local subgrid
-  		local frac_exps = exp.sub.exps
+  		local frac_exps = sub.exps
   		local frac_exp
   		if #frac_exps == 1  then
   			local exp = frac_exps[1]
@@ -1301,7 +1301,7 @@ function put_if_only_sub(g, sub, sup)
   		end
 
   		if not frac_exp then
-  			subgrid = to_ascii(exp.sub)
+  			subgrid = to_ascii({sub}, 1)
   		else
   			subgrid = frac_exp
   		end
@@ -1473,7 +1473,7 @@ function to_ascii(explist, exp_i)
 
 
     	elseif name == "sqrt" then
-    		local toroot = to_ascii(explist[exp_i+1])
+    		local toroot = to_ascii({explist[exp_i+1]}, 1)
     	  exp_i = exp_i + 1
 
     		local left_content = {}
