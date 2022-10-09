@@ -4,7 +4,7 @@ local parser = require("nabla.latex")
 
 local ascii = require("nabla.ascii")
 
-local ts_utils = require("nvim-treesitter.ts_utils")
+local _, ts_utils = pcall(require, "nvim-treesitter.ts_utils")
 local utils=require"nabla.utils"
 
 local vtext = vim.api.nvim_create_namespace("nabla")

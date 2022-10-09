@@ -75,7 +75,7 @@ end
 return utils
 
 @requires+=
-local ts_utils = require("nvim-treesitter.ts_utils")
+local _, ts_utils = pcall(require, "nvim-treesitter.ts_utils")
 local utils=require"nabla.utils"
 
 @extract_latex_formula+=
