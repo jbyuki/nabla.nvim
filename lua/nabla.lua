@@ -342,7 +342,6 @@ local function popup(overrides)
   line = line:gsub("\\%]", "")
   line = line:gsub("^\\%(", "")
   line = line:gsub("\\%)$", "")
-  local whitespace = string.match(line, "^(%s*)%S")
   line = vim.trim(line)
   if line == "" then
       return
