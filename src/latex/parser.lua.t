@@ -9,6 +9,7 @@ return M
 @functions+=
 function M.parse_all(str)
 	@init_parser
+  lnum = 1
 	local exp = parse()
 	return exp
 end
@@ -16,6 +17,7 @@ end
 @script_variables+=
 local buf
 local ptr
+local lnum
 
 @init_parser+=
 buf = str
@@ -38,6 +40,7 @@ function parse()
 	local explist = {
 		kind = "explist",
 		exps = {},
+    lnum = lnum,
 	}
 
   local chosexp
@@ -73,6 +76,9 @@ local skip_ws
 @functions+=
 function skip_ws()
 	while not finish() and string.match(getc(), "%s") do
+    if getc() == "\n" then
+      lnum = lnum + 1
+    end
 		nextc()
 	end
 end
@@ -100,6 +106,7 @@ end
 local exp = {
 	kind = "numexp",
 	num = tonumber(num_str),
+  lnum = lnum,
 }
 
 @if_letter_parse_symbol+=
@@ -122,6 +129,7 @@ end
 local exp = {
 	kind = "symexp",
 	sym = sym_str,
+  lnum = lnum,
 }
 
 @if_backslash_parse_special_symbols+=
@@ -134,6 +142,7 @@ elseif string.match(getc(), "\\") then
     sym = {
       kind = "symexp",
       sym = "\\",
+      lnum = lnum,
     }
     nextc()
   @if_open_bracket_parse_verbatim
@@ -164,6 +173,7 @@ end
 exp = {
 	kind = "funexp",
 	sym = sym.sym,
+  lnum = lnum,
 }
 
 @if_operator_parse_operator+=
@@ -180,7 +190,8 @@ if getc() == "_" then
 	assert(#explist.exps > 0, "subscript no preceding token")
 	nextc()
   exp = {
-    kind = "subexp"
+    kind = "subexp",
+    lnum = lnum,
   }
 
 @if_superscript_parse_with_sup+=
@@ -188,7 +199,8 @@ elseif getc() == "^" then
 	assert(#explist.exps > 0, "superscript no preceding token")
 	nextc()
   exp = {
-    kind = "supexp"
+    kind = "supexp",
+    lnum = lnum,
   }
 
 @if_paren_parse_inside_it+=
@@ -197,6 +209,7 @@ elseif getc() == "(" then
 	local in_exp = parse()
 	exp = {
 		kind = "parexp",
+    lnum = lnum,
 		exp = in_exp,
 	}
 
@@ -210,6 +223,7 @@ end
 else 
 	exp = {
 		kind = "symexp",
+    lnum = lnum,
 		sym = getc(),
 	}
 	nextc()
@@ -223,6 +237,7 @@ if sym.sym == "begin" then
 
 	exp = {
 		kind = "blockexp",
+    lnum = lnum,
     first = block_name,
 		content = explist,
 	}
@@ -236,6 +251,7 @@ end
 if getc() == " " then
 	sym = {
 		kind = "symexp",
+    lnum = lnum,
 		sym = "      ",
 	}
 	nextc()
@@ -252,6 +268,7 @@ end
 elseif getc() == "/" and lookahead(1) == "/" then
 	exp = {
 		kind = "symexp",
+    lnum = lnum,
 		sym = "//",
 	}
 	nextc()
@@ -261,6 +278,7 @@ elseif getc() == "/" and lookahead(1) == "/" then
 elseif getc() == "," then
 	sym = {
 		kind = "symexp",
+    lnum = lnum,
 		sym = " ",
 	}
 	nextc()
@@ -269,6 +287,7 @@ elseif getc() == "," then
 elseif sym.sym:sub(1,1) == " " then
 	exp = {
 		kind = "symexp",
+    lnum = lnum,
 		sym = " ",
 	}
 
@@ -277,6 +296,7 @@ elseif getc() == "{" then
 	nextc()
   sym = {
     kind = "symexp", 
+    lnum = lnum,
     sym = "{", 
   }
 
@@ -285,6 +305,7 @@ elseif getc() == "}" then
   nextc()
   sym = {
     kind = "symexp", 
+    lnum = lnum,
     sym = "}", 
   }
 
@@ -300,6 +321,7 @@ if (sym.sym == "text" or sym.sym == "texttt") and string.match(getc(), '{') then
 
   exp = {
     kind = "symexp",
+    lnum = lnum,
     sym  = txt,
   }
 
@@ -313,12 +335,14 @@ elseif string.match(getc(), "{") then
 elseif getc() == ":" then
 	sym = {
 		kind = "symexp",
+    lnum = lnum,
 		sym = "    ",
 	}
 	nextc()
 elseif getc() == ";" then
 	sym = {
 		kind = "symexp",
+    lnum = lnum,
 		sym = "     ",
 	}
 	nextc()
@@ -327,11 +351,13 @@ elseif getc() == ";" then
 elseif sym.sym == "quad" then
 	exp = {
 		kind = "symexp",
+    lnum = lnum,
 		sym = "       ",
 	}
 elseif sym.sym == "qquad" then
 	exp = {
 		kind = "symexp",
+    lnum = lnum,
 		sym = "        ",
 	}
 
@@ -341,6 +367,7 @@ elseif sym.sym == "left" and string.match(getc(), '%(') then
 	local in_exp = parse()
   exp = {
     kind = "parexp",
+    lnum = lnum,
     exp = in_exp,
   }
 elseif sym.sym == "right" and string.match(getc(), '%)') then
@@ -355,6 +382,7 @@ elseif sym.sym == "choose" then
 
   chosexp = {
     kind = "chosexp",
+    lnum = lnum,
     left = nil,
     right = nil
   }

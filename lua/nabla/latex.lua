@@ -1,6 +1,7 @@
 -- Generated using ntangle.nvim
 local buf
 local ptr
+local lnum
 
 local getc, nextc, finish
 
@@ -19,6 +20,7 @@ function M.parse_all(str)
 	buf = str
 	ptr = 1
 
+  lnum = 1
 	local exp = parse()
 	return exp
 end
@@ -32,6 +34,7 @@ function parse()
 	local explist = {
 		kind = "explist",
 		exps = {},
+    lnum = lnum,
 	}
 
   local chosexp
@@ -61,6 +64,7 @@ function parse()
 			if getc() == " " then
 				sym = {
 					kind = "symexp",
+			    lnum = lnum,
 					sym = "      ",
 				}
 				nextc()
@@ -68,12 +72,14 @@ function parse()
 		  elseif getc() == ":" then
 		  	sym = {
 		  		kind = "symexp",
+		      lnum = lnum,
 		  		sym = "    ",
 		  	}
 		  	nextc()
 		  elseif getc() == ";" then
 		  	sym = {
 		  		kind = "symexp",
+		      lnum = lnum,
 		  		sym = "     ",
 		  	}
 		  	nextc()
@@ -82,12 +88,14 @@ function parse()
 		    sym = {
 		      kind = "symexp",
 		      sym = "\\",
+		      lnum = lnum,
 		    }
 		    nextc()
 		  elseif getc() == "{" then
 		  	nextc()
 		    sym = {
 		      kind = "symexp", 
+		      lnum = lnum,
 		      sym = "{", 
 		    }
 
@@ -95,12 +103,14 @@ function parse()
 		    nextc()
 		    sym = {
 		      kind = "symexp", 
+		      lnum = lnum,
 		      sym = "}", 
 		    }
 
 		  elseif getc() == "," then
 		  	sym = {
 		  		kind = "symexp",
+		      lnum = lnum,
 		  		sym = " ",
 		  	}
 		  	nextc()
@@ -119,6 +129,7 @@ function parse()
 
 		    exp = {
 		      kind = "symexp",
+		      lnum = lnum,
 		      sym  = txt,
 		    }
 
@@ -126,11 +137,13 @@ function parse()
 		  elseif sym.sym == "quad" then
 		  	exp = {
 		  		kind = "symexp",
+		      lnum = lnum,
 		  		sym = "       ",
 		  	}
 		  elseif sym.sym == "qquad" then
 		  	exp = {
 		  		kind = "symexp",
+		      lnum = lnum,
 		  		sym = "        ",
 		  	}
 
@@ -141,6 +154,7 @@ function parse()
 
 		    chosexp = {
 		      kind = "chosexp",
+		      lnum = lnum,
 		      left = nil,
 		      right = nil
 		    }
@@ -151,6 +165,7 @@ function parse()
 		  elseif sym.sym:sub(1,1) == " " then
 		  	exp = {
 		  		kind = "symexp",
+		      lnum = lnum,
 		  		sym = " ",
 		  	}
 
@@ -159,6 +174,7 @@ function parse()
 		  	local in_exp = parse()
 		    exp = {
 		      kind = "parexp",
+		      lnum = lnum,
 		      exp = in_exp,
 		    }
 		  elseif sym.sym == "right" and string.match(getc(), '%)') then
@@ -169,6 +185,7 @@ function parse()
 		    exp = {
 		    	kind = "funexp",
 		    	sym = sym.sym,
+		      lnum = lnum,
 		    }
 
 
@@ -179,6 +196,7 @@ function parse()
 
 		    	exp = {
 		    		kind = "blockexp",
+		        lnum = lnum,
 		        first = block_name,
 		    		content = explist,
 		    	}
@@ -201,14 +219,16 @@ function parse()
 				assert(#explist.exps > 0, "subscript no preceding token")
 				nextc()
 			  exp = {
-			    kind = "subexp"
+			    kind = "subexp",
+			    lnum = lnum,
 			  }
 
 			elseif getc() == "^" then
 				assert(#explist.exps > 0, "superscript no preceding token")
 				nextc()
 			  exp = {
-			    kind = "supexp"
+			    kind = "supexp",
+			    lnum = lnum,
 			  }
 
 			elseif getc() == "(" then
@@ -216,12 +236,14 @@ function parse()
 				local in_exp = parse()
 				exp = {
 					kind = "parexp",
+			    lnum = lnum,
 					exp = in_exp,
 				}
 
 			elseif getc() == "/" and lookahead(1) == "/" then
 				exp = {
 					kind = "symexp",
+			    lnum = lnum,
 					sym = "//",
 				}
 				nextc()
@@ -230,6 +252,7 @@ function parse()
 			else 
 				exp = {
 					kind = "symexp",
+			    lnum = lnum,
 					sym = getc(),
 				}
 				nextc()
@@ -258,6 +281,9 @@ end
 
 function skip_ws()
 	while not finish() and string.match(getc(), "%s") do
+    if getc() == "\n" then
+      lnum = lnum + 1
+    end
 		nextc()
 	end
 end
@@ -269,6 +295,7 @@ function parse_number()
 	local exp = {
 		kind = "numexp",
 		num = tonumber(num_str),
+	  lnum = lnum,
 	}
 
 	return exp
@@ -281,6 +308,7 @@ function parse_symbol()
 	local exp = {
 		kind = "symexp",
 		sym = sym_str,
+	  lnum = lnum,
 	}
 
 	return exp
