@@ -426,31 +426,40 @@ matrix_vert_right = "⎥",
 matrix_single_left = "[",
 matrix_single_right = "]",
 
-@combine_matrix_brackets+=
-local left_content, right_content = {}, {}
-if res.h > 1 then
-	for y=1,res.h do
-		if y == 1 then
-			table.insert(left_content, style.matrix_upper_left)
-			table.insert(right_content, style.matrix_upper_right)
-		elseif y == res.h then
-			table.insert(left_content, style.matrix_lower_left)
-			table.insert(right_content, style.matrix_lower_right)
-		else
-			table.insert(left_content, style.matrix_vert_left)
-			table.insert(right_content, style.matrix_vert_right)
-		end
-	end
-else
-	left_content = { style.matrix_single_left }
-	right_content = { style.matrix_single_right }
+@declare_functions+=
+local combine_brackets
+
+@utility_functions+=
+function combine_brackets(res)
+  local left_content, right_content = {}, {}
+  if res.h > 1 then
+    for y=1,res.h do
+      if y == 1 then
+        table.insert(left_content, style.matrix_upper_left)
+        table.insert(right_content, style.matrix_upper_right)
+      elseif y == res.h then
+        table.insert(left_content, style.matrix_lower_left)
+        table.insert(right_content, style.matrix_lower_right)
+      else
+        table.insert(left_content, style.matrix_vert_left)
+        table.insert(right_content, style.matrix_vert_right)
+      end
+    end
+  else
+    left_content = { style.matrix_single_left }
+    right_content = { style.matrix_single_right }
+  end
+
+  local leftbracket = grid:new(1, res.h, left_content)
+  local rightbracket = grid:new(1, res.h, right_content)
+
+  res = leftbracket:join_hori(res, true)
+  res = res:join_hori(rightbracket, true)
+  return res
 end
 
-local leftbracket = grid:new(1, res.h, left_content)
-local rightbracket = grid:new(1, res.h, right_content)
-
-res = leftbracket:join_hori(res, true)
-res = res:join_hori(rightbracket, true)
+@combine_matrix_brackets+=
+res = combine_brackets(res)
 
 @special_symbols+=
 ["..."] = "…",
@@ -764,7 +773,7 @@ else
   error("Unknown block expression " .. name)
 end
 
-@transform_block_expression+=
+@transform_block_expression-=
 if name == "matrix" then
   local cellsgrid, maxheight = grid_of_exps(exp.content.exps)
   local res = combine_matrix_grid(cellsgrid, maxheight)

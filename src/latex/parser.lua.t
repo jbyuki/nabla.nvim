@@ -156,6 +156,7 @@ elseif string.match(getc(), "\\") then
   @if_sym_is_choose_reduce
   @if_sym_is_space_passthrough
   @if_sym_is_left_open_paren
+  @if_sym_is_left_open_bracket
   else
     @create_function_expression
 
@@ -398,3 +399,16 @@ if chosexp then
     chosexp.right = exp
     chosexp = nil
   end
+
+@if_sym_is_left_open_bracket+=
+elseif sym.sym == "left" and string.match(getc(), '%[') then
+  nextc()
+	local in_exp = parse()
+  exp = {
+    kind = "braexp",
+    lnum = lnum,
+    exp = in_exp,
+  }
+elseif sym.sym == "right" and string.match(getc(), '%]') then
+  nextc()
+  break

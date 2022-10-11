@@ -3,6 +3,8 @@ local to_ascii
 
 local utf8len, utf8char
 
+local combine_brackets
+
 local stack_subsup
 
 local grid_of_exps
@@ -1018,6 +1020,34 @@ local mathbb = {
 }
 
 
+function combine_brackets(res)
+  local left_content, right_content = {}, {}
+  if res.h > 1 then
+    for y=1,res.h do
+      if y == 1 then
+        table.insert(left_content, style.matrix_upper_left)
+        table.insert(right_content, style.matrix_upper_right)
+      elseif y == res.h then
+        table.insert(left_content, style.matrix_lower_left)
+        table.insert(right_content, style.matrix_lower_right)
+      else
+        table.insert(left_content, style.matrix_vert_left)
+        table.insert(right_content, style.matrix_vert_right)
+      end
+    end
+  else
+    left_content = { style.matrix_single_left }
+    right_content = { style.matrix_single_right }
+  end
+
+  local leftbracket = grid:new(1, res.h, left_content)
+  local rightbracket = grid:new(1, res.h, right_content)
+
+  res = leftbracket:join_hori(res, true)
+  res = res:join_hori(rightbracket, true)
+  return res
+end
+
 function stack_subsup(explist, i, g)
   i = i + 1
   while i <= #explist do
@@ -1699,6 +1729,7 @@ function to_ascii(explist, exp_i)
         end
 
         assert(explist[exp_i+1] and explist[exp_i+1].kind == "funexp" and explist[exp_i+1].sym == "}", "No matching closing bracket")
+
       	g = to_ascii(inside_bra, 1):enclose_bracket()
 
     	else
@@ -1720,6 +1751,11 @@ function to_ascii(explist, exp_i)
         res.my = math.floor(res.h/2)
         g = res
 
+      elseif name == "align" or name == "aligned" then
+        local cellsgrid, maxheight = grid_of_exps(exp.content.exps)
+        local res = combine_matrix_grid(cellsgrid, maxheight)
+        res.my = math.floor(res.h/2)
+        g = res
       elseif name == "pmatrix" then
         local cellsgrid, maxheight = grid_of_exps(exp.content.exps)
         local res = combine_matrix_grid(cellsgrid, maxheight)
@@ -1729,30 +1765,7 @@ function to_ascii(explist, exp_i)
       elseif name == "bmatrix" then
         local cellsgrid, maxheight = grid_of_exps(exp.content.exps)
         local res = combine_matrix_grid(cellsgrid, maxheight)
-        local left_content, right_content = {}, {}
-        if res.h > 1 then
-        	for y=1,res.h do
-        		if y == 1 then
-        			table.insert(left_content, style.matrix_upper_left)
-        			table.insert(right_content, style.matrix_upper_right)
-        		elseif y == res.h then
-        			table.insert(left_content, style.matrix_lower_left)
-        			table.insert(right_content, style.matrix_lower_right)
-        		else
-        			table.insert(left_content, style.matrix_vert_left)
-        			table.insert(right_content, style.matrix_vert_right)
-        		end
-        	end
-        else
-        	left_content = { style.matrix_single_left }
-        	right_content = { style.matrix_single_right }
-        end
-
-        local leftbracket = grid:new(1, res.h, left_content)
-        local rightbracket = grid:new(1, res.h, right_content)
-
-        res = leftbracket:join_hori(res, true)
-        res = res:join_hori(rightbracket, true)
+        res = combine_brackets(res)
 
         res.my = math.floor(res.h/2)
         g = res
@@ -1818,6 +1831,9 @@ function to_ascii(explist, exp_i)
 
       g = c2:enclose_paren()
 
+    elseif exp.kind == "braexp" then
+    	g = to_ascii({exp.exp}, 1)
+      g = combine_brackets(g)
     else
       assert(false, "Unrecognized token")
     end

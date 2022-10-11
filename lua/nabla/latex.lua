@@ -181,6 +181,17 @@ function parse()
 		    nextc()
 		    break
 
+		  elseif sym.sym == "left" and string.match(getc(), '%[') then
+		    nextc()
+		  	local in_exp = parse()
+		    exp = {
+		      kind = "braexp",
+		      lnum = lnum,
+		      exp = in_exp,
+		    }
+		  elseif sym.sym == "right" and string.match(getc(), '%]') then
+		    nextc()
+		    break
 		  else
 		    exp = {
 		    	kind = "funexp",
@@ -270,6 +281,7 @@ function parse()
           chosexp.right = exp
           chosexp = nil
         end
+
       else
         table.insert(explist.exps, exp)
       end

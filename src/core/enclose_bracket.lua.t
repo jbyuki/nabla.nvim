@@ -79,3 +79,8 @@ while exp_i+1 <= #explist do
 end
 
 assert(explist[exp_i+1] and explist[exp_i+1].kind == "funexp" and explist[exp_i+1].sym == "}", "No matching closing bracket")
+
+@transform_exp_to_grid+=
+elseif exp.kind == "braexp" then
+	g = to_ascii({exp.exp}, 1)
+  g = combine_brackets(g)
