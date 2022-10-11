@@ -1,0 +1,5 @@
+\left[ \begin{aligned} x &=p_x+t{\cdot}v_x\\ y &=p_y+t{\cdot}v_y \end{aligned} \right]
+---
+⎡x =pₓ+t∙vₓ⎤
+⎢y =p +t∙v ⎥
+⎣    y    y⎦

@@ -863,6 +863,7 @@ local combine_matrix_grid
 @utility_functions+=
 function combine_matrix_grid(cellsgrid, maxheight)
   local res
+  @compute_each_row_height
   for i=1,#cellsgrid[1] do
     local col 
     for j=1,#cellsgrid do
@@ -876,6 +877,27 @@ function combine_matrix_grid(cellsgrid, maxheight)
   return res
 end
 
+@compute_each_row_height+=
+local row_heights = {}
+local baselines = {}
+
+for i=1,#cellsgrid do
+  @compute_row_height
+end
+
+@compute_row_height+=
+local height_below = 0
+local height_above = 0
+local baseline = 0
+for j=1,#cellsgrid[i] do
+  local cell = cellsgrid[i][j]
+  height_below = math.max(cell.my, height_below)
+  height_above = math.max(cell.h - cell.my - 1, height_above)
+  baseline = math.max(baseline, cell.my)
+end
+row_heights[i] = height_below + height_above + 1
+baselines[i] = baseline
+
 @add_cell_grid_to_row_grid+=
 if not col then col = cell
 else col = col:join_vert(cell, true) end
@@ -885,8 +907,8 @@ if not res then res = col
 else res = res:join_hori(col, true) end
 
 @add_row_spacer_to_center_cell+=
-local sup = maxheight - cell.h
-local sdown = 0
+local sup = baselines[j] - cell.my
+local sdown = row_heights[j] - cell.h - sup
 local up, down
 if sup > 0 then up = grid:new(cell.w, sup) end
 if sdown > 0 then down = grid:new(cell.w, sdown) end

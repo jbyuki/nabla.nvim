@@ -1128,12 +1128,30 @@ end
 
 function combine_matrix_grid(cellsgrid, maxheight)
   local res
+  local row_heights = {}
+  local baselines = {}
+
+  for i=1,#cellsgrid do
+    local height_below = 0
+    local height_above = 0
+    local baseline = 0
+    for j=1,#cellsgrid[i] do
+      local cell = cellsgrid[i][j]
+      height_below = math.max(cell.my, height_below)
+      height_above = math.max(cell.h - cell.my - 1, height_above)
+      baseline = math.max(baseline, cell.my)
+    end
+    row_heights[i] = height_below + height_above + 1
+    baselines[i] = baseline
+
+  end
+
   for i=1,#cellsgrid[1] do
     local col 
     for j=1,#cellsgrid do
       local cell = cellsgrid[j][i]
-      local sup = maxheight - cell.h
-      local sdown = 0
+      local sup = baselines[j] - cell.my
+      local sdown = row_heights[j] - cell.h - sup
       local up, down
       if sup > 0 then up = grid:new(cell.w, sup) end
       if sdown > 0 then down = grid:new(cell.w, sdown) end
