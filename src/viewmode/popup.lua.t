@@ -1,5 +1,4 @@
 ##../nabla
-
 @open_floating+=
 local floating_default_options = {
   wrap = false,

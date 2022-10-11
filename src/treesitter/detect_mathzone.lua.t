@@ -84,7 +84,8 @@ local utils=require"nabla.utils"
 
 @extract_latex_formula+=
 if not utils.in_mathzone() then
-    return
+  vim.api.nvim_echo({{"Please put the cursor inside a math expression", "ErrorMsg"}}, true, {})
+  return
 end
 
 local math_node = utils.in_mathzone()
