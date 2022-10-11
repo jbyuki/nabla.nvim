@@ -67,7 +67,7 @@ See [here](https://github.com/jbyuki/nabla.nvim/issues/35) for virt_lines suppor
 Usage
 -----
 
-* Press <kbd>leader + p</kbd> to open floating menu
+* Press <kbd>leader + p</kbd> while the cursor is on a math expression to open floating menu
 
 Reference
 ---------
