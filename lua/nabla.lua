@@ -327,7 +327,6 @@ end
 
 local function popup(overrides)
   if not utils.in_mathzone() then
-    vim.api.nvim_echo({{"Please put the cursor inside a math expression", "ErrorMsg"}}, true, {})
     return
   end
 
