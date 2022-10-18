@@ -1692,7 +1692,7 @@ function to_ascii(explist, exp_i)
 
     	  local  c1 = left_bar:join_hori(ingrid, true)
     	  local  c2 = c1:join_hori(right_bar, true)
-    	  return c2
+    		g = c2
 
 
     	elseif name == "hat" then

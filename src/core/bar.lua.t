@@ -7,7 +7,7 @@ elseif name == "bar" then
 
   local  c1 = left_bar:join_hori(ingrid, true)
   local  c2 = c1:join_hori(right_bar, true)
-  return c2
+	g = c2
 
 
 @generate_left_right_bar+=
