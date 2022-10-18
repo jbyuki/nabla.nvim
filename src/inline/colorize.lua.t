@@ -22,7 +22,7 @@ if g.t == "num" then
 
   local of
   if dy == 0 then of = px else of = 0 end
-  vim.api.nvim_buf_add_highlight(buf, ns_id, "TSNumber", py+dy, of+sx,of+se)
+  vim.api.nvim_buf_add_highlight(buf, ns_id, "@number", py+dy, of+sx,of+se)
 end
 
 @if_g_as_children_recurse+=
@@ -49,7 +49,7 @@ if g.t == "sym" then
       local se = vim.str_byteindex(drawing[dy+y], off+g.w)
       local of
       if y+dy == 1 then of = px else of = 0 end
-      vim.api.nvim_buf_add_highlight(buf, ns_id, "TSOperator", dy+py+y-1, of+sx, of+se)
+      vim.api.nvim_buf_add_highlight(buf, ns_id, "@operator", dy+py+y-1, of+sx, of+se)
     end
   end
 end
@@ -65,7 +65,7 @@ if g.t == "par" then
 
     local of
     if y+dy == 1 then of = px else of = 0 end
-    vim.api.nvim_buf_add_highlight(buf, ns_id, "TSOperator", dy+py+y-1, of+sx, of+se)
+    vim.api.nvim_buf_add_highlight(buf, ns_id, "@operator", dy+py+y-1, of+sx, of+se)
   end
 end
 
@@ -73,13 +73,13 @@ end
 if string.match(g.content[1], "^%a") then
   local of
   if dy == 0 then of = px else of = 0 end
-  vim.api.nvim_buf_add_highlight(buf, ns_id, "TSString", dy+py, of+sx, of+se)
+  vim.api.nvim_buf_add_highlight(buf, ns_id, "@string", dy+py, of+sx, of+se)
 
 @if_start_with_number_number+=
 elseif string.match(g.content[1], "^%d") then
   local of
   if dy == 0 then of = px else of = 0 end
-  vim.api.nvim_buf_add_highlight(buf, ns_id, "TSNumber", dy+py, of+sx, of+se)
+  vim.api.nvim_buf_add_highlight(buf, ns_id, "@number", dy+py, of+sx, of+se)
 
 @if_g_type_variable_colorize_as_variable+=
 if g.t == "var" then
@@ -91,7 +91,7 @@ if g.t == "var" then
 
   local of
   if dy == 0 then of = px else of = 0 end
-  vim.api.nvim_buf_add_highlight(buf, ns_id, "TSString", dy+py, of+sx, of+se)
+  vim.api.nvim_buf_add_highlight(buf, ns_id, "@string", dy+py, of+sx, of+se)
 end
 
 @if_g_type_operator_colorize_as_operator+=
@@ -105,6 +105,6 @@ if g.t == "op" then
 
     local of
     if dy+y == 1 then of = px else of = 0 end
-    vim.api.nvim_buf_add_highlight(buf, ns_id, "TSOperator", dy+py+y-1, of+sx, of+se)
+    vim.api.nvim_buf_add_highlight(buf, ns_id, "@operator", dy+py+y-1, of+sx, of+se)
   end
 end

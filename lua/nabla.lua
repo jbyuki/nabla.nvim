@@ -52,7 +52,7 @@ function colorize(g, first_dx, dx, dy, ns_id, drawing, px, py, buf)
 
     local of
     if dy == 0 then of = px else of = 0 end
-    vim.api.nvim_buf_add_highlight(buf, ns_id, "TSNumber", py+dy, of+sx,of+se)
+    vim.api.nvim_buf_add_highlight(buf, ns_id, "@number", py+dy, of+sx,of+se)
   end
 
   if g.t == "sym" then
@@ -65,12 +65,12 @@ function colorize(g, first_dx, dx, dy, ns_id, drawing, px, py, buf)
     if string.match(g.content[1], "^%a") then
       local of
       if dy == 0 then of = px else of = 0 end
-      vim.api.nvim_buf_add_highlight(buf, ns_id, "TSString", dy+py, of+sx, of+se)
+      vim.api.nvim_buf_add_highlight(buf, ns_id, "@string", dy+py, of+sx, of+se)
 
     elseif string.match(g.content[1], "^%d") then
       local of
       if dy == 0 then of = px else of = 0 end
-      vim.api.nvim_buf_add_highlight(buf, ns_id, "TSNumber", dy+py, of+sx, of+se)
+      vim.api.nvim_buf_add_highlight(buf, ns_id, "@number", dy+py, of+sx, of+se)
 
     else
       for y=1,g.h do
@@ -81,7 +81,7 @@ function colorize(g, first_dx, dx, dy, ns_id, drawing, px, py, buf)
         local se = vim.str_byteindex(drawing[dy+y], off+g.w)
         local of
         if y+dy == 1 then of = px else of = 0 end
-        vim.api.nvim_buf_add_highlight(buf, ns_id, "TSOperator", dy+py+y-1, of+sx, of+se)
+        vim.api.nvim_buf_add_highlight(buf, ns_id, "@operator", dy+py+y-1, of+sx, of+se)
       end
     end
   end
@@ -96,7 +96,7 @@ function colorize(g, first_dx, dx, dy, ns_id, drawing, px, py, buf)
 
       local of
       if dy+y == 1 then of = px else of = 0 end
-      vim.api.nvim_buf_add_highlight(buf, ns_id, "TSOperator", dy+py+y-1, of+sx, of+se)
+      vim.api.nvim_buf_add_highlight(buf, ns_id, "@operator", dy+py+y-1, of+sx, of+se)
     end
   end
   if g.t == "par" then
@@ -109,7 +109,7 @@ function colorize(g, first_dx, dx, dy, ns_id, drawing, px, py, buf)
 
       local of
       if y+dy == 1 then of = px else of = 0 end
-      vim.api.nvim_buf_add_highlight(buf, ns_id, "TSOperator", dy+py+y-1, of+sx, of+se)
+      vim.api.nvim_buf_add_highlight(buf, ns_id, "@operator", dy+py+y-1, of+sx, of+se)
     end
   end
 
@@ -122,7 +122,7 @@ function colorize(g, first_dx, dx, dy, ns_id, drawing, px, py, buf)
 
     local of
     if dy == 0 then of = px else of = 0 end
-    vim.api.nvim_buf_add_highlight(buf, ns_id, "TSString", dy+py, of+sx, of+se)
+    vim.api.nvim_buf_add_highlight(buf, ns_id, "@string", dy+py, of+sx, of+se)
   end
 
   for _, child in ipairs(g.children) do
@@ -137,7 +137,7 @@ function colorize_virt(g, virt_lines, first_dx, dx, dy)
     if dy == 0 then off = first_dx else off = dx end
 
     for i=1,g.w do
-      virt_lines[dy+1][off+i][2] = "TSNumber"
+      virt_lines[dy+1][off+i][2] = "@number"
     end
   end
 
@@ -147,12 +147,12 @@ function colorize_virt(g, virt_lines, first_dx, dx, dy)
 
     if string.match(g.content[1], "^%a") then
       for i=1,g.w do
-        virt_lines[dy+1][off+i][2] = "TSString"
+        virt_lines[dy+1][off+i][2] = "@string"
       end
 
     elseif string.match(g.content[1], "^%d") then
       for i=1,g.w do
-        virt_lines[dy+1][off+i][2] = "TSNumber"
+        virt_lines[dy+1][off+i][2] = "@number"
       end
 
 
@@ -162,7 +162,7 @@ function colorize_virt(g, virt_lines, first_dx, dx, dy)
         if y+dy == 1 then off = first_dx else off = dx end
 
         for i=1,g.w do
-          virt_lines[dy+y][off+i][2] = "TSOperator"
+          virt_lines[dy+y][off+i][2] = "@operator"
         end
 
       end
@@ -175,7 +175,7 @@ function colorize_virt(g, virt_lines, first_dx, dx, dy)
       if y+dy == 1 then off = first_dx else off = dx end
 
       for i=1,g.w do
-        virt_lines[dy+y][off+i][2] = "TSOperator"
+        virt_lines[dy+y][off+i][2] = "@operator"
       end
     end
   end
@@ -185,7 +185,7 @@ function colorize_virt(g, virt_lines, first_dx, dx, dy)
       if y+dy == 1 then off = first_dx else off = dx end
 
       for i=1,g.w do
-        virt_lines[dy+y][off+i][2] = "TSOperator"
+        virt_lines[dy+y][off+i][2] = "@operator"
       end
     end
   end
@@ -195,7 +195,7 @@ function colorize_virt(g, virt_lines, first_dx, dx, dy)
     if dy == 0 then off = first_dx else off = dx end
 
     for i=1,g.w do
-      virt_lines[dy+1][off+i][2] = "TSString"
+      virt_lines[dy+1][off+i][2] = "@string"
     end
   end
 

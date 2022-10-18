@@ -18,7 +18,7 @@ if g.t == "num" then
   if dy == 0 then off = first_dx else off = dx end
 
   for i=1,g.w do
-    virt_lines[dy+1][off+i][2] = "TSNumber"
+    virt_lines[dy+1][off+i][2] = "@number"
   end
 end
 
@@ -40,7 +40,7 @@ if g.t == "sym" then
       if y+dy == 1 then off = first_dx else off = dx end
 
       for i=1,g.w do
-        virt_lines[dy+y][off+i][2] = "TSOperator"
+        virt_lines[dy+y][off+i][2] = "@operator"
       end
 
     end
@@ -50,13 +50,13 @@ end
 @if_start_with_letter_unknown_virt+=
 if string.match(g.content[1], "^%a") then
   for i=1,g.w do
-    virt_lines[dy+1][off+i][2] = "TSString"
+    virt_lines[dy+1][off+i][2] = "@string"
   end
 
 @if_start_with_number_number_virt+=
 elseif string.match(g.content[1], "^%d") then
   for i=1,g.w do
-    virt_lines[dy+1][off+i][2] = "TSNumber"
+    virt_lines[dy+1][off+i][2] = "@number"
   end
 
 
@@ -67,7 +67,7 @@ if g.t == "par" then
     if y+dy == 1 then off = first_dx else off = dx end
 
     for i=1,g.w do
-      virt_lines[dy+y][off+i][2] = "TSOperator"
+      virt_lines[dy+y][off+i][2] = "@operator"
     end
   end
 end
@@ -78,7 +78,7 @@ if g.t == "var" then
   if dy == 0 then off = first_dx else off = dx end
 
   for i=1,g.w do
-    virt_lines[dy+1][off+i][2] = "TSString"
+    virt_lines[dy+1][off+i][2] = "@string"
   end
 end
 
@@ -89,7 +89,7 @@ if g.t == "op" then
     if y+dy == 1 then off = first_dx else off = dx end
 
     for i=1,g.w do
-      virt_lines[dy+y][off+i][2] = "TSOperator"
+      virt_lines[dy+y][off+i][2] = "@operator"
     end
   end
 end
