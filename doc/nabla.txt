@@ -1,0 +1,95 @@
+*nabla.txt*
+
+		        NABLA.NVIM REFERENCE MANUAL~
+			       by jbyuki~
+
+nabla.nvim is a plugin to render formulas written in the Latex syntax directly
+in the Neovim editor using special Unicode characters and ASCII art like
+representation.
+
+======================================================================
+Requirements
+
+ - A recent neovim version (0.8.0+)
+ - nvim-treesitter
+ - Latex parser: install with `:TSInstall latex`
+
+======================================================================
+Quickstart					   *nabla-quickstart*
+
+To see how nabla works, simply hover the cursor on the formula below and
+invoke `:lua require"nabla".popup()` on it. A floating window with the formula
+should appear.
+
+
+		      $a^2 + b^2 = c^2$
+
+		The famous pythagorean theorem.
+
+A second mode allows to directly inline the nabla rendering into the document
+using virtual text and conceals. Invoke `:lua require"nabla".toggle_virt()` .
+To go back to normal, invoke the same method again.
+
+==========================================================================
+Configuration					  *nabla-configuration*
+
+Currently the configuration in nabla.nvim is non-existent. There is no
+`setup{}` function or similar functions. Most of the configuration is done
+when invoking the function themselves. See the individual functions for
+possible customization.
+
+It is usually the case that `popup()` and `toggle_virt()` are bound to keymaps
+for a quicker invocation.
+
+==========================================================================
+Popup	  					  *nabla-popup*
+
+popup({opts})					  *nabla.popup()*
+
+This command will parse the latex expression under the cursor and display a
+floating window with formula rendered inside of it. 
+
+  Parameters:~
+      {opts} Optional parameters which will override the parameters given to 
+	     |vim.lsp.util.open_floating_preview()| when creating the floating
+	     window. Refer to that function for options. For example, to
+	     customize the border the function would be called with 
+	     `popup({border="double"})`.
+
+==========================================================================
+Virt-lines	  				  *nabla-virtlines*
+
+
+enable_virt({opts})				  *nabla.enable_virt()*
+
+This will enable nabla.nvim on the whole buffer, detect every formula with the
+Latex parser and conceal and replace with a virtual text representation of it.
+
+  Parameters:~
+      {opts} Optional parameters.
+	     • `align_center`: (boolean) Center align formulas. By default
+			     there are aligned left.
+
+disable_virt()					  *nabla.disable_virt()*
+
+All the virtual text and conceals created by |nabla.enable_virt()| or
+|nabla.toggle_virt()| will be destroyed and the buffer should go back to its
+original state.
+  
+
+toggle_virt({opts})
+
+This will invoke |nabla.enable_virt()| or |nabla.disable_virt()| based on its
+internal state `virt_enabled`.
+
+
+  Parameters:~
+      {opts} Optional parameters. See |nabla.enable_virt()|.
+
+is_virt_enabled()				  *nabla.is_virt_enabled()*
+
+  Returns:~
+      (boolean): Returns if virtual lines is enabled in the current buffer or
+		 not.
+
+ vim:tw=78:ts=8:ft=help:norl:
