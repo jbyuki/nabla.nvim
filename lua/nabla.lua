@@ -392,7 +392,7 @@ local function popup(overrides)
 
 end
 
-function enable_virt()
+function enable_virt(opts)
   local buf = vim.api.nvim_get_current_buf()
   virt_enabled[buf] = true
 
@@ -518,7 +518,12 @@ function enable_virt()
         -- p1 = vim.str_byteindex(lines[i], p1)
         -- p2 = vim.str_byteindex(lines[i], p2)
 
-        local desired_col = math.floor((p1 + p2 - #drawing_virt[1])/2) -- substract because of conceals
+        local desired_col
+        if opts and opts.align_center then
+        	desired_col = math.floor((p1 + p2 - #drawing_virt[1])/2) -- substract because of conceals
+        else
+        	desired_col = p1 + 1 -- substract because of conceals
+        end
 
         if desired_col-col > 0 then
           local ucol = vim.str_utfindex(lines[i], col)
