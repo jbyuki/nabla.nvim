@@ -50,7 +50,7 @@ This command will parse the latex expression under the cursor and display a
 floating window with formula rendered inside of it. 
 
   Parameters:~
-      {opts} Optional parameters which will override the parameters given to 
+      {opts} (table) Optional parameters which will override the parameters given to 
 	     |vim.lsp.util.open_floating_preview()| when creating the floating
 	     window. Refer to that function for options. For example, to
 	     customize the border the function would be called with 
@@ -66,7 +66,7 @@ This will enable nabla.nvim on the whole buffer, detect every formula with the
 Latex parser and conceal and replace with a virtual text representation of it.
 
   Parameters:~
-      {opts} Optional parameters.
+      {opts} (table) Optional parameters.
 	     • `align_center`: (boolean) Center align formulas. By default
 			     there are aligned left.
 
@@ -84,12 +84,14 @@ internal state `virt_enabled`.
 
 
   Parameters:~
-      {opts} Optional parameters. See |nabla.enable_virt()|.
+      {opts} (table) Optional parameters. See |nabla.enable_virt()|.
 
-is_virt_enabled()				  *nabla.is_virt_enabled()*
+is_virt_enabled({buf})			       *nabla.is_virt_enabled()*
 
+  Parameters:
+      {buf} (number) Optional parameter to ask for a specific buffer number.
+		     If `nil` is given, the current buffer is chosen.
   Returns:~
-      (boolean): Returns if virtual lines is enabled in the current buffer or
-		 not.
+      `true` if nabla.nvim virtual lines is enabled in the buffer {buf}.
 
  vim:tw=78:ts=8:ft=help:norl:
