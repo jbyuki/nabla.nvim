@@ -1,7 +1,7 @@
 *nabla.txt*
 
-		        NABLA.NVIM REFERENCE MANUAL~
-			       by jbyuki~
+                        NABLA.NVIM REFERENCE MANUAL~
+                               by jbyuki~
 
 nabla.nvim is a plugin to render formulas written in the Latex syntax directly
 in the Neovim editor using special Unicode characters and ASCII art like
@@ -15,23 +15,23 @@ Requirements
  - Latex parser: install with `:TSInstall latex`
 
 ======================================================================
-Quickstart					   *nabla-quickstart*
+Quickstart                                         *nabla-quickstart*
 
 To see how nabla works, simply hover the cursor on the formula below and
 invoke `:lua require"nabla".popup()` on it. A floating window with the formula
 should appear.
 
 
-		      $a^2 + b^2 = c^2$
+                        $a^2 + b^2 = c^2$
 
-		The famous pythagorean theorem.
+                  The famous pythagorean theorem.
 
 A second mode allows to directly inline the nabla rendering into the document
 using virtual text and conceals. Invoke `:lua require"nabla".toggle_virt()` .
 To go back to normal, invoke the same method again.
 
 ==========================================================================
-Configuration					  *nabla-configuration*
+Configuration                                      *nabla-configuration*
 
 Currently the configuration in nabla.nvim is non-existent. There is no
 `setup{}` function or similar functions. Most of the configuration is done
@@ -42,35 +42,35 @@ It is usually the case that `popup()` and `toggle_virt()` are bound to keymaps
 for a quicker invocation.
 
 ==========================================================================
-Popup	  					  *nabla-popup*
+Popup                                             *nabla-popup*
 
-popup({opts})					  *nabla.popup()*
+popup({opts})                                     *nabla.popup()*
 
 This command will parse the latex expression under the cursor and display a
 floating window with formula rendered inside of it. 
 
   Parameters:~
       {opts} (table) Optional parameters which will override the parameters given to 
-	     |vim.lsp.util.open_floating_preview()| when creating the floating
-	     window. Refer to that function for options. For example, to
-	     customize the border the function would be called with 
-	     `popup({border="double"})`.
+             |vim.lsp.util.open_floating_preview()| when creating the floating
+             window. Refer to that function for options. For example, to
+             customize the border the function would be called with 
+             `popup({border="double"})`.
 
 ==========================================================================
-Virt-lines	  				  *nabla-virtlines*
+Virt-lines                                        *nabla-virtlines*
 
 
-enable_virt({opts})				  *nabla.enable_virt()*
+enable_virt({opts})                               *nabla.enable_virt()*
 
 This will enable nabla.nvim on the whole buffer, detect every formula with the
 Latex parser and conceal and replace with a virtual text representation of it.
 
   Parameters:~
       {opts} (table) Optional parameters.
-	     • `align_center`: (boolean) Center align formulas. By default
-			     there are aligned left.
+             • `align_center`: (boolean) Center align formulas. By default
+                             there are aligned left.
 
-disable_virt()					  *nabla.disable_virt()*
+disable_virt()                                    *nabla.disable_virt()*
 
 All the virtual text and conceals created by |nabla.enable_virt()| or
 |nabla.toggle_virt()| will be destroyed and the buffer should go back to its
@@ -86,11 +86,11 @@ internal state `virt_enabled`.
   Parameters:~
       {opts} (table) Optional parameters. See |nabla.enable_virt()|.
 
-is_virt_enabled({buf})			       *nabla.is_virt_enabled()*
+is_virt_enabled({buf})                         *nabla.is_virt_enabled()*
 
   Parameters:
       {buf} (number) Optional parameter to ask for a specific buffer number.
-		     If `nil` is given, the current buffer is chosen.
+                     If `nil` is given, the current buffer is chosen.
   Returns:~
       `true` if nabla.nvim virtual lines is enabled in the buffer {buf}.
 
