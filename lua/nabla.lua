@@ -625,12 +625,12 @@ function disable_virt()
 
 end
 
-function toggle_virt()
+function toggle_virt(opts)
   local buf = vim.api.nvim_get_current_buf()
   if virt_enabled[buf] then
     disable_virt()
   else
-    enable_virt()
+    enable_virt(opts)
   end
 end
 

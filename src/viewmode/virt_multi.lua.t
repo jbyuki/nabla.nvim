@@ -175,12 +175,12 @@ colorize_virt(g, drawing_virt, 0, 0, 0)
 local toggle_virt
 
 @functions+=
-function toggle_virt()
+function toggle_virt(opts)
   local buf = vim.api.nvim_get_current_buf()
   if virt_enabled[buf] then
     disable_virt()
   else
-    enable_virt()
+    enable_virt(opts)
   end
 end
 
