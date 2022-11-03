@@ -1,4 +1,4 @@
-$y_{unten}=-\sqrt{r^2-x^2}$
+y_{unten}=-\sqrt{r^2-x^2}
 ---
          ┌─────
 y     =-\│r²-x²
