@@ -379,7 +379,8 @@ local function popup(overrides)
     local floating_default_options = {
       wrap = false,
       focusable = false,
-      border = 'single'
+      border = 'single',
+    	stylize_markdown=false 
     }
     local bufnr_float, winr_float = vim.lsp.util.open_floating_preview(drawing, 'markdown', vim.tbl_deep_extend('force', floating_default_options, overrides or {}))
     local ns_id = vim.api.nvim_create_namespace("")
