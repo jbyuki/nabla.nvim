@@ -527,8 +527,8 @@ function enable_virt(opts)
         end
 
         if desired_col-col > 0 then
-          local ucol = vim.str_utfindex(lines[i], col)
-          local udesired_col = vim.str_utfindex(lines[i], desired_col)
+          local ucol = vim.fn.strdisplaywidth(lines[i]:sub(1, col))
+          local udesired_col = vim.fn.strdisplaywidth(lines[i]:sub(1, desired_col))
           local fill = {{(" "):rep(udesired_col-ucol), "Normal"}}
           for j=1,num_lines do
             vim.list_extend(virt_lines[j], fill)
