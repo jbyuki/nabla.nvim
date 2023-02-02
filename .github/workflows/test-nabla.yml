@@ -1,4 +1,4 @@
-name: Test osv
+name: Test nabla
 on: [push, pull_request]
 jobs:
   Test-osv:
