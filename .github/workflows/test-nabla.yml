@@ -1,7 +1,7 @@
 name: Test nabla
 on: [push, pull_request]
 jobs:
-  Test-osv:
+  Test-nabla:
     runs-on: ubuntu-latest
     strategy:
       matrix:
