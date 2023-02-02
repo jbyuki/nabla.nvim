@@ -30,6 +30,6 @@ jobs:
       - name: Run tests
         run: |
           cat test/test.lua
-          ./build/nvim --headless -c "luafile test/test.lua" -c "exit"
+          nvim --headless -c "luafile test/test.lua" -c "exit"
           echo "Done"
           cat result.txt
