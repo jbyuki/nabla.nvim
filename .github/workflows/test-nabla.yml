@@ -1,23 +1,29 @@
-name: Test nabla
+name: Test osv
 on: [push, pull_request]
 jobs:
-  Test-nabla:
+  Test-osv:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        neovim_version: ['nightly', 'v0.7.2', 'v0.8.0']
     steps:
       - name: Check out repository code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v2
+      - run: date +%F > todays-date
+      - name: Restore cache for today's nightly
+        uses: actions/cache@v2
+        with:
+          path: _neovim
+          key: ${{ runner.os }}-x64-${{ hashFiles('todays-date') }}
+      - name: Setup neovim
+        uses: rhysd/action-setup-vim@v1
+        with:
+          neovim: true
+          version: ${{ matrix.neovim_version }}
       - name: Prepare
         run: |
-          sudo apt install fd-find
-          test -d build || {
-            mkdir -p build
-            wget https://github.com/neovim/neovim/releases/download/v0.5.1/nvim.appimage
-            chmod +x nvim.appimage
-            mv nvim.appimage ./build/nvim
-          }
           mkdir -p ~/.local/share/nvim/site/pack/vendor/start
-          cp -R ${{ github.workspace }} ~/.local/share/nvim/site/pack/vendor/start
-      - run: echo "Neovim has been installed."
+          git clone --depth 1 https://github.com/jbyuki/nabla.nvim ~/.local/share/nvim/site/pack/vendor/start/nabla.nvim
       - name: List files in the repository
         run: |
           ls ${{ github.workspace }}
