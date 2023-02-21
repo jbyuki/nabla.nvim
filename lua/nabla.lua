@@ -4,7 +4,7 @@ local parser = require("nabla.latex")
 
 local ascii = require("nabla.ascii")
 
-local _, ts_utils = pcall(require, "nvim-treesitter.ts_utils")
+local ts_utils = vim.treesitter
 local utils=require"nabla.utils"
 
 local vtext = vim.api.nvim_create_namespace("nabla")
@@ -207,17 +207,17 @@ end
 
 function find_latex_at(buf, row, col)
   local pat = get_param("nabla_inline_delimiter", "$")
-  local srow, scol = unpack(search_backward(pat, row, col, false)) 
+  local srow, scol = unpack(search_backward(pat, row, col, false))
   local erow, ecol = unpack(search_forward(pat, row, col, false))
 
-  if srow and scol and erow and ecol and not (srow == erow and scol == ecol) then 
+  if srow and scol and erow and ecol and not (srow == erow and scol == ecol) then
     return srow, scol, erow, ecol, pat
   end
   local pat = get_param("nabla_wrapped_delimiter", "$$")
-  local srow, scol = unpack(search_backward(pat, row, col, true)) 
+  local srow, scol = unpack(search_backward(pat, row, col, true))
   local erow, ecol = unpack(search_forward(pat, row, col, true))
 
-  if srow and scol and erow and ecol then 
+  if srow and scol and erow and ecol then
     return srow, scol, erow, ecol, pat
   end
 
@@ -335,7 +335,7 @@ local function popup(overrides)
   local srow, scol, erow, ecol = ts_utils.get_node_range(math_node)
 
   local lines = vim.api.nvim_buf_get_text(0, srow, scol, erow, ecol, {})
-   
+
   line = table.concat(lines, " ")
   line = line:gsub("%$", "")
   line = line:gsub("\\%[", "")
@@ -380,7 +380,7 @@ local function popup(overrides)
       wrap = false,
       focusable = false,
       border = 'single',
-    	stylize_markdown=false 
+    	stylize_markdown=false
     }
     local bufnr_float, winr_float = vim.lsp.util.open_floating_preview(drawing, 'markdown', vim.tbl_deep_extend('force', floating_default_options, overrides or {}))
     local ns_id = vim.api.nvim_create_namespace("")
@@ -698,7 +698,7 @@ local function init()
 
 
 	local prewin = vim.api.nvim_get_current_win()
-	local height = vim.api.nvim_win_get_height(prewin) 
+	local height = vim.api.nvim_win_get_height(prewin)
 	local width = vim.api.nvim_win_get_width(prewin)
 
 	if width > height*2 then
@@ -742,7 +742,7 @@ local function replace_current()
 
 
 		local curline, _ = unpack(vim.api.nvim_win_get_cursor(0))
-		vim.api.nvim_buf_set_lines(0, curline-1, curline, true, drawing) 
+		vim.api.nvim_buf_set_lines(0, curline-1, curline, true, drawing)
 
 	else
 		if type(errmsg) == "string"  then
@@ -898,4 +898,3 @@ return {
 	is_virt_enabled = is_virt_enabled,
 
 }
-
