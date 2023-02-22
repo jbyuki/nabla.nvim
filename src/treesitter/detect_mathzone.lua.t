@@ -79,7 +79,7 @@ end
 return utils
 
 @requires+=
-local _, ts_utils = pcall(require, "nvim-treesitter.ts_utils")
+local ts_utils = vim.treesitter
 local utils=require"nabla.utils"
 
 @extract_latex_formula+=
@@ -95,7 +95,6 @@ local srow, scol, erow, ecol = ts_utils.get_node_range(math_node)
 
 @get_text_in_range+=
 local lines = vim.api.nvim_buf_get_text(0, srow, scol, erow, ecol, {})
- 
 line = table.concat(lines, " ")
 line = line:gsub("%$", "")
 line = line:gsub("\\%[", "")
