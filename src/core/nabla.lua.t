@@ -20,7 +20,6 @@
 return {
 	@export_symbols
 }
-
 @init_nabla_mode+=
 local function init()
 	@create_scratch_buffer
@@ -39,7 +38,7 @@ local scratch = vim.api.nvim_create_buf(false, true)
 
 @create_split_with_scratch_buffer+=
 local prewin = vim.api.nvim_get_current_win()
-local height = vim.api.nvim_win_get_height(prewin) 
+local height = vim.api.nvim_win_get_height(prewin)
 local width = vim.api.nvim_win_get_width(prewin)
 
 if width > height*2 then
@@ -147,7 +146,7 @@ line = vim.api.nvim_get_current_line()
 
 @replace_current_line_with_ascii_art+=
 local curline, _ = unpack(vim.api.nvim_win_get_cursor(0))
-vim.api.nvim_buf_set_lines(0, curline-1, curline, true, drawing) 
+vim.api.nvim_buf_set_lines(0, curline-1, curline, true, drawing)
 
 @get_whilespace_before+=
 local whitespace = string.match(line, "^(%s*)%S")

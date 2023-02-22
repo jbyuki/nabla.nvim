@@ -335,7 +335,6 @@ local function popup(overrides)
   local srow, scol, erow, ecol = ts_utils.get_node_range(math_node)
 
   local lines = vim.api.nvim_buf_get_text(0, srow, scol, erow, ecol, {})
-
   line = table.concat(lines, " ")
   line = line:gsub("%$", "")
   line = line:gsub("\\%[", "")
