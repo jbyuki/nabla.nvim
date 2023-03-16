@@ -67,6 +67,7 @@ right_bra.my = self.my
 elseif name == "{" then
   @collect_all_until_close_bracket
 	g = to_ascii(inside_bra, 1):enclose_bracket()
+	exp_i = exp_i + 1
 
 @collect_all_until_close_bracket+=
 local inside_bra = {}

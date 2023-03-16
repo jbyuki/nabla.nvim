@@ -1786,6 +1786,7 @@ function to_ascii(explist, exp_i)
         assert(explist[exp_i+1] and explist[exp_i+1].kind == "funexp" and explist[exp_i+1].sym == "}", "No matching closing bracket")
 
       	g = to_ascii(inside_bra, 1):enclose_bracket()
+      	exp_i = exp_i + 1
 
     	else
     		g = grid:new(utf8len("\\" .. name), 1, { "\\" .. name })
