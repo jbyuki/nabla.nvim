@@ -56,15 +56,10 @@ utils.get_mathzones_in_node(root, out)
 
 @detect_all_formulas+=
 local formula_nodes = utils.get_all_mathzones()
-local formula_at_line = {}
+local formulas_loc = {}
 for _, node in ipairs(formula_nodes) do
   local srow, scol, erow, ecol = ts_utils.get_node_range(node)
-  -- For now only support single line formulas
-  -- will probably change this in the near future
-  if srow == erow then
-    formula_at_line[srow] = formula_at_line[srow] or {}
-    table.insert(formula_at_line[srow], {scol, ecol})
-  end
+	table.insert(formulas_loc, {srow, scol, erow, ecol})
 end
 
 @detect_formulas_in_line+=

@@ -17,6 +17,10 @@ local inline_virt_ns = {}
 
 local saved_conceallevel = {}
 
+local mult_virt_ns = {}
+
+local saved_wrapsettings = {}
+
 
 local remove_extmark
 
@@ -396,212 +400,200 @@ function enable_virt(opts)
   local buf = vim.api.nvim_get_current_buf()
   virt_enabled[buf] = true
 
+	local inline_virt = {}
+	local virt_lines_above = {}
+	local virt_lines_below = {}
+
+	if mult_virt_ns[buf] then
+	  vim.api.nvim_buf_clear_namespace(buf, mult_virt_ns[buf], 0, -1)
+	end
+	mult_virt_ns[buf] = vim.api.nvim_create_namespace("")
+
   local lines = vim.api.nvim_buf_get_lines(buf, 0, -1, true)
 
-  local annotations = {}
+	local formula_nodes = utils.get_all_mathzones()
+	local formulas_loc = {}
+	for _, node in ipairs(formula_nodes) do
+	  local srow, scol, erow, ecol = ts_utils.get_node_range(node)
+		table.insert(formulas_loc, {srow, scol, erow, ecol})
+	end
 
-  local formula_nodes = utils.get_all_mathzones()
-  local formula_at_line = {}
-  for _, node in ipairs(formula_nodes) do
-    local srow, scol, erow, ecol = ts_utils.get_node_range(node)
-    -- For now only support single line formulas
-    -- will probably change this in the near future
-    if srow == erow then
-      formula_at_line[srow] = formula_at_line[srow] or {}
-      table.insert(formula_at_line[srow], {scol, ecol})
-    end
-  end
+  for _, loc in ipairs(formulas_loc) do
+    local srow, scol, erow, ecol = unpack(loc)
+  	local texts = vim.api.nvim_buf_get_text(buf, srow, scol, erow, ecol, {})
 
-  for row, str in ipairs(lines) do
-    local formulas = formula_at_line[row-1] or {}
-
-    local line_annotations = {}
-
-    for _, form in ipairs(formulas) do
-      local p1, p2 = unpack(form)
-      local line = str:sub(p1+1, p2)
-
-      line = line:gsub("%$", "")
-      line = line:gsub("\\%[", "")
-      line = line:gsub("\\%]", "")
-      line = line:gsub("^\\%(", "")
-      line = line:gsub("\\%)$", "")
-      line = vim.trim(line)
-      local success, exp = pcall(parser.parse_all, line)
+  	local line = table.concat(texts, " ")
+    line = line:gsub("%$", "")
+    line = line:gsub("\\%[", "")
+    line = line:gsub("\\%]", "")
+    line = line:gsub("^\\%(", "")
+    line = line:gsub("\\%)$", "")
+    line = vim.trim(line)
+    local success, exp = pcall(parser.parse_all, line)
 
 
-      if success and exp then
-        local succ, g = pcall(ascii.to_ascii, {exp}, 1)
-        if not succ then
-          print(g)
-          return 0
-        end
-
-        if not g or g == "" then
-          vim.api.nvim_echo({{"Empty expression detected. Please use the $...$ syntax.", "ErrorMsg"}}, false, {})
-          return 0
-        end
-
-        local drawing = {}
-        for row in vim.gsplit(tostring(g), "\n") do
-        	table.insert(drawing, row)
-        end
-        if whitespace then
-        	for i=1,#drawing do
-        		drawing[i] = whitespace .. drawing[i]
-        	end
-        end
-
-
-        local drawing_virt = {}
-
-        for j=1,#drawing do
-          local len = vim.str_utfindex(drawing[j])
-          local new_virt_line = {}
-          for i=1,len do
-            local a = vim.str_byteindex(drawing[j], i-1)
-            local b = vim.str_byteindex(drawing[j], i)
-
-            local c = drawing[j]:sub(a+1, b)
-            table.insert(new_virt_line, { c, "Normal" })
-          end
-
-          table.insert(drawing_virt, new_virt_line)
-        end
-
-        colorize_virt(g, drawing_virt, 0, 0, 0)
-
-        table.insert(line_annotations, { p1, p2, drawing_virt })
-      else
-        print(exp)
-      end
-    end
-
-    table.insert(annotations, line_annotations)
-
-  end
-
-  if inline_virt_ns[buf] then
-    vim.api.nvim_buf_clear_namespace(buf, inline_virt_ns[buf], 0, -1)
-  end
-
-  inline_virt_ns[buf] = vim.api.nvim_create_namespace("")
-
-  if mult_virt_ns[buf] then
-    vim.api.nvim_buf_clear_namespace(buf, mult_virt_ns[buf], 0, -1)
-  end
-
-  mult_virt_ns[buf] = vim.api.nvim_create_namespace("")
-
-  for i, line_annotations in ipairs(annotations) do
-    if #line_annotations > 0 then
-      local num_lines = 0
-      for _, annotation in ipairs(line_annotations) do
-        local _, _, drawing_virt = unpack(annotation)
-        num_lines = math.max(num_lines, #drawing_virt)
+    if success and exp then
+      local succ, g = pcall(ascii.to_ascii, {exp}, 1)
+      if not succ then
+        print(g)
+        return 0
       end
 
-      num_lines = num_lines - 1
-
-
-      local virt_lines = {}
-      for i=1,num_lines do
-        table.insert(virt_lines, {})
+      if not g or g == "" then
+        vim.api.nvim_echo({{"Empty expression detected. Please use the $...$ syntax.", "ErrorMsg"}}, false, {})
+        return 0
       end
 
-      local inline_virt = {}
-
-      local col = 0
-      for ai, annotation in ipairs(line_annotations) do
-        local p1, p2, drawing_virt = unpack(annotation)
-
-        -- p1 = vim.str_byteindex(lines[i], p1)
-        -- p2 = vim.str_byteindex(lines[i], p2)
-
-        local desired_col
-        if opts and opts.align_center then
-        	desired_col = math.floor((p1 + p2 - #drawing_virt[1])/2) -- substract because of conceals
-        else
-        	desired_col = p1 + 1 -- substract because of conceals
-        end
-
-        if desired_col-col > 0 then
-          local ucol = vim.api.nvim_strwidth(lines[i]:sub(1, col+1))
-          local udesired_col = vim.api.nvim_strwidth(lines[i]:sub(1, desired_col+1))
-          local fill = {{(" "):rep(udesired_col-ucol), "Normal"}}
-          for j=1,num_lines do
-            vim.list_extend(virt_lines[j], fill)
-          end
-          col = col + (desired_col - col)
-        end
-
-        local off = num_lines - (#drawing_virt-1)
-        local first_line_off = 0
-        if i == 1 then
-          first_line_off = 1
-        end
-
-        for j=1,#drawing_virt-1 do
-          vim.list_extend(virt_lines[j+off], drawing_virt[j+first_line_off])
-        end
-
-        for j=1,off do
-          local fill = {{(" "):rep(#drawing_virt[1]), "Normal"}}
-          vim.list_extend(virt_lines[j], fill)
-        end
-
-        col = col + #drawing_virt[1]
-
-        local chunks = {}
-
-        local line_virt
-        if i == 1 then
-          line_virt = drawing_virt[1]
-        else
-          line_virt = drawing_virt[#drawing_virt]
-        end
-        local margin_left = desired_col - p1
-        local margin_right = p2 - #line_virt - desired_col
-
-        for i=1,margin_left do
-          table.insert(chunks, {" ", "NonText"})
-        end
-
-        vim.list_extend(chunks, line_virt)
-
-        for i=1,margin_right do
-          table.insert(chunks, {" ", "NonText"})
-        end
-
-        table.insert(inline_virt, { chunks, p1, p2 })
-
+      local drawing = {}
+      for row in vim.gsplit(tostring(g), "\n") do
+      	table.insert(drawing, row)
+      end
+      if whitespace then
+      	for i=1,#drawing do
+      		drawing[i] = whitespace .. drawing[i]
+      	end
       end
 
-      vim.api.nvim_buf_set_extmark(buf, mult_virt_ns[buf], i-1, 0, {
-        virt_lines = virt_lines,
-        virt_lines_above = i > 1,
-      })
 
-      for _, iv in ipairs(inline_virt) do
-        local chunks, p1, p2 = unpack(iv)
+      local drawing_virt = {}
 
-        for j, chunk in ipairs(chunks) do
-          local c, hl_group = unpack(chunk)
-          vim.api.nvim_buf_set_extmark(buf, inline_virt_ns[buf], i-1, p1+j-1, {
-            end_row = i-1,
-            end_col = p1+j,
-            conceal = c,
-            hl_group = hl_group,
-          })
+      for j=1,#drawing do
+        local len = vim.str_utfindex(drawing[j])
+        local new_virt_line = {}
+        for i=1,len do
+          local a = vim.str_byteindex(drawing[j], i-1)
+          local b = vim.str_byteindex(drawing[j], i)
+
+          local c = drawing[j]:sub(a+1, b)
+          table.insert(new_virt_line, { c, "Normal" })
         end
+
+        table.insert(drawing_virt, new_virt_line)
       end
 
-    end
+      colorize_virt(g, drawing_virt, 0, 0, 0)
+
+
+  		for r, virt_line in ipairs(drawing_virt) do
+  			local relrow = r - g.my - 1
+
+  			if srow == 0 then
+  				relrow = r-1
+  			end
+
+
+  			local p1, p2
+  			if srow == erow then
+  				p1 = scol
+  				p2 = ecol
+  			elseif i == 1 then
+  				p1 = scol
+  				p2 = #vim.api.nvim_buf_get_lines(buf, srow, srow+1, true)[1]
+  			elseif i == #drawing_virt then
+  				p1 = 1
+  				p2 = ecol
+  			else
+  				p1 = 1
+  				p2 = #vim.api.nvim_buf_get_lines(buf, srow+(i-1), srow+(i-1)+1, true)[1]
+  			end
+
+  			local desired_col = p1 + 1
+  			if relrow >= 0 and relrow <= erow-srow then
+  				local chunks = {}
+  				local margin_left = desired_col - p1
+  				local margin_right = p2 - #virt_line - desired_col
+
+  				for i=1,margin_left do
+  					table.insert(chunks, {" ", "NonText"})
+  				end
+
+  				vim.list_extend(chunks, virt_line)
+
+  				for i=1,margin_right do
+  					table.insert(chunks, {" ", "NonText"})
+  				end
+
+  				table.insert(inline_virt, { chunks, srow+relrow, p1, p2 })
+
+  			else 
+  				local vline, virt_lines
+  				if relrow < 0 then
+  					virt_lines = virt_lines_above[srow] or {}
+  					vline = virt_lines[-relrow] or {}
+  				else
+  					virt_lines = virt_lines_below[erow] or {}
+  					vline = virt_lines[relrow - (erow-srow)] or {}
+  				end
+
+  				local col = #vline
+  				for i=1,desired_col-col do
+  					table.insert(vline, { " ", "Normal" })
+  				end
+
+  				vim.list_extend(vline, virt_line)
+
+  				if relrow < 0 then
+  					virt_lines[-relrow] = vline
+  					virt_lines_above[srow] = virt_lines
+  				else
+  					virt_lines[relrow - (erow-srow)] = vline
+  					virt_lines_below[erow] = virt_lines
+  				end
+
+  			end
+
+  		end
+
+  	else
+  		print(exp)
+  	end
   end
+
+  -- @place_drawings_above_lines
+	for _, conceal in ipairs(inline_virt) do
+		local chunks, row, p1, p2 = unpack(conceal)
+
+	  for j, chunk in ipairs(chunks) do
+	    local c, hl_group = unpack(chunk)
+	    vim.api.nvim_buf_set_extmark(buf, mult_virt_ns[buf], row, p1+j-1, {
+	      end_row = row,
+	      end_col = p1+j,
+	      conceal = c,
+	      hl_group = hl_group,
+				strict = false,
+	    })
+	  end
+	end
+
+	for row, virt_lines in pairs(virt_lines_above) do
+		local virt_lines_reversed = {}
+		for _, line in ipairs(virt_lines) do
+			table.insert(virt_lines_reversed, 1, line)
+		end
+
+		if #virt_lines_reversed > 0 then
+			vim.api.nvim_buf_set_extmark(buf, mult_virt_ns[buf], row, 0, {
+				virt_lines = virt_lines_reversed,
+				virt_lines_above = true,
+			})
+		end
+	end
+
+	for row, virt_lines in pairs(virt_lines_below) do
+		if #virt_lines > 0 then
+			vim.api.nvim_buf_set_extmark(buf, mult_virt_ns[buf], row, 0, {
+				virt_lines = virt_lines,
+			})
+		end
+	end
 
   local win = vim.api.nvim_get_current_win()
   saved_conceallevel[win] = vim.wo[win].conceallevel
   vim.wo[win].conceallevel = 2
+
+	local win = vim.api.nvim_get_current_win()
+	saved_wrapsettings[win] = vim.wo[win].wrap
+	vim.wo[win].wrap = false
 
 end
 
@@ -622,6 +614,11 @@ function disable_virt()
   if saved_conceallevel[win] then
     vim.wo[win].conceallevel = saved_conceallevel[win]
   end
+
+	local win = vim.api.nvim_get_current_win()
+	if saved_wrapsettings[win] then
+	  vim.wo[win].wrap = saved_wrapsettings[win]
+	end
 
 end
 
