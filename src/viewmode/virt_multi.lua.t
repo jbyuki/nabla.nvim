@@ -20,126 +20,6 @@ end
 @export_symbols+=
 enable_virt = enable_virt,
 
-@foreach_line_generate_drawings+=
-local annotations = {}
-
-for row, str in ipairs(lines) do
-  @detect_formulas_in_line
-  @foreach_formulas_generate_drawing
-end
-
-@foreach_formulas_generate_drawing+=
-local line_annotations = {}
-
-for _, form in ipairs(formulas) do
-  local p1, p2 = unpack(form)
-  local line = str:sub(p1+1, p2)
-
-  @transform_line_to_remove_delimiters
-  @parse_math_expression
-
-  if success and exp then
-    @generate_ascii_art
-    @convert_drawing_to_virt_lines
-    @colorize_drawing
-    table.insert(line_annotations, { p1, p2, drawing_virt, g.my })
-  else
-    print(exp)
-  end
-end
-
-table.insert(annotations, line_annotations)
-
-@script_variables+=
-local mult_virt_ns = {}
-
-@place_drawings_above_lines+=
-if mult_virt_ns[buf] then
-  vim.api.nvim_buf_clear_namespace(buf, mult_virt_ns[buf], 0, -1)
-end
-
-mult_virt_ns[buf] = vim.api.nvim_create_namespace("")
-
-for i, line_annotations in ipairs(annotations) do
-  if #line_annotations > 0 then
-    @compute_min_number_of_lines
-    @fill_lines_progressively_with_drawings
-    @create_virtual_line_annotation_above
-    @create_virtual_line_for_inline_conceal
-  end
-end
-
-@compute_min_number_of_lines+=
-local num_max = 0
-local den_max = 0
-for _, annotation in ipairs(line_annotations) do
-  local _, _, drawing_virt, my = unpack(annotation)
-	@compute_drawing_height_separately_below_and_above
-end
-
-@reduce_number_of_line_for_inline_conceal
-
-local virt_lines_above = {}
-local virt_lines_below = {}
-for i=1,num_max do table.insert(virt_lines_above, {}) end
-for i=1,den_max do table.insert(virt_lines_below, {}) end
-
-@compute_drawing_height_separately_below_and_above+=
-num_max = math.max(num_max, my)
-den_max = math.max(den_max, #drawing_virt - my)
-
-@fill_lines_progressively_with_drawings+=
-local col = 0
-for ai, annotation in ipairs(line_annotations) do
-  local p1, p2, drawing_virt, my = unpack(annotation)
-
-  @compute_col_to_place_drawing
-  @fill_lines_to_go_to_col
-  @fill_drawing
-  @save_inline_conceal
-end
-
-@compute_col_to_place_drawing+=
--- p1 = vim.str_byteindex(lines[i], p1)
--- p2 = vim.str_byteindex(lines[i], p2)
-
-local desired_col
-if opts and opts.align_center then
-	desired_col = math.floor((p1 + p2 - #drawing_virt[1])/2) -- substract because of conceals
-else
-	desired_col = p1 + 1 -- substract because of conceals
-end
-
-@fill_lines_to_go_to_col+=
-if desired_col-col > 0 then
-  local ucol = vim.api.nvim_strwidth(lines[i]:sub(1, col+1))
-  local udesired_col = vim.api.nvim_strwidth(lines[i]:sub(1, desired_col+1))
-  local fill = {{(" "):rep(udesired_col-ucol), "Normal"}}
-  for j=1,num_max do vim.list_extend(virt_lines_above[j], fill) end
-  for j=1,den_max do vim.list_extend(virt_lines_below[j], fill) end
-  col = col + (desired_col - col)
-end
-
-@fill_drawing+=
-local off = num_max - my + 1
-local first_line_off = 0
-@offset_drawing_for_first_line
-for j=1,#drawing_virt-1 do
-  vim.list_extend(virt_lines[j+off], drawing_virt[j+first_line_off])
-end
-
-for j=1,off do
-  local fill = {{(" "):rep(#drawing_virt[1]), "Normal"}}
-  vim.list_extend(virt_lines[j], fill)
-end
-
-col = col + #drawing_virt[1]
-
-@create_virtual_line_annotation_above+=
-vim.api.nvim_buf_set_extmark(buf, mult_virt_ns[buf], i-1, 0, {
-  virt_lines = virt_lines,
-  virt_lines_above = i > 1,
-})
 
 @declare_functions+=
 local disable_virt
@@ -217,62 +97,6 @@ end
 @export_symbols+=
 is_virt_enabled = is_virt_enabled,
 
-@reduce_number_of_line_for_inline_conceal+=
-den_max = den_max -1
-
-@fill_lines_progressively_with_drawings-=
-local inline_virt = {}
-
-@save_inline_conceal+=
-local chunks = {}
-
-@select_inline_conceal_based_if_first_line
-local margin_left = desired_col - p1
-local margin_right = p2 - #line_virt - desired_col
-
-for i=1,margin_left do
-  table.insert(chunks, {" ", "NonText"})
-end
-
-vim.list_extend(chunks, line_virt)
-
-for i=1,margin_right do
-  table.insert(chunks, {" ", "NonText"})
-end
-
-table.insert(inline_virt, { chunks, p1, p2 })
-
-@script_variables+=
-local inline_virt_ns = {}
-
-@place_drawings_above_lines-=
-if inline_virt_ns[buf] then
-  vim.api.nvim_buf_clear_namespace(buf, inline_virt_ns[buf], 0, -1)
-end
-
-inline_virt_ns[buf] = vim.api.nvim_create_namespace("")
-
-@disable_virt_inline+=
-if inline_virt_ns[buf] then
-  vim.api.nvim_buf_clear_namespace(buf, inline_virt_ns[buf], 0, -1)
-  inline_virt_ns[buf] = nil
-end
-
-@create_virtual_line_for_inline_conceal+=
-for _, iv in ipairs(inline_virt) do
-  local chunks, p1, p2 = unpack(iv)
-
-  for j, chunk in ipairs(chunks) do
-    local c, hl_group = unpack(chunk)
-    vim.api.nvim_buf_set_extmark(buf, inline_virt_ns[buf], i-1, p1+j-1, {
-      end_row = i-1,
-      end_col = p1+j,
-      conceal = c,
-      hl_group = hl_group,
-    })
-  end
-end
-
 @script_variables+=
 local saved_conceallevel = {}
 
@@ -285,19 +109,6 @@ vim.wo[win].conceallevel = 2
 local win = vim.api.nvim_get_current_win()
 if saved_conceallevel[win] then
   vim.wo[win].conceallevel = saved_conceallevel[win]
-end
-
-@offset_drawing_for_first_line+=
-if i == 1 then
-  first_line_off = 1
-end
-
-@select_inline_conceal_based_if_first_line+=
-local line_virt
-if i == 1 then
-  line_virt = drawing_virt[1]
-else
-  line_virt = drawing_virt[#drawing_virt]
 end
 
 @foreach_formula_generate_drawings+=

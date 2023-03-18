@@ -9,11 +9,7 @@ local utils=require"nabla.utils"
 
 local vtext = vim.api.nvim_create_namespace("nabla")
 
-local mult_virt_ns = {}
-
 local virt_enabled = {}
-
-local inline_virt_ns = {}
 
 local saved_conceallevel = {}
 
@@ -659,11 +655,6 @@ function disable_virt()
     vim.api.nvim_buf_clear_namespace(buf, mult_virt_ns[buf], 0, -1)
     mult_virt_ns[buf] = nil
   end
-  if inline_virt_ns[buf] then
-    vim.api.nvim_buf_clear_namespace(buf, inline_virt_ns[buf], 0, -1)
-    inline_virt_ns[buf] = nil
-  end
-
   local win = vim.api.nvim_get_current_win()
   if saved_conceallevel[win] then
     vim.wo[win].conceallevel = saved_conceallevel[win]
@@ -940,6 +931,7 @@ return {
 	gen_drawing = gen_drawing,
 	popup= popup,
 	enable_virt = enable_virt,
+
 
 	disable_virt = disable_virt,
 
