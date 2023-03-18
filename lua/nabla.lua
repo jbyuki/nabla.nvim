@@ -9,6 +9,9 @@ local utils=require"nabla.utils"
 
 local vtext = vim.api.nvim_create_namespace("nabla")
 
+local autogen_autocmd = {}
+local autogen_flag = false
+
 local virt_enabled = {}
 
 local saved_conceallevel = {}
@@ -650,6 +653,19 @@ function enable_virt(opts)
 	saved_wrapsettings[win] = vim.wo[win].wrap
 	vim.wo[win].wrap = false
 
+	if opts and opts.autogen then
+		autogen_autocmd[buf] = vim.api.nvim_create_autocmd({"InsertLeave"}, {
+			buffer = buf,
+			desc = "nabla.nvim: Regenerates virt_lines automatically when the user exists insert mode",
+			callback = function()
+				autogen_flag = true
+				disable_virt()
+				autogen_flag = false
+				enable_virt()
+			end
+		})
+
+	end
 end
 
 function disable_virt()
@@ -673,6 +689,10 @@ function disable_virt()
 	  vim.wo[win].wrap = saved_wrapsettings[win]
 	end
 
+	if not autogen_flag and autogen_autocmd[buf] then
+		vim.api.nvim_del_autocmd(autogen_autocmd[buf])
+		autogen_autocmd[buf] = nil
+	end
 end
 
 function toggle_virt(opts)

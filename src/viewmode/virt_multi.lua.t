@@ -15,6 +15,9 @@ function enable_virt(opts)
 	@place_virt_lines_above_and_below
   @enable_conceal_level_local
 	@enable_nowrap_local
+	if opts and opts.autogen then
+		@enable_autogen
+	end
 end
 
 @export_symbols+=
@@ -35,6 +38,7 @@ function disable_virt()
   @disable_virt_inline
   @restore_conceallevel
 	@restore_wrap_settings
+	@disable_autogen_if_disable_called_manually
 end
 
 @export_symbols+=
