@@ -314,11 +314,40 @@ for _, loc in ipairs(formulas_loc) do
     @convert_drawing_to_virt_lines
     @colorize_drawing
 
+		@pick_longest_line_as_conceal
 		@place_each_line_virtually
+		@conceal_other_line_completely
 	else
 		print(exp)
 	end
 end
+
+@pick_longest_line_as_conceal+=
+-- Pick the longest line in multiline formulas and hope that
+-- everything fits horizontally
+local concealline = srow
+local longest = -1
+for r=1,erow-srow+1 do
+	@compute_col_on_line
+	if p2 - p1 > longest then
+		concealline = srow+(r-1)
+		longest = p2 - p1
+	end
+end
+
+@conceal_other_line_completely+=
+for r=1,erow-srow+1 do
+	@compute_col_on_line
+	if srow+(r-1) ~= concealline then
+		local chunks = {}
+		for i=1,p2-p1 do
+			table.insert(chunks, {" ", "NonText"})
+		end
+
+		table.insert(inline_virt, { chunks, srow+(r-1), p1, p2 })
+	end
+end
+
 
 @place_each_line_virtually+=
 for r, virt_line in ipairs(drawing_virt) do
@@ -332,29 +361,32 @@ if srow == 0 then
 	relrow = r-1
 end
 
-@compute_relative_line_position+=
-local relrow = r - g.my - 1
-
-@if_first_line_shift_below
-
+@compute_col_on_line+=
 local p1, p2
 if srow == erow then
 	p1 = scol
 	p2 = ecol
-elseif i == 1 then
+elseif r == 1 then
 	p1 = scol
 	p2 = #vim.api.nvim_buf_get_lines(buf, srow, srow+1, true)[1]
-elseif i == #drawing_virt then
-	p1 = 1
+elseif r == #drawing_virt then
+	p1 = 0
 	p2 = ecol
 else
-	p1 = 1
-	p2 = #vim.api.nvim_buf_get_lines(buf, srow+(i-1), srow+(i-1)+1, true)[1]
+	p1 = 0
+	p2 = #vim.api.nvim_buf_get_lines(buf, srow+(r-1), srow+(r-1)+1, true)[1]
 end
+
+@compute_relative_line_position+=
+local relrow = r - g.my - 1
+
+@if_first_line_shift_below
+@compute_col_on_line
+
 
 @if_position_on_formula_conceal+=
 local desired_col = p1 + 1
-if relrow >= 0 and relrow <= erow-srow then
+if relrow == 0 then
 	local chunks = {}
 	local margin_left = desired_col - p1
 	local margin_right = p2 - #virt_line - desired_col
@@ -369,7 +401,7 @@ if relrow >= 0 and relrow <= erow-srow then
 		table.insert(chunks, {" ", "NonText"})
 	end
 
-	table.insert(inline_virt, { chunks, srow+relrow, p1, p2 })
+	table.insert(inline_virt, { chunks, concealline, p1, p2 })
 
 @init_virt_lines+=
 local inline_virt = {}
@@ -387,20 +419,20 @@ end
 @get_virt_line_at_location_or_create+=
 local vline, virt_lines
 if relrow < 0 then
-	virt_lines = virt_lines_above[srow] or {}
+	virt_lines = virt_lines_above[concealline] or {}
 	vline = virt_lines[-relrow] or {}
 else
-	virt_lines = virt_lines_below[erow] or {}
-	vline = virt_lines[relrow - (erow-srow)] or {}
+	virt_lines = virt_lines_below[concealline] or {}
+	vline = virt_lines[relrow] or {}
 end
 
 @put_virt_line_at_location+=
 if relrow < 0 then
 	virt_lines[-relrow] = vline
-	virt_lines_above[srow] = virt_lines
+	virt_lines_above[concealline] = virt_lines
 else
-	virt_lines[relrow - (erow-srow)] = vline
-	virt_lines_below[erow] = virt_lines
+	virt_lines[relrow] = vline
+	virt_lines_below[concealline] = virt_lines
 end
 
 @fill_until_desired_col+=
@@ -428,10 +460,10 @@ for _, conceal in ipairs(inline_virt) do
   for j, chunk in ipairs(chunks) do
     local c, hl_group = unpack(chunk)
     vim.api.nvim_buf_set_extmark(buf, mult_virt_ns[buf], row, p1+j-1, {
+			virt_text = {{ c, hl_group }},
       end_row = row,
       end_col = p1+j,
-      conceal = c,
-      hl_group = hl_group,
+			virt_text_pos = "overlay",
 			strict = false,
     })
   end
