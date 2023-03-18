@@ -139,7 +139,7 @@ for _, loc in ipairs(formulas_loc) do
 		@place_each_line_virtually
 		@conceal_other_line_completely
 	else
-		if opts and opts.silent the
+		if opts and opts.silent then
 		else
 			print(exp)
 		end

@@ -599,7 +599,7 @@ function enable_virt(opts)
 
 
   	else
-  		if opts and opts.silent the
+  		if opts and opts.silent then
   		else
   			print(exp)
   		end
