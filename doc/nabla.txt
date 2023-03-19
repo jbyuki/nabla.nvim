@@ -67,8 +67,10 @@ Latex parser and conceal and replace with a virtual text representation of it.
 
   Parameters:~
       {opts} (table) Optional parameters.
-             • `align_center`: (boolean) Center align formulas. By default
-                             there are aligned left.
+             • `autogen`: (boolean) Automatically regenerate ASCII art when
+	     exiting insert mode. By default it's set to false.
+             • `silent`: (boolean) Hides error messages. Defaults to false.
+                             
 
 disable_virt()                                    *nabla.disable_virt()*
 
@@ -88,7 +90,7 @@ internal state `virt_enabled`.
 
 is_virt_enabled({buf})                         *nabla.is_virt_enabled()*
 
-  Parameters:
+  Parameters:~
       {buf} (number) Optional parameter to ask for a specific buffer number.
                      If `nil` is given, the current buffer is chosen.
   Returns:~
