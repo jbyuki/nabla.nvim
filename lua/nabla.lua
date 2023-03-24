@@ -420,188 +420,189 @@ function enable_virt(opts)
 
   for _, loc in ipairs(formulas_loc) do
     local srow, scol, erow, ecol = unpack(loc)
-  	local texts = vim.api.nvim_buf_get_text(buf, srow, scol, erow, ecol, {})
-
-  	local line = table.concat(texts, " ")
-    line = line:gsub("%$", "")
-    line = line:gsub("\\%[", "")
-    line = line:gsub("\\%]", "")
-    line = line:gsub("^\\%(", "")
-    line = line:gsub("\\%)$", "")
-    line = vim.trim(line)
-    local success, exp = pcall(parser.parse_all, line)
-
-
-    if success and exp then
-      local succ, g = pcall(ascii.to_ascii, {exp}, 1)
-      if not succ then
-        print(g)
-        return 0
-      end
-
-      if not g or g == "" then
-        vim.api.nvim_echo({{"Empty expression detected. Please use the $...$ syntax.", "ErrorMsg"}}, false, {})
-        return 0
-      end
-
-      local drawing = {}
-      for row in vim.gsplit(tostring(g), "\n") do
-      	table.insert(drawing, row)
-      end
-      if whitespace then
-      	for i=1,#drawing do
-      		drawing[i] = whitespace .. drawing[i]
-      	end
-      end
+  	local succ, texts = pcall(vim.api.nvim_buf_get_text, buf, srow, scol, erow, ecol, {})
+  	if succ then
+  		local line = table.concat(texts, " ")
+  		line = line:gsub("%$", "")
+  		line = line:gsub("\\%[", "")
+  		line = line:gsub("\\%]", "")
+  		line = line:gsub("^\\%(", "")
+  		line = line:gsub("\\%)$", "")
+  		line = vim.trim(line)
+  		local success, exp = pcall(parser.parse_all, line)
 
 
-      local drawing_virt = {}
-
-      for j=1,#drawing do
-        local len = vim.str_utfindex(drawing[j])
-        local new_virt_line = {}
-        for i=1,len do
-          local a = vim.str_byteindex(drawing[j], i-1)
-          local b = vim.str_byteindex(drawing[j], i)
-
-          local c = drawing[j]:sub(a+1, b)
-          table.insert(new_virt_line, { c, "Normal" })
-        end
-
-        table.insert(drawing_virt, new_virt_line)
-      end
-
-      colorize_virt(g, drawing_virt, 0, 0, 0)
-
-
-  		-- Pick the longest line in multiline formulas and hope that
-  		-- everything fits horizontally
-  		local concealline = srow
-  		local longest = -1
-  		for r=1,erow-srow+1 do
-  			local p1, p2
-  			if srow == erow then
-  				p1 = scol
-  				p2 = ecol
-  			elseif r == 1 then
-  				p1 = scol
-  				p2 = #vim.api.nvim_buf_get_lines(buf, srow, srow+1, true)[1]
-  			elseif r == #drawing_virt then
-  				p1 = 0
-  				p2 = ecol
-  			else
-  				p1 = 0
-  				p2 = #vim.api.nvim_buf_get_lines(buf, srow+(r-1), srow+(r-1)+1, true)[1]
+  		if success and exp then
+  			local succ, g = pcall(ascii.to_ascii, {exp}, 1)
+  			if not succ then
+  			  print(g)
+  			  return 0
   			end
 
-  			if p2 - p1 > longest then
-  				concealline = srow+(r-1)
-  				longest = p2 - p1
-  			end
-  		end
-
-  		for r, virt_line in ipairs(drawing_virt) do
-  			local relrow = r - g.my - 1
-
-  			if srow == 0 then
-  				relrow = r-1
+  			if not g or g == "" then
+  			  vim.api.nvim_echo({{"Empty expression detected. Please use the $...$ syntax.", "ErrorMsg"}}, false, {})
+  			  return 0
   			end
 
-  			local p1, p2
-  			if srow == erow then
-  				p1 = scol
-  				p2 = ecol
-  			elseif r == 1 then
-  				p1 = scol
-  				p2 = #vim.api.nvim_buf_get_lines(buf, srow, srow+1, true)[1]
-  			elseif r == #drawing_virt then
-  				p1 = 0
-  				p2 = ecol
-  			else
-  				p1 = 0
-  				p2 = #vim.api.nvim_buf_get_lines(buf, srow+(r-1), srow+(r-1)+1, true)[1]
+  			local drawing = {}
+  			for row in vim.gsplit(tostring(g), "\n") do
+  				table.insert(drawing, row)
   			end
-
-
-
-  			local desired_col = p1 + 1
-  			if relrow == 0 then
-  				local chunks = {}
-  				local margin_left = desired_col - p1
-  				local margin_right = p2 - #virt_line - desired_col
-
-  				for i=1,margin_left do
-  					table.insert(chunks, {" ", "NonText"})
+  			if whitespace then
+  				for i=1,#drawing do
+  					drawing[i] = whitespace .. drawing[i]
   				end
+  			end
 
-  				vim.list_extend(chunks, virt_line)
 
-  				for i=1,margin_right do
-  					table.insert(chunks, {" ", "NonText"})
-  				end
+  			local drawing_virt = {}
 
-  				table.insert(inline_virt, { chunks, concealline, p1, p2 })
+  			for j=1,#drawing do
+  			  local len = vim.str_utfindex(drawing[j])
+  			  local new_virt_line = {}
+  			  for i=1,len do
+  			    local a = vim.str_byteindex(drawing[j], i-1)
+  			    local b = vim.str_byteindex(drawing[j], i)
 
-  			else 
-  				local vline, virt_lines
-  				if relrow < 0 then
-  					virt_lines = virt_lines_above[concealline] or {}
-  					vline = virt_lines[-relrow] or {}
+  			    local c = drawing[j]:sub(a+1, b)
+  			    table.insert(new_virt_line, { c, "Normal" })
+  			  end
+
+  			  table.insert(drawing_virt, new_virt_line)
+  			end
+
+  			colorize_virt(g, drawing_virt, 0, 0, 0)
+
+
+  			-- Pick the longest line in multiline formulas and hope that
+  			-- everything fits horizontally
+  			local concealline = srow
+  			local longest = -1
+  			for r=1,erow-srow+1 do
+  				local p1, p2
+  				if srow == erow then
+  					p1 = scol
+  					p2 = ecol
+  				elseif r == 1 then
+  					p1 = scol
+  					p2 = #vim.api.nvim_buf_get_lines(buf, srow, srow+1, true)[1]
+  				elseif r == #drawing_virt then
+  					p1 = 0
+  					p2 = ecol
   				else
-  					virt_lines = virt_lines_below[concealline] or {}
-  					vline = virt_lines[relrow] or {}
+  					p1 = 0
+  					p2 = #vim.api.nvim_buf_get_lines(buf, srow+(r-1), srow+(r-1)+1, true)[1]
   				end
 
-  				local col = #vline
-  				for i=1,desired_col-col do
-  					table.insert(vline, { " ", "Normal" })
+  				if p2 - p1 > longest then
+  					concealline = srow+(r-1)
+  					longest = p2 - p1
+  				end
+  			end
+
+  			for r, virt_line in ipairs(drawing_virt) do
+  				local relrow = r - g.my - 1
+
+  				if srow == 0 then
+  					relrow = r-1
   				end
 
-  				vim.list_extend(vline, virt_line)
-
-  				if relrow < 0 then
-  					virt_lines[-relrow] = vline
-  					virt_lines_above[concealline] = virt_lines
+  				local p1, p2
+  				if srow == erow then
+  					p1 = scol
+  					p2 = ecol
+  				elseif r == 1 then
+  					p1 = scol
+  					p2 = #vim.api.nvim_buf_get_lines(buf, srow, srow+1, true)[1]
+  				elseif r == #drawing_virt then
+  					p1 = 0
+  					p2 = ecol
   				else
-  					virt_lines[relrow] = vline
-  					virt_lines_below[concealline] = virt_lines
+  					p1 = 0
+  					p2 = #vim.api.nvim_buf_get_lines(buf, srow+(r-1), srow+(r-1)+1, true)[1]
+  				end
+
+
+
+  				local desired_col = p1 + 1
+  				if relrow == 0 then
+  					local chunks = {}
+  					local margin_left = desired_col - p1
+  					local margin_right = p2 - #virt_line - desired_col
+
+  					for i=1,margin_left do
+  						table.insert(chunks, {" ", "NonText"})
+  					end
+
+  					vim.list_extend(chunks, virt_line)
+
+  					for i=1,margin_right do
+  						table.insert(chunks, {" ", "NonText"})
+  					end
+
+  					table.insert(inline_virt, { chunks, concealline, p1, p2 })
+
+  				else 
+  					local vline, virt_lines
+  					if relrow < 0 then
+  						virt_lines = virt_lines_above[concealline] or {}
+  						vline = virt_lines[-relrow] or {}
+  					else
+  						virt_lines = virt_lines_below[concealline] or {}
+  						vline = virt_lines[relrow] or {}
+  					end
+
+  					local col = #vline
+  					for i=1,desired_col-col do
+  						table.insert(vline, { " ", "Normal" })
+  					end
+
+  					vim.list_extend(vline, virt_line)
+
+  					if relrow < 0 then
+  						virt_lines[-relrow] = vline
+  						virt_lines_above[concealline] = virt_lines
+  					else
+  						virt_lines[relrow] = vline
+  						virt_lines_below[concealline] = virt_lines
+  					end
+
   				end
 
   			end
 
-  		end
-
-  		for r=1,erow-srow+1 do
-  			local p1, p2
-  			if srow == erow then
-  				p1 = scol
-  				p2 = ecol
-  			elseif r == 1 then
-  				p1 = scol
-  				p2 = #vim.api.nvim_buf_get_lines(buf, srow, srow+1, true)[1]
-  			elseif r == #drawing_virt then
-  				p1 = 0
-  				p2 = ecol
-  			else
-  				p1 = 0
-  				p2 = #vim.api.nvim_buf_get_lines(buf, srow+(r-1), srow+(r-1)+1, true)[1]
-  			end
-
-  			if srow+(r-1) ~= concealline then
-  				local chunks = {}
-  				for i=1,p2-p1 do
-  					table.insert(chunks, {" ", "NonText"})
+  			for r=1,erow-srow+1 do
+  				local p1, p2
+  				if srow == erow then
+  					p1 = scol
+  					p2 = ecol
+  				elseif r == 1 then
+  					p1 = scol
+  					p2 = #vim.api.nvim_buf_get_lines(buf, srow, srow+1, true)[1]
+  				elseif r == #drawing_virt then
+  					p1 = 0
+  					p2 = ecol
+  				else
+  					p1 = 0
+  					p2 = #vim.api.nvim_buf_get_lines(buf, srow+(r-1), srow+(r-1)+1, true)[1]
   				end
 
-  				table.insert(inline_virt, { chunks, srow+(r-1), p1, p2 })
+  				if srow+(r-1) ~= concealline then
+  					local chunks = {}
+  					for i=1,p2-p1 do
+  						table.insert(chunks, {" ", "NonText"})
+  					end
+
+  					table.insert(inline_virt, { chunks, srow+(r-1), p1, p2 })
+  				end
   			end
-  		end
 
 
-  	else
-  		if opts and opts.silent then
   		else
-  			print(exp)
+  			if opts and opts.silent then
+  			else
+  				print(exp)
+  			end
   		end
   	end
   end

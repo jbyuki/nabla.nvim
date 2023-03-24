@@ -124,24 +124,25 @@ end
 @foreach_formula_generate_drawings+=
 for _, loc in ipairs(formulas_loc) do
   local srow, scol, erow, ecol = unpack(loc)
-	local texts = vim.api.nvim_buf_get_text(buf, srow, scol, erow, ecol, {})
+	local succ, texts = pcall(vim.api.nvim_buf_get_text, buf, srow, scol, erow, ecol, {})
+	if succ then
+		local line = table.concat(texts, " ")
+		@transform_line_to_remove_delimiters
+		@parse_math_expression
 
-	local line = table.concat(texts, " ")
-  @transform_line_to_remove_delimiters
-  @parse_math_expression
+		if success and exp then
+			@generate_ascii_art
+			@convert_drawing_to_virt_lines
+			@colorize_drawing
 
-  if success and exp then
-    @generate_ascii_art
-    @convert_drawing_to_virt_lines
-    @colorize_drawing
-
-		@pick_longest_line_as_conceal
-		@place_each_line_virtually
-		@conceal_other_line_completely
-	else
-		if opts and opts.silent then
+			@pick_longest_line_as_conceal
+			@place_each_line_virtually
+			@conceal_other_line_completely
 		else
-			print(exp)
+			if opts and opts.silent then
+			else
+				print(exp)
+			end
 		end
 	end
 end
