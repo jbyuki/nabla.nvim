@@ -1542,7 +1542,7 @@ function to_ascii(explist, exp_i)
 
     elseif exp.kind == "symexp" then
     	local sym =  exp.sym
-    	if not string.match(sym, "^%a") and not string.match(sym, "^%d")  and not string.match(sym, "^%s+$") and sym ~= special_syms["cdot"]  and sym ~= "/" and sym ~= special_syms["partial"] and sym ~= "[" and sym ~= "]" then
+    	if not string.match(sym, "^%a") and not string.match(sym, "^%d")  and not string.match(sym, "^%s+$") and sym ~= special_syms["cdot"]  and sym ~= "/" and sym ~= special_syms["partial"] and sym ~= "[" and sym ~= "]" and sym ~= "'" then
     		sym = " " .. sym .. " "
     	end
 
@@ -1580,7 +1580,7 @@ function to_ascii(explist, exp_i)
     	  local t
     	  if special_syms[name] then
     	    t = "sym"
-    	  	if not string.match(sym, "^%a") and not string.match(sym, "^%d")  and not string.match(sym, "^%s+$") and sym ~= special_syms["cdot"]  and sym ~= "/" and sym ~= special_syms["partial"] and sym ~= "[" and sym ~= "]" then
+    	  	if not string.match(sym, "^%a") and not string.match(sym, "^%d")  and not string.match(sym, "^%s+$") and sym ~= special_syms["cdot"]  and sym ~= "/" and sym ~= special_syms["partial"] and sym ~= "[" and sym ~= "]" and sym ~= "'" then
     	  		sym = " " .. sym .. " "
     	  	end
 
