@@ -1,5 +1,5 @@
 y_{unten}=-\sqrt{r^2-x^2}
 ---
-         ┌─────
-y     =-\│r²-x²
- unten         
+             ┌───────
+y      =  - \│r² - x²
+ unten               
