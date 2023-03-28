@@ -24,12 +24,6 @@ local colorize
 
 local colorize_virt
 
-local find_latex_at
-
-local search_backward
-
-local search_forward
-
 local enable_virt
 
 local disable_virt
@@ -199,90 +193,6 @@ function colorize_virt(g, virt_lines, first_dx, dx, dy)
     colorize_virt(child[1], virt_lines, child[2]+first_dx, child[2]+dx, child[3]+dy)
   end
 
-end
-
-function find_latex_at(buf, row, col)
-  local pat = get_param("nabla_inline_delimiter", "$")
-  local srow, scol = unpack(search_backward(pat, row, col, false))
-  local erow, ecol = unpack(search_forward(pat, row, col, false))
-
-  if srow and scol and erow and ecol and not (srow == erow and scol == ecol) then
-    return srow, scol, erow, ecol, pat
-  end
-  local pat = get_param("nabla_wrapped_delimiter", "$$")
-  local srow, scol = unpack(search_backward(pat, row, col, true))
-  local erow, ecol = unpack(search_forward(pat, row, col, true))
-
-  if srow and scol and erow and ecol then
-    return srow, scol, erow, ecol, pat
-  end
-
-end
-
-function search_backward(pattern, row, col, other_lines)
-  local rpattern = pattern:reverse()
-
-  rpattern = vim.pesc(rpattern)
-
-  local line = vim.api.nvim_buf_get_lines(0, row-1, row, true)[1]
-  line = line:sub(1, col)
-
-  local s = line:reverse():find(rpattern)
-  if s then
-    return { row, #line - s + 1 } -- same indexing as nvim_win_get_cursor
-  end
-
-  if other_lines then
-    local i = row-1
-    while i > 0 do
-      local line = vim.api.nvim_buf_get_lines(0, i-1, i, true)[1]
-
-      local s = line:reverse():find(rpattern)
-      if s then
-        return { i, #line - s + 1 } -- same indexing as nvim_win_get_cursor
-      end
-
-      i = i - 1
-    end
-
-  end
-  return { nil, nil }
-end
-
-function search_forward(pattern, row, col, other_lines)
-  pattern = vim.pesc(pattern)
-
-  local line = vim.api.nvim_buf_get_lines(0, row-1, row, true)[1]
-  line = line:sub(col)
-
-  local s = line:find(pattern)
-  if s then
-    return { row, s + col - 2 } -- same indexing as nvim_win_get_cursor
-  end
-
-  if other_lines then
-    local i = row+1
-    local line_count = vim.api.nvim_buf_line_count(0)
-    while i <= line_count do
-      local line = vim.api.nvim_buf_get_lines(0, i-1, i, true)[1]
-
-      local s = line:find(pattern)
-      if s then
-        return { i, s - 1 } -- same indexing as nvim_win_get_cursor
-      end
-
-      i = i + 1
-    end
-
-  end
-
-  return { nil, nil }
-end
-
-local function get_range()
-  local row, col = unpack(vim.api.nvim_win_get_cursor(0))
-
-  print(find_latex_at(0, row, col))
 end
 
 local function gen_drawing(lines)
@@ -709,8 +619,6 @@ end
 
 
 return {
-	get_range = get_range,
-
 	gen_drawing = gen_drawing,
 	popup= popup,
 	enable_virt = enable_virt,
