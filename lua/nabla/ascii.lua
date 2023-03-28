@@ -1541,7 +1541,11 @@ function to_ascii(explist, exp_i)
     	g = grid:new(string.len(numstr), 1, { tostring(numstr) }, "num")
 
     elseif exp.kind == "symexp" then
-    	local sym = exp.sym
+    	local sym =  exp.sym
+    	if not string.match(sym, "^%a") and not string.match(sym, "^%d")  and not string.match(sym, "^%s+$") then
+    		sym = " " .. sym .. " "
+    	end
+
     	g = grid:new(utf8len(sym), 1, { sym }, "sym")
 
 
@@ -1576,6 +1580,10 @@ function to_ascii(explist, exp_i)
     	  local t
     	  if special_syms[name] then
     	    t = "sym"
+    	  	if not string.match(sym, "^%a") and not string.match(sym, "^%d")  and not string.match(sym, "^%s+$") then
+    	  		sym = " " .. sym .. " "
+    	  	end
+
     	  elseif special_nums[name] then
     	    t = "num"
     	  elseif greek_etc[name] then

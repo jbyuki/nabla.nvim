@@ -299,7 +299,8 @@ right_paren.my = self.my
 
 @transform_exp_to_grid+=
 elseif exp.kind == "symexp" then
-	local sym = exp.sym
+	local sym =  exp.sym
+	@put_spacing_around_operators
 	g = grid:new(utf8len(sym), 1, { sym }, "sym")
 
 
@@ -950,6 +951,7 @@ table.insert(c.children, { g, s2, self.h })
 @determine_type_special+=
 if special_syms[name] then
   t = "sym"
+	@put_spacing_around_operators
 elseif special_nums[name] then
   t = "num"
 elseif greek_etc[name] then
