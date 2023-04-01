@@ -516,15 +516,21 @@ function enable_virt(opts)
 
 	  for j, chunk in ipairs(chunks) do
 	    local c, hl_group = unpack(chunk)
-	    vim.api.nvim_buf_set_extmark(buf, mult_virt_ns[buf], row, p1+j-1, {
-				-- virt_text = {{ c, hl_group }},
-	      end_row = row,
-	      end_col = p1+j,
-				-- virt_text_pos = "overlay",
-				conceal = c,
-				hl_group = hl_group,
-				strict = false,
-	    })
+			if p1+j == p2 and j < #chunks then
+				hl_group = "DiffDelete"
+			end
+
+			if p1+j <= p2 then
+				vim.api.nvim_buf_set_extmark(buf, mult_virt_ns[buf], row, p1+j-1, {
+					-- virt_text = {{ c, hl_group }},
+					end_row = row,
+					end_col = p1+j,
+					-- virt_text_pos = "overlay",
+					conceal = c,
+					hl_group = hl_group,
+					strict = false,
+				})
+			end
 	  end
 	end
 
