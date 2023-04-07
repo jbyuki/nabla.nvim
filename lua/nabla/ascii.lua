@@ -21,7 +21,9 @@ local put_if_only_sup
 
 
 local style = {
-	div_bar = "―",
+	div_high_bar = "‾",
+	div_middle_bar = "―",
+	div_low_bar = "_",
 
 	left_top_par    = '⎛',
 	left_middle_par = '⎜',
@@ -1562,7 +1564,7 @@ function to_ascii(explist, exp_i)
     		local bar = ""
     		local w = math.max(leftgrid.w, rightgrid.w)
     		for x=1,w do
-    			bar = bar .. style.div_bar
+    			bar = bar .. style.div_middle_bar
     		end
 
 
@@ -1761,7 +1763,7 @@ function to_ascii(explist, exp_i)
     	  local bar = ""
     	  local w = belowgrid.w
     	  for x=1,w do
-    	  	bar = bar .. style.div_bar
+    	  	bar = bar .. style.div_low_bar
     	  end
     	  local overline = grid:new(w, 1, { bar })
     	  g = overline:join_vert(belowgrid)
@@ -1773,7 +1775,7 @@ function to_ascii(explist, exp_i)
     	  local txt = ""
     	  local w = belowgrid.w
     	  for x=1,w-1 do
-    	  	txt = txt .. style.div_bar
+    	  	txt = txt .. style.div_middle_bar
     	  end
     	  txt = txt .. style.vec_arrow
 
