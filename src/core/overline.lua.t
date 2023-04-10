@@ -12,6 +12,6 @@ elseif name == "overline" then
 local bar = ""
 local w = belowgrid.w
 for x=1,w do
-	bar = bar .. style.div_bar
+	bar = bar .. style.div_low_bar
 end
 local overline = grid:new(w, 1, { bar })

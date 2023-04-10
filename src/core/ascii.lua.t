@@ -203,13 +203,15 @@ for y=1,h do
 end
 
 @style_variables+=
-div_bar = "―",
+div_high_bar = "‾",
+div_middle_bar = "―",
+div_low_bar = "_",
 
 @generate_appropriate_size_fraction_bar+=
 local bar = ""
 local w = math.max(leftgrid.w, rightgrid.w)
 for x=1,w do
-	bar = bar .. style.div_bar
+	bar = bar .. style.div_middle_bar
 end
 
 @grid_data+=
