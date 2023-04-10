@@ -115,6 +115,13 @@ function parse()
 		  	}
 		  	nextc()
 
+			elseif getc() == "|" then
+				sym = {
+					kind = "funexp",
+			    lnum = lnum,
+					sym = "Vert",
+				}
+				nextc()
 			else
 				sym = parse_symbol()
 			end
@@ -192,6 +199,7 @@ function parse()
 		  elseif sym.sym == "right" and string.match(getc(), '%]') then
 		    nextc()
 		    break
+
 		  else
 		    exp = {
 		    	kind = "funexp",

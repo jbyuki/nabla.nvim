@@ -148,6 +148,7 @@ elseif string.match(getc(), "\\") then
   @if_open_bracket_parse_verbatim
   @if_close_bracket_break
   @if_comma_parse_as_space
+	@if_vertical_bar_put_norm
 	else
 		sym = parse_symbol()
 	end
@@ -412,3 +413,12 @@ elseif sym.sym == "left" and string.match(getc(), '%[') then
 elseif sym.sym == "right" and string.match(getc(), '%]') then
   nextc()
   break
+
+@if_vertical_bar_put_norm+=
+elseif getc() == "|" then
+	sym = {
+		kind = "funexp",
+    lnum = lnum,
+		sym = "Vert",
+	}
+	nextc()
