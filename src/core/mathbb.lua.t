@@ -40,6 +40,6 @@ elseif name == "mathbb" then
   exp_i = exp_i + 1
 	assert(sym.kind == "symexp" or sym.kind == "numexp", "mathbb must have 1 arguments")
 
-  local sym = tostring(sym.sym or sym.lnum)
+  local sym = tostring(sym.sym or sym.num)
   assert(mathbb[sym], "mathbb symbol not found")
   g = grid:new(1, 1, {mathbb[sym]})
