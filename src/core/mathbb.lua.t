@@ -19,9 +19,6 @@ local mathbb = {
   ["Q"] = "ℚ",
 }
 
-@export_symbols+=
-mathbb = mathbb,
-
 @declare_functions+=
 local unpack_explist
 

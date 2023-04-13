@@ -1932,7 +1932,5 @@ end
 return {
 to_ascii = to_ascii,
 
-mathbb = mathbb,
-
 }
 
