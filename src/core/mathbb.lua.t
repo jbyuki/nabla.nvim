@@ -19,6 +19,9 @@ local mathbb = {
   ["Q"] = "ℚ",
 }
 
+@export_symbols+=
+mathbb = mathbb,
+
 @declare_functions+=
 local unpack_explist
 
@@ -35,8 +38,8 @@ end
 elseif name == "mathbb" then
   local sym = unpack_explist(explist[exp_i+1])
   exp_i = exp_i + 1
-	assert(sym.kind == "symexp", "mathbb must have 1 arguments")
+	assert(sym.kind == "symexp" or sym.kind == "numexp", "mathbb must have 1 arguments")
 
-  local sym = sym.sym
+  local sym = tostring(sym.sym or sym.lnum)
   assert(mathbb[sym], "mathbb symbol not found")
   g = grid:new(1, 1, {mathbb[sym]})
