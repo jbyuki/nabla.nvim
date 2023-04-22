@@ -39,7 +39,7 @@ elseif name == "mathcal" then
 		local cell = ""
 		for i=1,#sym do
 			assert(mathcal[sym:sub(i,i)], "mathcal " .. sym:sub(i,i) .. " symbol not found")
-			cell = cell .. sym:sub(i,i)
+			cell = cell .. mathcal[sym:sub(i,i)]
 		end
 		g = grid:new(#sym, 1, {cell})
 	elseif sym.kind == "funexp" then
