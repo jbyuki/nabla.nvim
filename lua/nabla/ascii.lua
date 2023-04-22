@@ -1050,6 +1050,12 @@ local mathcal = {
   ["Z"] = "𝒵",
 }
 
+local plain_functions = {
+	["min"] = true,
+	["lim"] = true,
+	["exp"] = true,
+	["log"] = true,
+}
 
 function combine_brackets(res)
   local left_content, right_content = {}, {}
@@ -1749,28 +1755,39 @@ function to_ascii(explist, exp_i)
     		local cell = ""
     		for i=1,#sym do
     			assert(mathbb[sym:sub(i,i)], "mathbb " .. sym:sub(i,i) .. " symbol not found")
-    			cell = cell .. sym:sub(i,i)
+    			cell = cell .. mathbb[sym:sub(i,i)]
     		end
     		g = grid:new(#sym, 1, {cell})
     	elseif name == "mathbf" then
     	  local sym = unpack_explist(explist[exp_i+1])
+    		g = to_ascii({explist[exp_i+1]}, 1)
     	  exp_i = exp_i + 1
-    		assert(sym.kind == "symexp", "mathcal must have 1 arguments")
-
-    	  local sym = sym.sym
-    		g = grid:new(#sym, 1, {sym})
     	elseif name == "mathcal" then
     	  local sym = unpack_explist(explist[exp_i+1])
-    	  exp_i = exp_i + 1
-    		assert(sym.kind == "symexp", "mathcal must have 1 arguments")
+    		-- assert(sym.kind == "symexp", "mathcal must have 1 arguments")
+    		if sym.kind == "symexp" then
+    			sym = sym.sym
 
-    	  local sym = sym.sym
-    		local cell = ""
-    		for i=1,#sym do
-    			assert(mathcal[sym:sub(i,i)], "mathcal " .. sym:sub(i,i) .. " symbol not found")
-    			cell = cell .. sym:sub(i,i)
+    			local cell = ""
+    			for i=1,#sym do
+    				assert(mathcal[sym:sub(i,i)], "mathcal " .. sym:sub(i,i) .. " symbol not found")
+    				cell = cell .. sym:sub(i,i)
+    			end
+    			g = grid:new(#sym, 1, {cell})
+    		elseif sym.kind == "funexp" then
+    			g = to_ascii({explist[exp_i+1]}, 1)
+    		else
+    			assert(false, "mathcal")
     		end
-    		g = grid:new(#sym, 1, {cell})
+
+    		exp_i = exp_i + 1
+    	elseif name == "boldsymbol" then
+    	  local sym = unpack_explist(explist[exp_i+1])
+    		g = to_ascii({explist[exp_i+1]}, 1)
+    		exp_i = exp_i + 1
+
+    	elseif plain_functions[name] then
+    		g = grid:new(#name, 1, {name})
     	elseif name == "overline" then
     	  local belowgrid = to_ascii({explist[exp_i+1]}, 1)
     	  exp_i = exp_i + 1
@@ -1873,17 +1890,35 @@ function to_ascii(explist, exp_i)
       exp_i = exp_i - 1
 
       if sup and sup.kind ~= "explist" then
-        sup = {
-          kind = "explist",
-          exps = { sup },
-        }
+    		if sup.kind == "funexp" and explist[exp_i+1] and explist[exp_i+1].kind == "explist" then
+    			sup = {
+    				kind = "explist",
+    				exps = { sup, explist[exp_i+1] },
+    			}
+    			exp_i = exp_i + 1
+
+    		else
+    			sup = {
+    				kind = "explist",
+    				exps = { sup },
+    			}
+    		end
       end
 
       if sub and sub.kind ~= "explist" then
-        sub = {
-          kind = "explist",
-          exps = { sub },
-        }
+    		if sub.kind == "funexp" and explist[exp_i+1] and explist[exp_i+1].kind == "explist" then
+    			sub = {
+    				kind = "explist",
+    				exps = { sub, explist[exp_i+1] },
+    			}
+    			exp_i = exp_i + 1
+
+    		else
+    			sub = {
+    				kind = "explist",
+    				exps = { sub },
+    			}
+    		end
       end
 
       local last_g = gs[#gs]

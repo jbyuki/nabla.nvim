@@ -966,17 +966,23 @@ elseif exp.kind == "supexp" or exp.kind == "subexp" then
   @collec_sub_and_sup
 
   if sup and sup.kind ~= "explist" then
-    sup = {
-      kind = "explist",
-      exps = { sup },
-    }
+		@special_case_sup_if_funexp
+		else
+			sup = {
+				kind = "explist",
+				exps = { sup },
+			}
+		end
   end
 
   if sub and sub.kind ~= "explist" then
-    sub = {
-      kind = "explist",
-      exps = { sub },
-    }
+		@special_case_sub_if_funexp
+		else
+			sub = {
+				kind = "explist",
+				exps = { sub },
+			}
+		end
   end
 
   local last_g = gs[#gs]
@@ -984,6 +990,22 @@ elseif exp.kind == "supexp" or exp.kind == "subexp" then
   last_g = put_if_only_sub(last_g, sub, sup)
   last_g = put_if_only_sup(last_g, sub, sup)
   gs[#gs] = last_g
+
+@special_case_sup_if_funexp+=
+if sup.kind == "funexp" and explist[exp_i+1] and explist[exp_i+1].kind == "explist" then
+	sup = {
+		kind = "explist",
+		exps = { sup, explist[exp_i+1] },
+	}
+	exp_i = exp_i + 1
+
+@special_case_sub_if_funexp+=
+if sub.kind == "funexp" and explist[exp_i+1] and explist[exp_i+1].kind == "explist" then
+	sub = {
+		kind = "explist",
+		exps = { sub, explist[exp_i+1] },
+	}
+	exp_i = exp_i + 1
 
 @collec_sub_and_sup+=
 local sub, sup

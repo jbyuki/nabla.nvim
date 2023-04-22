@@ -32,13 +32,20 @@ local mathcal = {
 @transform_function_into_ascii+=
 elseif name == "mathcal" then
   local sym = unpack_explist(explist[exp_i+1])
-  exp_i = exp_i + 1
-	assert(sym.kind == "symexp", "mathcal must have 1 arguments")
+	-- assert(sym.kind == "symexp", "mathcal must have 1 arguments")
+	if sym.kind == "symexp" then
+		sym = sym.sym
 
-  local sym = sym.sym
-	local cell = ""
-	for i=1,#sym do
-		assert(mathcal[sym:sub(i,i)], "mathcal " .. sym:sub(i,i) .. " symbol not found")
-		cell = cell .. sym:sub(i,i)
+		local cell = ""
+		for i=1,#sym do
+			assert(mathcal[sym:sub(i,i)], "mathcal " .. sym:sub(i,i) .. " symbol not found")
+			cell = cell .. sym:sub(i,i)
+		end
+		g = grid:new(#sym, 1, {cell})
+	elseif sym.kind == "funexp" then
+		g = to_ascii({explist[exp_i+1]}, 1)
+	else
+		assert(false, "mathcal")
 	end
-	g = grid:new(#sym, 1, {cell})
+
+	exp_i = exp_i + 1

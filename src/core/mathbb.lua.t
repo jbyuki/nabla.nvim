@@ -41,6 +41,6 @@ elseif name == "mathbb" then
 	local cell = ""
 	for i=1,#sym do
 		assert(mathbb[sym:sub(i,i)], "mathbb " .. sym:sub(i,i) .. " symbol not found")
-		cell = cell .. sym:sub(i,i)
+		cell = cell .. mathbb[sym:sub(i,i)]
 	end
 	g = grid:new(#sym, 1, {cell})
