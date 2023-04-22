@@ -36,5 +36,9 @@ elseif name == "mathcal" then
 	assert(sym.kind == "symexp", "mathcal must have 1 arguments")
 
   local sym = sym.sym
-  assert(mathcal[sym], "mathcal symbol not found")
-  g = grid:new(1, 1, {mathcal[sym]})
+	local cell = ""
+	for i=1,#sym do
+		assert(mathcal[sym:sub(i,i)], "mathcal " .. sym:sub(i,i) .. " symbol not found")
+		cell = cell .. sym:sub(i,i)
+	end
+	g = grid:new(#sym, 1, {cell})

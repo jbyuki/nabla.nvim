@@ -1746,16 +1746,24 @@ function to_ascii(explist, exp_i)
     		assert(sym.kind == "symexp" or sym.kind == "numexp", "mathbb must have 1 arguments")
 
     	  local sym = tostring(sym.sym or sym.num)
-    	  assert(mathbb[sym], "mathbb symbol not found")
-    	  g = grid:new(1, 1, {mathbb[sym]})
+    		local cell = ""
+    		for i=1,#sym do
+    			assert(mathbb[sym:sub(i,i)], "mathbb " .. sym:sub(i,i) .. " symbol not found")
+    			cell = cell .. sym:sub(i,i)
+    		end
+    		g = grid:new(#sym, 1, {cell})
     	elseif name == "mathcal" then
     	  local sym = unpack_explist(explist[exp_i+1])
     	  exp_i = exp_i + 1
     		assert(sym.kind == "symexp", "mathcal must have 1 arguments")
 
     	  local sym = sym.sym
-    	  assert(mathcal[sym], "mathcal symbol not found")
-    	  g = grid:new(1, 1, {mathcal[sym]})
+    		local cell = ""
+    		for i=1,#sym do
+    			assert(mathcal[sym:sub(i,i)], "mathcal " .. sym:sub(i,i) .. " symbol not found")
+    			cell = cell .. sym:sub(i,i)
+    		end
+    		g = grid:new(#sym, 1, {cell})
     	elseif name == "overline" then
     	  local belowgrid = to_ascii({explist[exp_i+1]}, 1)
     	  exp_i = exp_i + 1

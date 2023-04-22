@@ -38,5 +38,9 @@ elseif name == "mathbb" then
 	assert(sym.kind == "symexp" or sym.kind == "numexp", "mathbb must have 1 arguments")
 
   local sym = tostring(sym.sym or sym.num)
-  assert(mathbb[sym], "mathbb symbol not found")
-  g = grid:new(1, 1, {mathbb[sym]})
+	local cell = ""
+	for i=1,#sym do
+		assert(mathbb[sym:sub(i,i)], "mathbb " .. sym:sub(i,i) .. " symbol not found")
+		cell = cell .. sym:sub(i,i)
+	end
+	g = grid:new(#sym, 1, {cell})
