@@ -1740,6 +1740,12 @@ function to_ascii(explist, exp_i)
     		g = c2
 
 
+    	elseif name == "dot" then
+    	  local belowgrid = to_ascii({explist[exp_i+1]}, 1)
+    	  exp_i = exp_i + 1
+    	  local dot = grid:new(1, 1, { "." })
+    	  g = dot:join_vert(belowgrid)
+    	  g.my = belowgrid.my + 1
     	elseif name == "hat" then
     	  local belowgrid = to_ascii({explist[exp_i+1]}, 1)
     	  exp_i = exp_i + 1
