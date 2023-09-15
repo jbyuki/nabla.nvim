@@ -71,7 +71,7 @@ utils.get_all_mathzones = function()
     local ok, parser = pcall(ts.get_parser, buf, "latex")
     if not ok or not parser then
         vim.api.nvim_echo(
-            { { 'Latex parser not found. Please install with nvim-tresitter using ":TSInstall latex".', "ErrorMsg" } },
+            { { 'Latex parser not found. Please install with nvim-treesitter using ":TSInstall latex".', "ErrorMsg" } },
             true,
             {}
         )

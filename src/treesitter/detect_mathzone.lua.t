@@ -25,7 +25,7 @@ utils.in_mathzone = function()
         local ok, parser = pcall(ts.get_parser, buf, "latex")
         if not ok or not parser then
           @warn_if_latex_is_not_installed
-            vim.api.nvim_echo({{"Latex parser not found. Please install with nvim-tresitter using \":TSInstall latex\".", "ErrorMsg"}}, true, {})
+            vim.api.nvim_echo({{"Latex parser not found. Please install with nvim-treesitter using \":TSInstall latex\".", "ErrorMsg"}}, true, {})
             return
         end
         local root_tree = parser:parse()[1]
