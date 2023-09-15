@@ -7,7 +7,7 @@ utils.get_all_mathzones = function()
 end
 
 @warn_if_latex_is_not_installed+=
-vim.api.nvim_echo({{"Latex parser not found. Please install with nvim-tresitter using \":TSInstall latex\".", "ErrorMsg"}}, true, {})
+vim.api.nvim_echo({{"Latex parser not found. Please install with nvim-treesitter using \":TSInstall latex\".", "ErrorMsg"}}, true, {})
 
 @get_tree_root_ts+=
 local buf = vim.api.nvim_get_current_buf()
