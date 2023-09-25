@@ -559,10 +559,8 @@ function enable_virt(opts)
 					-- store how many characters we removed to the right
 					-- on the next formula, if it is on the same row, remove
 					-- that many characters from the left padding
-					if prev_row then
-						prev_row = srow
-						prev_diff = margin_right
-					end
+					prev_row = srow
+					prev_diff = margin_right
 
 					table.insert(inline_virt, { chunks, concealline, p1, p2 })
 				end
