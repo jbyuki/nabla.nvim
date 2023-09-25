@@ -472,46 +472,21 @@ function enable_virt(opts)
 						relrow = r - 1
 					end
 
-					local p1, p2
+					local p1
 					if srow == erow then
 						p1 = scol
-						p2 = ecol
 					elseif r == 1 then
 						p1 = scol
-						p2 = #vim.api.nvim_buf_get_lines(buf, srow, srow + 1, true)[1]
 					elseif r == #drawing_virt then
 						p1 = 0
-						p2 = ecol
 					else
 						p1 = 0
-						p2 = #vim.api.nvim_buf_get_lines(buf, srow + (r - 1), srow + (r - 1) + 1, true)[1]
 					end
 
 					local desired_col = p1
 
-					if relrow == 0 then
-						local chunks = {}
-						local margin_left = desired_col - p1
-						local margin_right = p2 - #virt_line - desired_col
-
-						for _ = 1, margin_left do
-							table.insert(chunks, { " ", "NonText" })
-						end
-
-						vim.list_extend(chunks, virt_line)
-
-						-- remove characters to the right
-						for _ = 1, margin_right do
-							table.insert(chunks, { "", "NonText" })
-						end
-						-- store how many characters we removed to the right
-						-- on the next formula, if it is on the same row, remove
-						-- that many characters from the left padding
-						prev_row = srow
-						prev_diff = margin_right
-
-						table.insert(inline_virt, { chunks, concealline, p1, p2 })
-					else
+					-- Skip the inline virt line
+					if relrow ~= 0 then
 						local vline, virt_lines
 						if relrow < 0 then
 							virt_lines = virt_lines_above[concealline] or {}
@@ -543,6 +518,51 @@ function enable_virt(opts)
 							virt_lines_below[concealline] = virt_lines
 						end
 					end
+				end
+
+				-- handle inline virt line last
+				do
+					local r = g.my + 1
+					local virt_line = drawing_virt[r]
+
+					local p1, p2
+					if srow == erow then
+						p1 = scol
+						p2 = ecol
+					elseif r == 1 then
+						p1 = scol
+						p2 = #vim.api.nvim_buf_get_lines(buf, srow, srow + 1, true)[1]
+					elseif r == #drawing_virt then
+						p1 = 0
+						p2 = ecol
+					else
+						p1 = 0
+						p2 = #vim.api.nvim_buf_get_lines(buf, srow + (r - 1), srow + (r - 1) + 1, true)[1]
+					end
+
+					local desired_col = p1
+
+					local chunks = {}
+					local margin_left = desired_col - p1
+					local margin_right = p2 - #virt_line - desired_col
+
+					for _ = 1, margin_left do
+						table.insert(chunks, { " ", "NonText" })
+					end
+
+					vim.list_extend(chunks, virt_line)
+
+					-- remove characters to the right
+					for _ = 1, margin_right do
+						table.insert(chunks, { "", "NonText" })
+					end
+					-- store how many characters we removed to the right
+					-- on the next formula, if it is on the same row, remove
+					-- that many characters from the left padding
+					prev_row = srow
+					prev_diff = margin_right
+
+					table.insert(inline_virt, { chunks, concealline, p1, p2 })
 				end
 
 				for r = 1, erow - srow + 1 do
