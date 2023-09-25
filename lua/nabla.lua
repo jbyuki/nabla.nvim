@@ -379,7 +379,7 @@ function enable_virt(opts)
 		table.insert(formulas_loc, { srow, scol, erow, ecol })
 	end
 
-	local prev_row = -1
+	local prev_row
 	local prev_diff = 0
 	for _, loc in ipairs(formulas_loc) do
 		local srow, scol, erow, ecol = unpack(loc)
@@ -501,11 +501,11 @@ function enable_virt(opts)
 						-- if we are on the same row as the previous formula, remove
 						-- the same amount of left padding that the previous formula
 						-- removed from its right padding
-						if prev_row == srow then
+						if prev_row and prev_row == srow then
 							padding = padding - prev_diff
 						end
 						for _ = 1, padding do
-							table.insert(vline, { "-", "Normal" })
+							table.insert(vline, { " ", "Normal" })
 						end
 
 						vim.list_extend(vline, virt_line)
@@ -559,8 +559,10 @@ function enable_virt(opts)
 					-- store how many characters we removed to the right
 					-- on the next formula, if it is on the same row, remove
 					-- that many characters from the left padding
-					prev_row = srow
-					prev_diff = margin_right
+					if prev_row then
+						prev_row = srow
+						prev_diff = margin_right
+					end
 
 					table.insert(inline_virt, { chunks, concealline, p1, p2 })
 				end
