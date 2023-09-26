@@ -176,11 +176,13 @@ end
 
 
 @place_each_line_virtually+=
-@position_on_formula_conceal
+@init_next_prev_info
 for r, virt_line in ipairs(drawing_virt) do
 	@compute_relative_line_position
+	@if_position_on_formula_conceal
 	@otherwise_put_in_virt_line
 end
+@update_prev_info
 
 @if_first_line_shift_below+=
 if srow == 0 then
@@ -210,21 +212,26 @@ local relrow = r - g.my - 1
 @compute_col_on_line
 
 
-@position_on_formula_conceal+=
+@if_position_on_formula_conceal+=
 local desired_col = p1
-local chunks = {}
-local margin_left = desired_col - p1
-local margin_right = p2 - #virt_line - desired_col
-for i=1,margin_left do
-	table.insert(chunks, {" ", "NonText"})
-end
-vim.list_extend(chunks, virt_line)
-for i=1,margin_right do
-	table.insert(chunks, {"", "NonText"})
-end
-prev_row = row
-prev_diff = margin_right
-table.insert(inline_virt, { chunks, concealline, p1, p2 })
+if relrow == 0 then
+	local chunks = {}
+	local margin_left = desired_col - p1
+	local margin_right = p2 - #virt_line - desired_col
+
+	for i=1,margin_left do
+		table.insert(chunks, {" ", "NonText"})
+	end
+
+	vim.list_extend(chunks, virt_line)
+
+	for i=1,margin_right do
+		table.insert(chunks, {"", "NonText"})
+	end
+	next_prev_row = row
+	next_prev_diff = margin_right
+
+	table.insert(inline_virt, { chunks, concealline, p1, p2 })
 
 @init_virt_lines+=
 local inline_virt = {}
@@ -235,12 +242,22 @@ local virt_lines_below = {}
 local prev_row
 local prev_diff
 
+@init_next_prev_info
+local next_prev_row
+local next_prev_diff
+
 @otherwise_put_in_virt_line+=
-if relrow ~= 0 then
+else 
 	@get_virt_line_at_location_or_create
 	@fill_until_desired_col
 	@append_virt_line
 	@put_virt_line_at_location
+end
+
+@update_prev_info+=
+if next_prev_row then
+	prev_diff = next_prev_diff
+	prev_row = next_prev_row
 end
 
 @get_virt_line_at_location_or_create+=
