@@ -449,7 +449,7 @@ function enable_virt(opts)
   						table.insert(chunks, {"", "NonText"})
   					end
   					next_prev_row = srow
-  					next_prev_diff = margin_right
+  					next_prev_diff = margin_right + prev_diff
 
   					table.insert(inline_virt, { chunks, concealline, p1, p2 })
 
