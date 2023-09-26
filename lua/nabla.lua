@@ -313,6 +313,12 @@ function enable_virt(opts)
 	end
 	mult_virt_ns[buf] = vim.api.nvim_create_namespace("")
 
+	local prev_row = -1
+	local prev_diff = 0
+
+	local next_prev_row
+	local next_prev_diff
+
 	local formula_nodes = utils.get_all_mathzones()
 	local formulas_loc = {}
 	for _, node in ipairs(formula_nodes) do
@@ -404,6 +410,11 @@ function enable_virt(opts)
   			end
 
   			for r, virt_line in ipairs(drawing_virt) do
+  				if srow ~= prev_row then
+  					prev_row = -1
+  					prev_diff = 0
+  				end
+
   				local relrow = r - g.my - 1
 
   				if srow == 0 then
@@ -427,7 +438,7 @@ function enable_virt(opts)
 
 
 
-  				local desired_col = p1 + 1
+  				local desired_col = p1
   				if relrow == 0 then
   					local chunks = {}
   					local margin_left = desired_col - p1
@@ -440,8 +451,10 @@ function enable_virt(opts)
   					vim.list_extend(chunks, virt_line)
 
   					for i=1,margin_right do
-  						table.insert(chunks, {" ", "NonText"})
+  						table.insert(chunks, {"", "NonText"})
   					end
+  					next_prev_row = srow
+  					next_prev_diff = margin_right + prev_diff
 
   					table.insert(inline_virt, { chunks, concealline, p1, p2 })
 
@@ -456,7 +469,11 @@ function enable_virt(opts)
   					end
 
   					local col = #vline
-  					for i=1,desired_col-col do
+  					local padding = desired_col - col
+  					if prev_row == srow then
+  						padding = padding - prev_diff
+  					end
+  					for i=1,padding do
   						table.insert(vline, { " ", "Normal" })
   					end
 
@@ -473,6 +490,11 @@ function enable_virt(opts)
   				end
 
   			end
+  			if next_prev_row then
+  				prev_diff = next_prev_diff
+  				prev_row = next_prev_row
+  			end
+
 
   			for r=1,erow-srow+1 do
   				local p1, p2
