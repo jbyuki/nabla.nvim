@@ -228,7 +228,7 @@ if relrow == 0 then
 	for i=1,margin_right do
 		table.insert(chunks, {"", "NonText"})
 	end
-	next_prev_row = row
+	next_prev_row = srow
 	next_prev_diff = margin_right
 
 	table.insert(inline_virt, { chunks, concealline, p1, p2 })
