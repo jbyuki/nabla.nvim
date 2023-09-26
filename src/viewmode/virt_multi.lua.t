@@ -239,8 +239,8 @@ local virt_lines_above = {}
 local virt_lines_below = {}
 
 @init_previous_info+=
-local prev_row
-local prev_diff
+local prev_row = -1
+local prev_diff = 0
 
 @init_next_prev_info
 local next_prev_row

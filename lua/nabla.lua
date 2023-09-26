@@ -313,8 +313,8 @@ function enable_virt(opts)
 	end
 	mult_virt_ns[buf] = vim.api.nvim_create_namespace("")
 
-	local prev_row
-	local prev_diff
+	local prev_row = -1
+	local prev_diff = 0
 
 	local next_prev_row
 	local next_prev_diff
