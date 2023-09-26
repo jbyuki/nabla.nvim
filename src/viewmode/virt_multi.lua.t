@@ -236,7 +236,7 @@ local prev_row
 local prev_diff
 
 @otherwise_put_in_virt_line+=
-if relrow ~= 0
+if relrow ~= 0 then
 	@get_virt_line_at_location_or_create
 	@fill_until_desired_col
 	@append_virt_line

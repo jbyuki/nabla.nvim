@@ -445,7 +445,7 @@ function enable_virt(opts)
 
 
 
-  				if relrow ~= 0
+  				if relrow ~= 0 then
   					local vline, virt_lines
   					if relrow < 0 then
   						virt_lines = virt_lines_above[concealline] or {}
