@@ -178,6 +178,7 @@ end
 @place_each_line_virtually+=
 @init_next_prev_info
 for r, virt_line in ipairs(drawing_virt) do
+	@if_new_row_reset_prev_info
 	@compute_relative_line_position
 	@if_position_on_formula_conceal
 	@otherwise_put_in_virt_line
@@ -187,6 +188,12 @@ end
 @if_first_line_shift_below+=
 if srow == 0 then
 	relrow = r-1
+end
+
+@if_new_row_reset_prev_info+=
+if srow ~= prev_row then
+	prev_row = -1
+	prev_diff = 0
 end
 
 @compute_col_on_line+=

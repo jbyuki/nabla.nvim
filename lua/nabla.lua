@@ -410,6 +410,11 @@ function enable_virt(opts)
   			end
 
   			for r, virt_line in ipairs(drawing_virt) do
+  				if srow ~= prev_row then
+  					prev_row = -1
+  					prev_diff = 0
+  				end
+
   				local relrow = r - g.my - 1
 
   				if srow == 0 then
