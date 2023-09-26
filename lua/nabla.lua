@@ -372,6 +372,12 @@ function enable_virt(opts)
 	end
 	mult_virt_ns[buf] = vim.api.nvim_create_namespace("")
 
+	local prev_row
+	local prev_diff
+
+	local next_prev_row
+	local next_prev_diff
+
 	local formula_nodes = utils.get_all_mathzones()
 	local formulas_loc = {}
 	for _, node in ipairs(formula_nodes) do
@@ -525,20 +531,11 @@ function enable_virt(opts)
 					local r = g.my + 1
 					local virt_line = drawing_virt[r]
 
-					local p1, p2
-					if srow == erow then
-						p1 = scol
-						p2 = ecol
-					elseif r == 1 then
-						p1 = scol
-						p2 = #vim.api.nvim_buf_get_lines(buf, srow, srow + 1, true)[1]
-					elseif r == #drawing_virt then
-						p1 = 0
-						p2 = ecol
-					else
-						p1 = 0
-						p2 = #vim.api.nvim_buf_get_lines(buf, srow + (r - 1), srow + (r - 1) + 1, true)[1]
-					end
+  				local desired_col = p1
+  				if relrow == 0 then
+  					local chunks = {}
+  					local margin_left = desired_col - p1
+  					local margin_right = p2 - #virt_line - desired_col
 
 					local desired_col = p1
 
@@ -546,9 +543,11 @@ function enable_virt(opts)
 					local margin_left = desired_col - p1
 					local margin_right = p2 - #virt_line - desired_col
 
-					for _ = 1, margin_left do
-						table.insert(chunks, { " ", "NonText" })
-					end
+  					for i=1,margin_right do
+  						table.insert(chunks, {"", "NonText"})
+  					end
+  					next_prev_row = srow
+  					next_prev_diff = margin_right
 
 					vim.list_extend(chunks, virt_line)
 
@@ -562,8 +561,14 @@ function enable_virt(opts)
 					prev_row = srow
 					prev_diff = margin_right
 
-					table.insert(inline_virt, { chunks, concealline, p1, p2 })
-				end
+  					local col = #vline
+  					local padding = desired_col - col
+  					if prev_row == srow then
+  						padding = padding - prev_diff
+  					end
+  					for i=1,padding do
+  						table.insert(vline, { " ", "Normal" })
+  					end
 
 				for r = 1, erow - srow + 1 do
 					local p1, p2
@@ -599,7 +604,50 @@ function enable_virt(opts)
 		end
 	end
 
-	-- @place_drawings_above_lines
+  			end
+  			if next_prev_row then
+  				prev_diff = next_prev_diff
+  				prev_row = next_prev_row
+  			end
+
+
+  			for r=1,erow-srow+1 do
+  				local p1, p2
+  				if srow == erow then
+  					p1 = scol
+  					p2 = ecol
+  				elseif r == 1 then
+  					p1 = scol
+  					p2 = #vim.api.nvim_buf_get_lines(buf, srow, srow+1, true)[1]
+  				elseif r == #drawing_virt then
+  					p1 = 0
+  					p2 = ecol
+  				else
+  					p1 = 0
+  					p2 = #vim.api.nvim_buf_get_lines(buf, srow+(r-1), srow+(r-1)+1, true)[1]
+  				end
+
+  				if srow+(r-1) ~= concealline then
+  					local chunks = {}
+  					for i=1,p2-p1 do
+  						table.insert(chunks, {" ", "NonText"})
+  					end
+
+  					table.insert(inline_virt, { chunks, srow+(r-1), p1, p2 })
+  				end
+  			end
+
+
+  		else
+  			if opts and opts.silent then
+  			else
+  				print(exp)
+  			end
+  		end
+  	end
+  end
+
+  -- @place_drawings_above_lines
 	for _, conceal in ipairs(inline_virt) do
 		local chunks, row, p1, p2 = unpack(conceal)
 
