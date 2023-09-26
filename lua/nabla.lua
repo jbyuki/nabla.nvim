@@ -313,6 +313,9 @@ function enable_virt(opts)
 	end
 	mult_virt_ns[buf] = vim.api.nvim_create_namespace("")
 
+	local prev_row
+	local prev_diff
+
 	local formula_nodes = utils.get_all_mathzones()
 	local formulas_loc = {}
 	for _, node in ipairs(formula_nodes) do
@@ -403,6 +406,21 @@ function enable_virt(opts)
   				end
   			end
 
+  			local desired_col = p1
+  			local chunks = {}
+  			local margin_left = desired_col - p1
+  			local margin_right = p2 - #virt_line - desired_col
+  			for i=1,margin_left do
+  				table.insert(chunks, {" ", "NonText"})
+  			end
+  			vim.list_extend(chunks, virt_line)
+  			for i=1,margin_right do
+  				table.insert(chunks, {"", "NonText"})
+  			end
+  			prev_row = row
+  			prev_diff = margin_right
+  			table.insert(inline_virt, { chunks, concealline, p1, p2 })
+
   			for r, virt_line in ipairs(drawing_virt) do
   				local relrow = r - g.my - 1
 
@@ -427,25 +445,7 @@ function enable_virt(opts)
 
 
 
-  				local desired_col = p1 + 1
-  				if relrow == 0 then
-  					local chunks = {}
-  					local margin_left = desired_col - p1
-  					local margin_right = p2 - #virt_line - desired_col
-
-  					for i=1,margin_left do
-  						table.insert(chunks, {" ", "NonText"})
-  					end
-
-  					vim.list_extend(chunks, virt_line)
-
-  					for i=1,margin_right do
-  						table.insert(chunks, {" ", "NonText"})
-  					end
-
-  					table.insert(inline_virt, { chunks, concealline, p1, p2 })
-
-  				else 
+  				if relrow ~= 0
   					local vline, virt_lines
   					if relrow < 0 then
   						virt_lines = virt_lines_above[concealline] or {}
@@ -456,7 +456,11 @@ function enable_virt(opts)
   					end
 
   					local col = #vline
-  					for i=1,desired_col-col do
+  					local padding = desired_col - col
+  					if prev_row == srow then
+  						padding = padding - prev_diff
+  					end
+  					for i=1,padding do
   						table.insert(vline, { " ", "Normal" })
   					end
 

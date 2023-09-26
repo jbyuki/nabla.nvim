@@ -8,6 +8,7 @@ function enable_virt(opts)
   @set_as_enabled
 	@init_virt_lines
   @read_whole_buffer
+	@init_previous_info
 	@detect_all_formulas
   @foreach_formula_generate_drawings
   -- @place_drawings_above_lines
@@ -175,9 +176,9 @@ end
 
 
 @place_each_line_virtually+=
+@position_on_formula_conceal
 for r, virt_line in ipairs(drawing_virt) do
 	@compute_relative_line_position
-	@if_position_on_formula_conceal
 	@otherwise_put_in_virt_line
 end
 
@@ -209,32 +210,33 @@ local relrow = r - g.my - 1
 @compute_col_on_line
 
 
-@if_position_on_formula_conceal+=
-local desired_col = p1 + 1
-if relrow == 0 then
-	local chunks = {}
-	local margin_left = desired_col - p1
-	local margin_right = p2 - #virt_line - desired_col
-
-	for i=1,margin_left do
-		table.insert(chunks, {" ", "NonText"})
-	end
-
-	vim.list_extend(chunks, virt_line)
-
-	for i=1,margin_right do
-		table.insert(chunks, {" ", "NonText"})
-	end
-
-	table.insert(inline_virt, { chunks, concealline, p1, p2 })
+@position_on_formula_conceal+=
+local desired_col = p1
+local chunks = {}
+local margin_left = desired_col - p1
+local margin_right = p2 - #virt_line - desired_col
+for i=1,margin_left do
+	table.insert(chunks, {" ", "NonText"})
+end
+vim.list_extend(chunks, virt_line)
+for i=1,margin_right do
+	table.insert(chunks, {"", "NonText"})
+end
+prev_row = row
+prev_diff = margin_right
+table.insert(inline_virt, { chunks, concealline, p1, p2 })
 
 @init_virt_lines+=
 local inline_virt = {}
 local virt_lines_above = {}
 local virt_lines_below = {}
 
+@init_previous_info+=
+local prev_row
+local prev_diff
+
 @otherwise_put_in_virt_line+=
-else 
+if relrow ~= 0
 	@get_virt_line_at_location_or_create
 	@fill_until_desired_col
 	@append_virt_line
@@ -262,7 +264,11 @@ end
 
 @fill_until_desired_col+=
 local col = #vline
-for i=1,desired_col-col do
+local padding = desired_col - col
+if prev_row == srow then
+	padding = padding - prev_diff
+end
+for i=1,padding do
 	table.insert(vline, { " ", "Normal" })
 end
 
