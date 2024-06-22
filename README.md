@@ -17,6 +17,7 @@ Requirements
 * Neovim nightly
 * A colorscheme which supports treesitter [see here](https://github.com/rockerBOO/awesome-neovim#tree-sitter-supported-colorscheme)
 * Tree-sitter : [nvim-treesitter/nvim-treesitter](https://github.com/nvim-treesitter/nvim-treesitter)
+  (Not a dependency, but recommended to install parsers).
 * Latex parser : Install with `TSInstall latex`.
 
 Install
