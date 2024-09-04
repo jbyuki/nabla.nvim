@@ -97,7 +97,7 @@ Install
 Configuration
 -------------
 
-_(*): Skip when using LazyVim_
+_(Default keymap to nabla-render in LazyVim is `<leader>p`)_
 
 Bind the following command:
 
