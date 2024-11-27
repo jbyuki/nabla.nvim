@@ -94,20 +94,16 @@ utils.get_all_mathzones = function()
   if vim.bo.filetype == "markdown" then
     local injections = {}
 
-    parser:for_each_tree(function(parent_tree, parent_ltree)
-      local parent = parent_tree:root()
+    parser:for_each_tree(function(_, parent_ltree)
       for _, child in pairs(parent_ltree:children()) do
         for _, tree in pairs(child:trees()) do
           local r = tree:root()
-          local node = assert(parent:named_descendant_for_range(r:range()))
-          local id = node:id()
-          if not injections[id] then
+          local sr, sc, er, ec = ts.get_node_range(r)
+          local key = string.format("%s,%s,%s,%s", sr, sc, er, ec)
+          if not injections[key] then
             local lang = child:lang()
             if lang == "latex" then
-              injections[id] = {
-                lang = lang,
-                root = r,
-              }
+              injections[key] = true
               table.insert(out, r)
             end
           end
