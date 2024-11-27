@@ -586,7 +586,7 @@ function enable_virt(opts)
 
 	local win = vim.api.nvim_get_current_win()
 	saved_wrapsettings[win] = vim.wo[win].wrap
-	vim.wo[win].wrap = false
+	-- vim.wo[win].wrap = false
 
 	if opts and opts.autogen then
 		autogen_autocmd[buf] = vim.api.nvim_create_autocmd({"InsertLeave"}, {
