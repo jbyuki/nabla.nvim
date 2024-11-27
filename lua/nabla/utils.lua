@@ -76,14 +76,14 @@ end
 
 utils.get_all_mathzones = function()
   local buf = vim.api.nvim_get_current_buf()
-  local ok, parser = pcall(ts.get_parser, buf, "latex")
+  local ok, parser = pcall(ts.get_parser, buf, vim.bo.filetype~="markdown" and "latex" or "markdown")
   if not ok or not parser then
     vim.api.nvim_echo({{"Latex parser not found. Please install with nvim-treesitter using \":TSInstall latex\".", "ErrorMsg"}}, true, {})
 
     return {}
   end
 
-  local root_tree = parser:parse()[1]
+  local root_tree = parser:parse(true)[1]
   local root = root_tree and root_tree:root()
 
   if not root then
@@ -91,7 +91,32 @@ utils.get_all_mathzones = function()
   end
 
   local out = {}
-  utils.get_mathzones_in_node(root, out)
+  if vim.bo.filetype == "markdown" then
+    local injections = {}
+
+    parser:for_each_tree(function(parent_tree, parent_ltree)
+      local parent = parent_tree:root()
+      for _, child in pairs(parent_ltree:children()) do
+        for _, tree in pairs(child:trees()) do
+          local r = tree:root()
+          local node = assert(parent:named_descendant_for_range(r:range()))
+          local id = node:id()
+          if not injections[id] then
+            local lang = child:lang()
+            if lang == "latex" then
+              injections[id] = {
+                lang = lang,
+                root = r,
+              }
+              table.insert(out, r)
+            end
+          end
+        end
+      end
+    end)
+  else
+    utils.get_mathzones_in_node(root, out)
+  end
 
   return out
 end
