@@ -589,7 +589,7 @@ function enable_virt(opts)
 	-- vim.wo[win].wrap = false
 
 	if opts and opts.autogen then
-		autogen_autocmd[buf] = vim.api.nvim_create_autocmd({"InsertLeave"}, {
+		autogen_autocmd[buf] = vim.api.nvim_create_autocmd({"InsertLeave", "TextChanged"}, {
 			buffer = buf,
 			desc = "nabla.nvim: Regenerates virt_lines automatically when the user exists insert mode",
 			callback = function()
