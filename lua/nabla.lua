@@ -326,6 +326,7 @@ function enable_virt(opts)
 		table.insert(formulas_loc, {srow, scol, erow, ecol})
 	end
 
+  local conceal_padding = {}
   for _, loc in ipairs(formulas_loc) do
     local srow, scol, erow, ecol = unpack(loc)
   	local succ, texts = pcall(vim.api.nvim_buf_get_text, buf, srow, scol, erow, ecol, {})
@@ -363,6 +364,18 @@ function enable_virt(opts)
   			end
 
 
+        if not conceal_padding[srow] then
+          -- account for treesitter capture conceals
+          conceal_padding[srow] = vim.iter(vim.gsplit(vim.api.nvim_buf_get_lines(0, srow, srow + 1, false)[1], ''))
+              :fold({}, function(acc, _)
+                local conceal_cap = vim.iter(vim.treesitter.get_captures_at_pos(0, srow, #acc))
+                    :filter(function(v)
+                      return v.metadata.conceal
+                    end):next()
+                acc[#acc + 1] = (#acc == 0 and 0 or acc[#acc]) + 1 - (conceal_cap and #conceal_cap.metadata.conceal or 1)
+                return acc
+              end)
+        end
 
   			local drawing_virt = {}
 
@@ -469,7 +482,7 @@ function enable_virt(opts)
   					end
 
   					local col = #vline
-  					local padding = desired_col - col
+  					local padding = desired_col - col - conceal_padding[srow][desired_col + 1]
   					if prev_row == srow then
   						padding = padding - prev_diff
   					end
