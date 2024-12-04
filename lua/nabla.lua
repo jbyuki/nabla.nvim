@@ -365,7 +365,6 @@ function enable_virt(opts)
 
 
         if not conceal_padding[srow] then
-          print(srow .. "->" .. vim.api.nvim_buf_get_lines(0, srow, srow + 1, false)[1])
           -- account for treesitter capture conceals
           conceal_padding[srow] = vim.iter(vim.gsplit(vim.api.nvim_buf_get_lines(0, srow, srow + 1, false)[1], ''))
               :fold({}, function(acc, _)
@@ -373,12 +372,11 @@ function enable_virt(opts)
                     :filter(function(v)
                       return v.metadata.conceal
                     end):next()
-                acc[#acc + 1] = (#acc == 0 and 0 or acc[#acc]) + 1 - (conceal_cap and #conceal_cap.metadata.conceal or 1)
+                acc[#acc + 1] = (#acc == 0 and 0 or acc[#acc]) + 1 - (conceal_cap and vim.fn.strutf16len(conceal_cap.metadata.conceal) or 1)
                 return acc
               end)
 
           local marks = vim.iter(vim.api.nvim_buf_get_extmarks(0, -1, { srow, 0 }, { srow, -1 }, { details = true, }))
-          print(vim.inspect(marks._table))
           local last_stat = marks:filter(function(v) return v[4].virt_text and v[4].virt_text_pos == "inline" end)
             :fold({0, 0}, function (stat, mark)
               for i = stat[1] + 1, mark[3] + 1 do
@@ -386,14 +384,12 @@ function enable_virt(opts)
               end
             return {mark[3] + 1,
               stat[2] + vim.iter(mark[4].virt_text):fold(0, function (len, v)
-                return len + #v[1]
+                return len + vim.fn.strutf16len(v[1]) - 1
               end)}
             end)
           for i = last_stat[1] + 1, #conceal_padding[srow] do
             conceal_padding[srow][i] = conceal_padding[srow][i] - last_stat[2]
           end
-
-          print(vim.inspect(conceal_padding[srow]))
         end
 
   			local drawing_virt = {}
