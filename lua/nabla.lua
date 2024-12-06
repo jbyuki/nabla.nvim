@@ -379,12 +379,18 @@ function enable_virt(opts)
           local marks = vim.iter(vim.api.nvim_buf_get_extmarks(0, -1, { srow, 0 }, { srow, -1 }, { details = true, }))
           local last_stat = marks:filter(function(v) return v[4].virt_text and v[4].virt_text_pos == "inline" end)
             :fold({0, 0}, function (stat, mark)
+                if stat[1] >= mark[3] then
+                  return { stat[1], stat[2] + vim.iter(mark[4].virt_text):fold(0, function(len, v)
+                    -- the third term accounts for replacement of a character with virt_text (1) vs addition of string (0)
+                    return len + vim.fn.strutf16len(v[1]) - (mark[4].end_col and 1 or 0)
+                  end) }
+                end
               for i = stat[1] + 1, mark[3] + 1 do
                 conceal_padding[srow][i] = conceal_padding[srow][i] - stat[2]
               end
             return {mark[3] + 1,
               stat[2] + vim.iter(mark[4].virt_text):fold(0, function (len, v)
-                return len + vim.fn.strutf16len(v[1]) - 1
+                return len + vim.fn.strutf16len(v[1]) - (mark[4].end_col and 1 or 0)
               end)}
             end)
           for i = last_stat[1] + 1, #conceal_padding[srow] do
