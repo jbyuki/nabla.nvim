@@ -308,10 +308,9 @@ function enable_virt(opts)
 	local virt_lines_above = {}
 	local virt_lines_below = {}
 
-	if mult_virt_ns[buf] then
-	  vim.api.nvim_buf_clear_namespace(buf, mult_virt_ns[buf], 0, -1)
+	if mult_virt_ns[buf] == nil then
+      mult_virt_ns[buf] = vim.api.nvim_create_namespace("nabla.nvim")
 	end
-	mult_virt_ns[buf] = vim.api.nvim_create_namespace("")
 
 	local prev_row = -1
 	local prev_diff = 0
@@ -319,7 +318,7 @@ function enable_virt(opts)
 	local next_prev_row
 	local next_prev_diff
 
-	local formula_nodes = utils.get_all_mathzones()
+	local formula_nodes = utils.get_all_mathzones(opts)
 	local formulas_loc = {}
 	for _, node in ipairs(formula_nodes) do
 	  local srow, scol, erow, ecol = ts_utils.get_node_range(node)
@@ -566,6 +565,7 @@ function enable_virt(opts)
   	end
   end
 
+  local cleared_extmarks = {}
   -- @place_drawings_above_lines
 	for _, conceal in ipairs(inline_virt) do
 		local chunks, row, p1, p2 = unpack(conceal)
@@ -577,6 +577,10 @@ function enable_virt(opts)
 			end
 
 			if p1+j <= p2 then
+              if cleared_extmarks[row] == nil then
+                vim.api.nvim_buf_clear_namespace(buf, mult_virt_ns[buf], row, row + 1)
+                cleared_extmarks[row] = true
+              end
 				vim.api.nvim_buf_set_extmark(buf, mult_virt_ns[buf], row, p1+j-1, {
 					-- virt_text = {{ c, hl_group }},
 					end_row = row,
@@ -597,6 +601,10 @@ function enable_virt(opts)
 		end
 
 		if #virt_lines_reversed > 0 then
+            if cleared_extmarks[row] == nil then
+              vim.api.nvim_buf_clear_namespace(buf, mult_virt_ns[buf], row, row + 1)
+              cleared_extmarks[row] = true
+            end
 			vim.api.nvim_buf_set_extmark(buf, mult_virt_ns[buf], row, 0, {
 				virt_lines = virt_lines_reversed,
 				virt_lines_above = true,
@@ -606,6 +614,10 @@ function enable_virt(opts)
 
 	for row, virt_lines in pairs(virt_lines_below) do
 		if #virt_lines > 0 then
+            if cleared_extmarks[row] == nil then
+              vim.api.nvim_buf_clear_namespace(buf, mult_virt_ns[buf], row, row + 1)
+              cleared_extmarks[row] = true
+            end
 			vim.api.nvim_buf_set_extmark(buf, mult_virt_ns[buf], row, 0, {
 				virt_lines = virt_lines,
 			})

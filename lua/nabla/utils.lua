@@ -16,6 +16,8 @@ local MATH_NODES = {
     inline_formula = true,
 }
 
+RENDER_CACHE = {}
+
 utils.in_mathzone = function()
     local function get_node_at_cursor()
         local cursor = vim.api.nvim_win_get_cursor(0)
@@ -74,7 +76,7 @@ utils.in_mathzone = function()
     end
 end
 
-utils.get_all_mathzones = function()
+utils.get_all_mathzones = function(opts)
   local buf = vim.api.nvim_get_current_buf()
   local ok, parser = pcall(ts.get_parser, buf, vim.bo.filetype~="markdown" and "latex" or "markdown")
   if not ok or not parser then
@@ -83,7 +85,32 @@ utils.get_all_mathzones = function()
     return {}
   end
 
-  local root_tree = parser:parse(true)[1]
+  local top, bottom = vim.fn.line('w0') - 1, vim.fn.line('w$')
+  local parse_span
+  local cache = RENDER_CACHE[buf]
+  if not cache then
+    RENDER_CACHE[buf] = { top = top, bottom = bottom, changedtick = vim.api.nvim_buf_get_changedtick(buf) }
+    parse_span = { top = top, bottom = bottom }
+  else
+    if cache.changedtick ~= vim.api.nvim_buf_get_changedtick(buf) then
+      local line = vim.fn.line('.') - 1
+      parse_span = vim.fn.mode() == 'i' and { top = line, bottom = line + 1 } or { top = top, bottom = bottom }
+      cache.changedtick = vim.api.nvim_buf_get_changedtick(buf)
+    else
+      parse_span = {
+        top = top < cache.top and top or (top >= cache.bottom and top or cache.bottom),
+        bottom = bottom > cache.bottom and bottom or (bottom >= cache.top and cache.top or bottom),
+      }
+    end
+    cache.top = math.min(cache.top, parse_span.top)
+    cache.bottom = math.max(cache.bottom, parse_span.bottom)
+  end
+
+  if not parse_span or parse_span.top >= parse_span.bottom then
+    return {}
+  end
+
+  local root_tree = parser:parse(opts.render_visible and { parse_span.top, parse_span.bottom } or true)[1]
   local root = root_tree and root_tree:root()
 
   if not root then
