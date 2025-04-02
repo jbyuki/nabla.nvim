@@ -381,7 +381,7 @@ function enable_virt(opts)
                 if stat[1] >= mark[3] then
                   return { stat[1], stat[2] + vim.iter(mark[4].virt_text):fold(0, function(len, v)
                     -- the third term accounts for replacement of a character with virt_text (1) vs addition of string (0)
-                    return len + vim.fn.strutf16len(v[1]) - (mark[4].end_col and 1 or 0)
+                    return len + vim.fn.strutf16len(v[1]) - 1
                   end) }
                 end
               for i = stat[1] + 1, mark[3] + 1 do
@@ -389,7 +389,7 @@ function enable_virt(opts)
               end
             return {mark[3] + 1,
               stat[2] + vim.iter(mark[4].virt_text):fold(0, function (len, v)
-                return len + vim.fn.strutf16len(v[1]) - (mark[4].end_col and 1 or 0)
+                return len + vim.fn.strutf16len(v[1]) - 1
               end)}
             end)
           for i = last_stat[1] + 1, #conceal_padding[srow] do
