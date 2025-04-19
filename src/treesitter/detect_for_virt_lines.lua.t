@@ -1,6 +1,7 @@
 ##../nabla
 @utils_functions+=
 utils.get_all_mathzones = function(opts)
+  opts = opts or {}
   @get_tree_root_ts
   @go_downwards_and_search_for_math_nodes
   return out

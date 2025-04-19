@@ -77,6 +77,7 @@ utils.in_mathzone = function()
 end
 
 utils.get_all_mathzones = function(opts)
+  opts = opts or {}
   local buf = vim.api.nvim_get_current_buf()
   local ok, parser = pcall(ts.get_parser, buf, vim.bo.filetype~="markdown" and "latex" or "markdown")
   if not ok or not parser then
