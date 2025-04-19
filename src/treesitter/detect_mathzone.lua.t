@@ -17,6 +17,8 @@ local MATH_NODES = {
     inline_formula = true,
 }
 
+RENDER_CACHE = {}
+
 utils.in_mathzone = function()
     local function get_node_at_cursor()
         local cursor = vim.api.nvim_win_get_cursor(0)

@@ -1,6 +1,6 @@
 ##../nabla
 @utils_functions+=
-utils.get_all_mathzones = function()
+utils.get_all_mathzones = function(opts)
   @get_tree_root_ts
   @go_downwards_and_search_for_math_nodes
   return out
@@ -11,13 +11,13 @@ vim.api.nvim_echo({{"Latex parser not found. Please install with nvim-treesitter
 
 @get_tree_root_ts+=
 local buf = vim.api.nvim_get_current_buf()
-local ok, parser = pcall(ts.get_parser, buf, "latex")
+local ok, parser = pcall(ts.get_parser, buf, vim.bo.filetype~="markdown" and "latex" or "markdown")
 if not ok or not parser then
   @warn_if_latex_is_not_installed
   return {}
 end
 
-local root_tree = parser:parse()[1]
+@parse_latex_with_markdown_fix
 local root = root_tree and root_tree:root()
 
 if not root then
@@ -52,14 +52,14 @@ end
 
 @go_downwards_and_search_for_math_nodes+=
 local out = {}
-utils.get_mathzones_in_node(root, out)
+@get_mathzones_with_markdown_fix
 
 @detect_all_formulas+=
-local formula_nodes = utils.get_all_mathzones()
+local formula_nodes = utils.get_all_mathzones(opts)
 local formulas_loc = {}
 for _, node in ipairs(formula_nodes) do
   local srow, scol, erow, ecol = ts_utils.get_node_range(node)
-	table.insert(formulas_loc, {srow, scol, erow, ecol})
+  table.insert(formulas_loc, {srow, scol, erow, ecol})
 end
 
 @detect_formulas_in_line+=

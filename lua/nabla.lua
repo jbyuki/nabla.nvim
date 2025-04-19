@@ -309,7 +309,7 @@ function enable_virt(opts)
 	local virt_lines_below = {}
 
 	if mult_virt_ns[buf] == nil then
-      mult_virt_ns[buf] = vim.api.nvim_create_namespace("nabla.nvim")
+			mult_virt_ns[buf] = vim.api.nvim_create_namespace("nabla.nvim")
 	end
 
 	local prev_row = -1
@@ -322,7 +322,7 @@ function enable_virt(opts)
 	local formulas_loc = {}
 	for _, node in ipairs(formula_nodes) do
 	  local srow, scol, erow, ecol = ts_utils.get_node_range(node)
-		table.insert(formulas_loc, {srow, scol, erow, ecol})
+	  table.insert(formulas_loc, {srow, scol, erow, ecol})
 	end
 
   local conceal_padding = {}
@@ -363,39 +363,40 @@ function enable_virt(opts)
   			end
 
 
-        if not conceal_padding[srow] then
-          -- account for treesitter capture conceals
-          conceal_padding[srow] = vim.iter(vim.gsplit(vim.api.nvim_buf_get_lines(0, srow, srow + 1, false)[1], ''))
-              :fold({}, function(acc, _)
-                local conceal_cap = vim.iter(vim.treesitter.get_captures_at_pos(0, srow, #acc))
-                    :filter(function(v)
-                      return v.metadata.conceal
-                    end):next()
-                acc[#acc + 1] = (#acc == 0 and 0 or acc[#acc]) + 1 - (conceal_cap and vim.fn.strutf16len(conceal_cap.metadata.conceal) or 1)
-                return acc
-              end)
 
-          local marks = vim.iter(vim.api.nvim_buf_get_extmarks(0, -1, { srow, 0 }, { srow, -1 }, { details = true, }))
-          local last_stat = marks:filter(function(v) return v[4].virt_text and v[4].virt_text_pos == "inline" end)
-            :fold({0, 0}, function (stat, mark)
-                if stat[1] >= mark[3] then
-                  return { stat[1], stat[2] + vim.iter(mark[4].virt_text):fold(0, function(len, v)
-                    -- the third term accounts for replacement of a character with virt_text (1) vs addition of string (0)
-                    return len + vim.fn.strutf16len(v[1]) - 1
-                  end) }
-                end
-              for i = stat[1] + 1, mark[3] + 1 do
-                conceal_padding[srow][i] = conceal_padding[srow][i] - stat[2]
-              end
-            return {mark[3] + 1,
-              stat[2] + vim.iter(mark[4].virt_text):fold(0, function (len, v)
-                return len + vim.fn.strutf16len(v[1]) - 1
-              end)}
-            end)
-          for i = last_stat[1] + 1, #conceal_padding[srow] do
-            conceal_padding[srow][i] = conceal_padding[srow][i] - last_stat[2]
-          end
-        end
+  			if not conceal_padding[srow] then
+  			  -- account for treesitter capture conceals
+  			  conceal_padding[srow] = vim.iter(vim.gsplit(vim.api.nvim_buf_get_lines(0, srow, srow + 1, false)[1], ''))
+  			      :fold({}, function(acc, _)
+  			        local conceal_cap = vim.iter(vim.treesitter.get_captures_at_pos(0, srow, #acc))
+  			            :filter(function(v)
+  			              return v.metadata.conceal
+  			            end):next()
+  			        acc[#acc + 1] = (#acc == 0 and 0 or acc[#acc]) + 1 - (conceal_cap and vim.fn.strutf16len(conceal_cap.metadata.conceal) or 1)
+  			        return acc
+  			      end)
+
+  			  local marks = vim.iter(vim.api.nvim_buf_get_extmarks(0, -1, { srow, 0 }, { srow, -1 }, { details = true, }))
+  			  local last_stat = marks:filter(function(v) return v[4].virt_text and v[4].virt_text_pos == "inline" end)
+  			    :fold({0, 0}, function (stat, mark)
+  			        if stat[1] >= mark[3] then
+  			          return { stat[1], stat[2] + vim.iter(mark[4].virt_text):fold(0, function(len, v)
+  			            -- the third term accounts for replacement of a character with virt_text (1) vs addition of string (0)
+  			            return len + vim.fn.strutf16len(v[1]) - 1
+  			          end) }
+  			        end
+  			      for i = stat[1] + 1, mark[3] + 1 do
+  			        conceal_padding[srow][i] = conceal_padding[srow][i] - stat[2]
+  			      end
+  			    return {mark[3] + 1,
+  			      stat[2] + vim.iter(mark[4].virt_text):fold(0, function (len, v)
+  			        return len + vim.fn.strutf16len(v[1]) - 1
+  			      end)}
+  			    end)
+  			  for i = last_stat[1] + 1, #conceal_padding[srow] do
+  			    conceal_padding[srow][i] = conceal_padding[srow][i] - last_stat[2]
+  			  end
+  			end
 
   			local drawing_virt = {}
 
@@ -565,8 +566,8 @@ function enable_virt(opts)
   	end
   end
 
-  local cleared_extmarks = {}
   -- @place_drawings_above_lines
+	local cleared_extmarks = {}
 	for _, conceal in ipairs(inline_virt) do
 		local chunks, row, p1, p2 = unpack(conceal)
 
@@ -577,10 +578,11 @@ function enable_virt(opts)
 			end
 
 			if p1+j <= p2 then
-              if cleared_extmarks[row] == nil then
-                vim.api.nvim_buf_clear_namespace(buf, mult_virt_ns[buf], row, row + 1)
-                cleared_extmarks[row] = true
-              end
+				if cleared_extmarks[row] == nil then
+				  vim.api.nvim_buf_clear_namespace(buf, mult_virt_ns[buf], row, row + 1)
+				  cleared_extmarks[row] = true
+				end
+
 				vim.api.nvim_buf_set_extmark(buf, mult_virt_ns[buf], row, p1+j-1, {
 					-- virt_text = {{ c, hl_group }},
 					end_row = row,
@@ -601,10 +603,11 @@ function enable_virt(opts)
 		end
 
 		if #virt_lines_reversed > 0 then
-            if cleared_extmarks[row] == nil then
-              vim.api.nvim_buf_clear_namespace(buf, mult_virt_ns[buf], row, row + 1)
-              cleared_extmarks[row] = true
-            end
+			if cleared_extmarks[row] == nil then
+			  vim.api.nvim_buf_clear_namespace(buf, mult_virt_ns[buf], row, row + 1)
+			  cleared_extmarks[row] = true
+			end
+
 			vim.api.nvim_buf_set_extmark(buf, mult_virt_ns[buf], row, 0, {
 				virt_lines = virt_lines_reversed,
 				virt_lines_above = true,
@@ -614,10 +617,11 @@ function enable_virt(opts)
 
 	for row, virt_lines in pairs(virt_lines_below) do
 		if #virt_lines > 0 then
-            if cleared_extmarks[row] == nil then
-              vim.api.nvim_buf_clear_namespace(buf, mult_virt_ns[buf], row, row + 1)
-              cleared_extmarks[row] = true
-            end
+			if cleared_extmarks[row] == nil then
+			  vim.api.nvim_buf_clear_namespace(buf, mult_virt_ns[buf], row, row + 1)
+			  cleared_extmarks[row] = true
+			end
+
 			vim.api.nvim_buf_set_extmark(buf, mult_virt_ns[buf], row, 0, {
 				virt_lines = virt_lines,
 			})

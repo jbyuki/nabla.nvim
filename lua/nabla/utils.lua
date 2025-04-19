@@ -111,6 +111,7 @@ utils.get_all_mathzones = function(opts)
   end
 
   local root_tree = parser:parse(opts.render_visible and { parse_span.top, parse_span.bottom } or true)[1]
+
   local root = root_tree and root_tree:root()
 
   if not root then

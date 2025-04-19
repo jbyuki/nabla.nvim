@@ -123,6 +123,7 @@ if saved_concealcursor[win] then
 end
 
 @foreach_formula_generate_drawings+=
+local conceal_padding = {}
 for _, loc in ipairs(formulas_loc) do
   local srow, scol, erow, ecol = unpack(loc)
 	local succ, texts = pcall(vim.api.nvim_buf_get_text, buf, srow, scol, erow, ecol, {})
@@ -133,6 +134,7 @@ for _, loc in ipairs(formulas_loc) do
 
 		if success and exp then
 			@generate_ascii_art
+			@fix_rendering_markdown
 			@convert_drawing_to_virt_lines
 			@colorize_drawing
 
@@ -288,7 +290,7 @@ end
 
 @fill_until_desired_col+=
 local col = #vline
-local padding = desired_col - col
+local padding = desired_col - col - conceal_padding[srow][desired_col + 1]
 if prev_row == srow then
 	padding = padding - prev_diff
 end
@@ -303,12 +305,12 @@ vim.list_extend(vline, virt_line)
 local mult_virt_ns = {}
 
 @init_virt_lines+=
-if mult_virt_ns[buf] then
-  vim.api.nvim_buf_clear_namespace(buf, mult_virt_ns[buf], 0, -1)
+if mult_virt_ns[buf] == nil then
+		mult_virt_ns[buf] = vim.api.nvim_create_namespace("nabla.nvim")
 end
-mult_virt_ns[buf] = vim.api.nvim_create_namespace("")
 
 @place_conceals_formulas+=
+local cleared_extmarks = {}
 for _, conceal in ipairs(inline_virt) do
 	local chunks, row, p1, p2 = unpack(conceal)
 
@@ -319,6 +321,7 @@ for _, conceal in ipairs(inline_virt) do
 		end
 
 		if p1+j <= p2 then
+			@cleared_extmarks
 			vim.api.nvim_buf_set_extmark(buf, mult_virt_ns[buf], row, p1+j-1, {
 				-- virt_text = {{ c, hl_group }},
 				end_row = row,
@@ -340,6 +343,7 @@ for row, virt_lines in pairs(virt_lines_above) do
 	end
 
 	if #virt_lines_reversed > 0 then
+		@cleared_extmarks
 		vim.api.nvim_buf_set_extmark(buf, mult_virt_ns[buf], row, 0, {
 			virt_lines = virt_lines_reversed,
 			virt_lines_above = true,
@@ -349,6 +353,7 @@ end
 
 for row, virt_lines in pairs(virt_lines_below) do
 	if #virt_lines > 0 then
+		@cleared_extmarks
 		vim.api.nvim_buf_set_extmark(buf, mult_virt_ns[buf], row, 0, {
 			virt_lines = virt_lines,
 		})
@@ -361,7 +366,7 @@ local saved_wrapsettings = {}
 @enable_nowrap_local+=
 local win = vim.api.nvim_get_current_win()
 saved_wrapsettings[win] = vim.wo[win].wrap
-vim.wo[win].wrap = false
+-- vim.wo[win].wrap = false
 
 @restore_wrap_settings+=
 local win = vim.api.nvim_get_current_win()
