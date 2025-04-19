@@ -15,10 +15,13 @@ Requirements
 ------------
 
 * Neovim nightly
-* A colorscheme which supports treesitter [see here](https://github.com/rockerBOO/awesome-neovim#tree-sitter-supported-colorscheme)
-* Tree-sitter : [nvim-treesitter/nvim-treesitter](https://github.com/nvim-treesitter/nvim-treesitter)
+* A colorscheme which supports treesitter [see here](https://github.com/rockerBOO/awesome-neovim#tree-sitter-supported-colorscheme) _(*)_
+* Tree-sitter : [nvim-treesitter/nvim-treesitter](https://github.com/nvim-treesitter/nvim-treesitter) _(*)_
   (Not a dependency, but recommended to install parsers).
-* Latex parser : Install with `TSInstall latex`.
+* Latex parser : Install with `TSInstall latex` _(*)_
+
+_(*): Skip when using LazyVim_
+
 
 Install
 -------
@@ -40,6 +43,45 @@ Install
 </details>
 
 <details>
+  <summary>Using <a href="https://github.com/LazyVim/LazyVim">lazy.vim</a></summary>
+
+  ```lua
+    {
+        "williamboman/mason.nvim",
+        opts = { ensure_installed = { "tree-sitter-cli" } },
+    },
+
+    {
+        "jbyuki/nabla.nvim",
+        dependencies = {
+            "nvim-neo-tree/neo-tree.nvim",
+            "williamboman/mason.nvim",
+        },
+        lazy = true,
+
+        config = function()
+            require("nvim-treesitter.configs").setup({
+                ensure_installed = { "latex" },
+                auto_install = true,
+                sync_install = false,
+            })
+        end,
+
+        keys = function()
+            return {
+                {
+                    "<leader>p",
+                    ':lua require("nabla").popup()<cr>',
+                    desc = "NablaPopUp",
+                },
+            }
+        end,
+    },
+
+  ```
+</details>
+
+<details>
   <summary>Using the built-in package manager</summary>
 
   * Create a folder `pack/<a folder name of your choosing>/start`
@@ -56,6 +98,8 @@ Install
 
 Configuration
 -------------
+
+_(Default keymap to nabla-render in LazyVim is `<leader>p`)_
 
 Bind the following command:
 
