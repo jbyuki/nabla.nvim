@@ -14,12 +14,14 @@ An ASCII math generator from LaTeX equations.
 Requirements
 ------------
 
-* Neovim: 0.10.1
+* Neovim nightly
 * A colorscheme which supports treesitter [see here](https://github.com/rockerBOO/awesome-neovim#tree-sitter-supported-colorscheme) _(*)_
 * Tree-sitter : [nvim-treesitter/nvim-treesitter](https://github.com/nvim-treesitter/nvim-treesitter) _(*)_
+  (Not a dependency, but recommended to install parsers).
 * Latex parser : Install with `TSInstall latex` _(*)_
 
 _(*): Skip when using LazyVim_
+
 
 Install
 -------
