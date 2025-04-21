@@ -54,8 +54,8 @@ else
     cache.changedtick = vim.api.nvim_buf_get_changedtick(buf)
   else
     parse_span = {
-      top = top < cache.top and top or (top >= cache.bottom and top or cache.bottom),
-      bottom = bottom > cache.bottom and bottom or (bottom >= cache.top and cache.top or bottom),
+      top = top <= cache.top and top or (top >= cache.bottom and top or cache.bottom),
+      bottom = bottom >= cache.bottom and bottom or (bottom >= cache.top and cache.top or bottom),
     }
   end
   cache.top = math.min(cache.top, parse_span.top)
